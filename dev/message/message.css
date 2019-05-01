@@ -1,0 +1,128 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+.show {
+  display: block !important;
+}
+
+.my_message_contaier {
+  padding: 8px 10px;
+  background-color: #fff;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+  border-radius: 4px;
+  position: fixed;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 1s;
+  opacity: 0;
+}
+.my_message_contaier.comedown {
+  top: 16px;
+  opacity: 1;
+}
+
+.my_message_contaier .my_message_text_box {
+  color: rgba(0,0,0,0.65);
+  vertical-align: top;
+  line-height: 1.4;
+}
+
+.my_message_contaier .my_message_icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 8px;
+  position: relative;
+}
+
+/* warning */
+.my_message_contaier .my_message_warning_icon {
+  background-color: #faad14;
+}
+.my_message_contaier .my_message_warning_icon:before {
+  display: block;
+  content: ' ';
+  width: 2px;
+  height: 6px;
+  background-color: #fff;
+  position: absolute;
+  left: 50%;
+  top: 3px;
+  transform: translateX(-50%);
+}
+.my_message_contaier .my_message_warning_icon:after {
+  display: block;
+  content: ' ';
+  width: 2px;
+  height: 2px;
+  background-color: #fff;
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  transform: translateX(-50%);
+}
+
+/* success */
+.my_message_contaier .my_message_success_icon {
+  background-color: #52c41a;
+}
+.my_message_contaier .my_message_success_icon:before {
+  display: block;
+  content: ' ';
+  width: 3px;
+  height: 2px;
+  background-color: #fff;
+  position: absolute;
+  left: 25%;
+  top: 50%;
+  transform: rotate(45deg);
+}
+.my_message_contaier .my_message_success_icon:after {
+  display: block;
+  content: ' ';
+  width: 6px;
+  height: 2px;
+  background-color: #fff;
+  position: absolute;
+  left: 40%;
+  top: 45%;
+  transform: rotate(-45deg);
+}
+
+/* error */
+.my_message_contaier .my_message_error_icon {
+  background-color: #f5222d;
+}
+.my_message_contaier .my_message_error_icon:before {
+  display: block;
+  content: ' ';
+  width: 8px;
+  height: 2px;
+  background-color: #fff;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: center;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.my_message_contaier .my_message_error_icon:after {
+  display: block;
+  content: ' ';
+  width: 8px;
+  height: 2px;
+  background-color: #fff;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-origin: center;
+  transform: translate(-50%, -50%) rotate(-45deg);
+}

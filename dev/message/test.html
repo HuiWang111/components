@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="./message.css">
+  <title>Document</title>
+  <style>
+    button {
+      display: block;
+      width: 50px;
+      height: 25px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <button class="warning">warning</button>
+  <button class="success">success</button>
+  <button class="error">error</button>
+
+  <script src="../../../lib/jquery-3.3.1.min.js"></script>
+  <script src="../util.js"></script>
+  <script src="./message.js"></script>
+  <script>
+    $('button.warning').on('click', function () {
+      message.warning('警告');
+    });
+    $('button.success').on('click', function () {
+      message.success('成功');
+    });
+    $('button.error').on('click', function () {
+      message.error('失败');
+    });
+  </script>
+</body>
+</html>

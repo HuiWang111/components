@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1.0, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <!-- <link rel="stylesheet" href="./Pagination.css"> -->
+</head>
+<body>
+  <ul class="pagination-container">
+
+  </ul>
+  
+  <script src="../jquery-3.3.1.min.js"></script>
+  <script src="../util.js"></script>
+  <script src="./Pagination.js"></script>
+  <script>
+    new Pagination('.pagination-container', {
+      total: 50,
+      // border: true,
+      itemRender: function (current, type, originalElement) {
+        if (type === 'prev') {
+          return '<a>上一页</a>';
+        } else if (type === 'next') {
+          return '<a>下一页</a>';
+        }
+        return originalElement;
+      },
+      useStyle: true
+    });
+  </script>
+</body>
+</html>
