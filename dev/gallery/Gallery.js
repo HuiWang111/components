@@ -15,9 +15,6 @@
   var appendStyle = Util.appendStyle;
   var buildRandomString = Util.buildRandomString;
 
-  // 随机字符串
-  var randomString = buildRandomString();
-
   //className
   var GALLERY_BUTTON_NEXT_CLASS = 'gallery-swiper-button-next';
   var GALLERY_BUTTON_PREV_CLASS = 'gallery-swiper-button-prev';
@@ -49,6 +46,9 @@
 
     $list = $(selector);
     this.$source = $list;
+
+    //随机className
+    var RANDOM_CLASS = buildRandomString();
 
     //z-index
     var $hasZIndex = $('*').filter(function (_, item) {
@@ -89,7 +89,7 @@
 
     var galleryWrappper = $.node('div', swiperContainer, GALLERY_WRAPPER_CLASS);
 
-    var galleryContainer = $.node('section', galleryWrappper, GALLERY_CONTAINER_CLASS.appendClass(GALLERY_CONTAINER_CLASS_HIDDEN));
+    var galleryContainer = $.node('section', galleryWrappper, GALLERY_CONTAINER_CLASS.appendClass(GALLERY_CONTAINER_CLASS_HIDDEN).appendClass(RANDOM_CLASS));
 
     // 将gallery元素添加到body
     var $gallery = $(galleryContainer);
@@ -101,16 +101,16 @@
     if (swiperOptions.nextButton) delete swiperOptions.nextButton;
     if (swiperOptions.prevButton) delete swiperOptions.prevButton;
 
-    if (options.pagination) swiperOptions.pagination = toSelector(GALLERY_PAGINATION_CLASS);
+    if (options.pagination) swiperOptions.pagination = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_PAGINATION_CLASS));
     if (options.navgation) {
-      swiperOptions.nextButton = toSelector(GALLERY_BUTTON_NEXT_CLASS);
-      swiperOptions.prevButton = toSelector(GALLERY_BUTTON_PREV_CLASS);
+      swiperOptions.nextButton = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_BUTTON_NEXT_CLASS));
+      swiperOptions.prevButton = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_BUTTON_PREV_CLASS));
     }
     swiperOptions.observer = true;
     swiperOptions.observeParents = true;
 
     //style
-    var $instance = $(toSelector(GALLERY_CONTAINER_CLASS));
+    var $instance = $(toSelector(RANDOM_CLASS));
     //z-index
     $instance.css({
       'z-index': maxZIndex === null ? 'auto' : maxZIndex
@@ -136,16 +136,16 @@
     });
 
     //点击初始化gallery
-    var gallerySwiper;
+    var gallerySwiper = {};
     $list.on('click', function () {
       var target = this;
       var index = Array.from($list).indexOf(target);
 
-      if (!gallerySwiper) {
+      if (!gallerySwiper[RANDOM_CLASS]) {
         (index > 0) && (swiperOptions.initialSlide = index);
-        gallerySwiper = new Swiper(toSelector(GALLERY_SWIPER_CONTAINER_CLASS), swiperOptions);
+        gallerySwiper[RANDOM_CLASS] = new Swiper(toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_SWIPER_CONTAINER_CLASS)), swiperOptions);
       } else {
-        gallerySwiper.slideTo(index, 0, false);
+        gallerySwiper[RANDOM_CLASS].slideTo(index, 0, false);
       }
 
       $instance.removeClass(GALLERY_CONTAINER_CLASS_HIDDEN);
