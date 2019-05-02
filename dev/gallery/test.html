@@ -53,7 +53,11 @@
       height: 600,
       bgColor: 'rgba(0, 0, 0, 1)',
       useStyle: true,
-      swiperOptions: {},
+      swiperOptions: {
+        onInit: function () {
+          console.log('init swiper');
+        }
+      },
     });
 
     new Gallery('ul > li', {

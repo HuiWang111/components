@@ -1,13 +1,12 @@
 !function (win, $, Swiper, Util) {  
   
-  //tools
+  // tools
   function isImgEl(el) {
     if (typeof el.length !== 'undefined') {
       return el[0].tagName.toLowerCase() === 'img';
     }
     return el.tagName.toLowerCase() === 'img';
   }
-
   var insertElementToBody = Util.insertElementToBody;
   var toSelector = Util.toSelector;
   var isTrueNumber = Util.isTrueNumber;
@@ -15,7 +14,7 @@
   var appendStyle = Util.appendStyle;
   var buildRandomString = Util.buildRandomString;
 
-  //className
+  // className
   var GALLERY_BUTTON_NEXT_CLASS = 'gallery-swiper-button-next';
   var GALLERY_BUTTON_PREV_CLASS = 'gallery-swiper-button-prev';
   var GALLERY_PAGINATION_CLASS = 'gallery-swiper-pagination';
@@ -24,7 +23,8 @@
   var GALLERY_CONTAINER_CLASS = 'gallery-contaier';
   var GALLERY_CONTAINER_CLASS_HIDDEN = 'gallery-contaier-invisible';
 
-  /* 
+  /*
+    options:
     {
       navgation: true/false, // 是否需要导航箭头
       pagination: true/false, // 是否需要分页器
@@ -41,16 +41,14 @@
       appendStyle({"html, body":{"height":"100%"},".gallery-contaier":{"width":"100%","height":"100%","position":"fixed","left":0,"top":0,},".gallery-contaier.gallery-contaier-invisible":{"display":"none"},".gallery-contaier .gallery-wrapper":{"position":"absolute","left":"50%","top":"50%","transform":"translate(-50%, -50%)","z-index":1},".gallery-contaier .gallery-wrapper .gallery-swiper-container":{"width":"100%","height":"100%","margin":"0 auto"},".gallery-contaier .gallery-swiper-container .swiper-slide":{"position":"relative"},".gallery-contaier .gallery-swiper-container .swiper-slide img":{"width":"100%","position":"absolute","left":"50%","top":"50%","transform":"translate(-50%, -50%)"},".swiper-pagination-bullet-active":{"background-color":"#fff"},".swiper-button-next":{"right":0},".swiper-button-prev":{"left":0}});
     }
 
-    var navgation = options.navgation;
-    var pagination = options.pagination;
-
     $list = $(selector);
-    this.$source = $list; // 向外暴露 图片源 元素
+    this.$source = $list;
 
-    //随机className
+    // 为每个实例创建一个随机className
     var RANDOM_CLASS = buildRandomString();
+    this.randomClassName = RANDOM_CLASS;
 
-    //获取当前页面最大的z-index值
+    // 获取当前页面最大的z-index值
     var $hasZIndex = $('*').filter(function (_, item) {
       return isNumber($(item).css('z-index')) && parseInt($(item).css('z-index')) > 0;
     });
@@ -59,8 +57,35 @@
       return zIndex > prev ? zIndex : prev;
     }, -1000000);
 
-    // 获取图片src
-    var eleList = Array.from($list);
+    // srcList
+    var srcList = this.createSrcList();
+
+    // 创建html元素，并合并到body下
+    var pagination = options.pagination;
+    var navgation = options.navgation;
+    this.createDom(srcList, pagination, navgation);
+
+    // 处理swiper配置
+    swiperOptions = options.swiperOptions;
+    this.swiperOptionsHandler(swiperOptions, pagination, navgation);
+
+    // gallery实例容器
+    this.$container = $(toSelector(RANDOM_CLASS));
+
+    // 初始化样式
+    var width = options.width, height = options.height;
+    var bgColor = options.bgColor || 'opacity';
+    this.setStyle(maxZIndex, width, height, bgColor, navgation);
+
+    this.bindEvent(swiperOptions);
+
+  }
+
+  win.Gallery = Gallery;
+
+  Gallery.prototype.createSrcList = function () {
+
+    var eleList = Array.from(this.$source);
     //获取【自身为img元素或者子元素中包含img元素】的元素
     eleList = eleList.filter(function (item) {
       var isImg = isImgEl(item);
@@ -72,7 +97,13 @@
       return item.src || $(item).find('img')[0].src;
     });
 
-    // 创建swiper元素
+    return srcList;
+  }
+
+  Gallery.prototype.createDom = function (srcList, pagination, navgation) {
+
+    var RANDOM_CLASS = this.randomClassName;
+    
     var slideList = srcList.map(function (src) {
       return $.node('div', '<img src="' + src + '" />', 'swiper-slide');
     });
@@ -97,33 +128,39 @@
     var $gallery = $(galleryContainer);
     insertElementToBody($gallery);
 
-    // 处理swiper 配置
-    swiperOptions = options.swiperOptions;
+  }
+
+  Gallery.prototype.swiperOptionsHandler = function (swiperOptions, pagination, navgation) {
+
+    var RANDOM_CLASS = this.randomClassName;
+
     if (swiperOptions.pagination) delete swiperOptions.pagination;
     if (swiperOptions.nextButton) delete swiperOptions.nextButton;
     if (swiperOptions.prevButton) delete swiperOptions.prevButton;
 
-    if (options.pagination) swiperOptions.pagination = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_PAGINATION_CLASS));
-    if (options.navgation) {
+    if (pagination) swiperOptions.pagination = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_PAGINATION_CLASS));
+    if (navgation) {
       swiperOptions.nextButton = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_BUTTON_NEXT_CLASS));
       swiperOptions.prevButton = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_BUTTON_PREV_CLASS));
     }
     swiperOptions.observer = true;
     swiperOptions.observeParents = true;
 
-    //获得gallery容器元素实例
-    var $instance = $(toSelector(RANDOM_CLASS));
+  }
+
+  Gallery.prototype.setStyle = function (maxZIndex, width, height, bgColor, navgation) {
+
+    var $container = this.$container;
     //设置gallery元素的z-index为当前页面z-index最大值+1
-    $instance.css({
+    $container.css({
       'z-index': maxZIndex === null ? 'auto' : maxZIndex
     });
 
     //设置swiper容器宽高，默认皆为100%，移动端最好设为默认
-    var width = options.width, height = options.height;
     width = width ? ( isTrueNumber(width) ? width + 'px' : width) : '100%';
     height =  height ? ( isTrueNumber(height) ? height + 'px' : height ) : '100%';
 
-    var $galleryWrapper = $instance.find(toSelector(GALLERY_WRAPPER_CLASS));
+    var $galleryWrapper = $container.find(toSelector(GALLERY_WRAPPER_CLASS));
     $galleryWrapper.css({
       'width': navgation ? (parseFloat(width) + 100) + 'px' : width,
       'height': height
@@ -134,35 +171,41 @@
     });
 
     //设置gallery容器宽高，默认透明背景
-    var bgColor = options.bgColor || 'opacity';
-    $instance.css({
+    $container.css({
       'background-color': bgColor
     });
 
-    //点击初始化gallery swiper
-    var gallerySwiper = {};
-    var GALLERY = this;
-    $list.on('click', function () {
-      var target = this;
-      var index = Array.from($list).indexOf(target);
+  }
 
-      if (!gallerySwiper[RANDOM_CLASS]) {
+  Gallery.prototype.bindEvent = function (swiperOptions) {
+    var $container = this.$container;
+    var RANDOM_CLASS = this.randomClassName;
+
+    //点击初始化gallery swiper
+    var GALLERY = this;
+    GALLERY.$swiper = null;
+    var $source = this.$source;
+    $source.on('click', function () {
+      var target = this;
+      var index = Array.from($source).indexOf(target);
+
+      if (!GALLERY.$swiper) {
         (index > 0) && (swiperOptions.initialSlide = index);
-        gallerySwiper[RANDOM_CLASS] = new Swiper(toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_SWIPER_CONTAINER_CLASS)), swiperOptions);
-        GALLERY.$swiper = gallerySwiper[RANDOM_CLASS]; //向外暴露当前galery实例的swiper实例
+        GALLERY.$swiper = new Swiper(toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_SWIPER_CONTAINER_CLASS)), swiperOptions);
       } else {
-        gallerySwiper[RANDOM_CLASS].slideTo(index, 0, false);
+        GALLERY.$swiper.slideTo(index, 0, false);
       }
 
-      $instance.removeClass(GALLERY_CONTAINER_CLASS_HIDDEN);
+      $(toSelector(RANDOM_CLASS)).removeClass(GALLERY_CONTAINER_CLASS_HIDDEN);
     });
 
     //隐藏gallery容器
+    var $galleryWrapper = $container.find(toSelector(GALLERY_WRAPPER_CLASS));
+
     var close = function () {
-      $instance.addClass(GALLERY_CONTAINER_CLASS_HIDDEN);
+      $container.addClass(GALLERY_CONTAINER_CLASS_HIDDEN);
     }
-    $instance.on('click', close);
-    $galleryWrapper.find('.gallery-swiper-container').on('click', close);
+    $container.on('click', close);
 
     var stopPropagation = function (e) {
       e.stopPropagation();
@@ -170,7 +213,5 @@
     $galleryWrapper.on('click', stopPropagation);
 
   }
-
-  win.Gallery = Gallery;
 
 }(window, jQuery, Swiper, Util);
