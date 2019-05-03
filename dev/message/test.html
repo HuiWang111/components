@@ -19,11 +19,16 @@
   <button class="warning">warning</button>
   <button class="success">success</button>
   <button class="error">error</button>
+  <button class="info">info</button>
 
-  <script src="../../../lib/jquery-3.3.1.min.js"></script>
+  <script src="../jquery-3.3.1.min.js"></script>
   <script src="../util.js"></script>
   <script src="./message.js"></script>
   <script>
+    message.setting({
+      GapOfMessage: 30
+    });
+
     $('button.warning').on('click', function () {
       message.warning('警告');
     });
@@ -32,6 +37,9 @@
     });
     $('button.error').on('click', function () {
       message.error('失败');
+    });
+    $('button.info').on('click', function () {
+      message.info('info info info info info');
     });
   </script>
 </body>

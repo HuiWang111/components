@@ -7,11 +7,7 @@ html, body {
   height: 100%;
 }
 
-.show {
-  display: block !important;
-}
-
-.my_message_contaier {
+.message_contaier {
   padding: 8px 10px;
   background-color: #fff;
   font-size: 14px;
@@ -24,18 +20,18 @@ html, body {
   transition: all 1s;
   opacity: 0;
 }
-.my_message_contaier.comedown {
+.message_contaier.comedown {
   top: 16px;
   opacity: 1;
 }
 
-.my_message_contaier .my_message_text_box {
+.message_contaier .message_text_box {
   color: rgba(0,0,0,0.65);
   vertical-align: top;
   line-height: 1.4;
 }
 
-.my_message_contaier .my_message_icon {
+.message_contaier .message_icon {
   display: inline-block;
   width: 16px;
   height: 16px;
@@ -45,10 +41,10 @@ html, body {
 }
 
 /* warning */
-.my_message_contaier .my_message_warning_icon {
+.message_contaier .message_warning_icon {
   background-color: #faad14;
 }
-.my_message_contaier .my_message_warning_icon:before {
+.message_contaier .message_warning_icon:before {
   display: block;
   content: ' ';
   width: 2px;
@@ -59,7 +55,7 @@ html, body {
   top: 3px;
   transform: translateX(-50%);
 }
-.my_message_contaier .my_message_warning_icon:after {
+.message_contaier .message_warning_icon:after {
   display: block;
   content: ' ';
   width: 2px;
@@ -72,10 +68,10 @@ html, body {
 }
 
 /* success */
-.my_message_contaier .my_message_success_icon {
+.message_contaier .message_success_icon {
   background-color: #52c41a;
 }
-.my_message_contaier .my_message_success_icon:before {
+.message_contaier .message_success_icon:before {
   display: block;
   content: ' ';
   width: 3px;
@@ -86,7 +82,7 @@ html, body {
   top: 50%;
   transform: rotate(45deg);
 }
-.my_message_contaier .my_message_success_icon:after {
+.message_contaier .message_success_icon:after {
   display: block;
   content: ' ';
   width: 6px;
@@ -99,10 +95,10 @@ html, body {
 }
 
 /* error */
-.my_message_contaier .my_message_error_icon {
+.message_contaier .message_error_icon {
   background-color: #f5222d;
 }
-.my_message_contaier .my_message_error_icon:before {
+.message_contaier .message_error_icon:before {
   display: block;
   content: ' ';
   width: 8px;
@@ -114,7 +110,7 @@ html, body {
   transform-origin: center;
   transform: translate(-50%, -50%) rotate(45deg);
 }
-.my_message_contaier .my_message_error_icon:after {
+.message_contaier .message_error_icon:after {
   display: block;
   content: ' ';
   width: 8px;
@@ -125,4 +121,31 @@ html, body {
   top: 50%;
   transform-origin: center;
   transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* info */
+.message_contaier .message_info_icon {
+  background-color: #1890ff;
+}
+.message_contaier .message_info_icon:before {
+  display: block;
+  content: ' ';
+  width: 2px;
+  height: 2px;
+  background-color: #fff;
+  position: absolute;
+  left: 50%;
+  top: 3px;
+  transform: translateX(-50%);
+}
+.message_contaier .message_info_icon:after {
+  display: block;
+  content: ' ';
+  width: 2px;
+  height: 6px;
+  background-color: #fff;
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  transform: translateX(-50%);
 }
