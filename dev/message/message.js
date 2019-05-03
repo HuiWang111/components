@@ -49,6 +49,8 @@
 
       var $el = this.$el;
       var $text = this.$text;
+      
+      $el[0].style = "";
 
       var time;
       if (isFunction(duration)) {
@@ -60,7 +62,6 @@
       }
 
       var elHeight = $el.outerHeight();
-      var index = messageList.indexOf(this) + 1;
 
       var message = this;
       var FirstMessagePosTop = this.FirstMessagePosTop;
@@ -69,6 +70,11 @@
 
         $text.text(content);
         $el.addClass('comedown');
+
+        var visibleMessageList = messageList.filter(function (msg) {
+          return msg.$el.hasClass('comedown');
+        });
+        var index = visibleMessageList.indexOf(message) + 1;
         index > 1 && $el.css({ //comedown className已经包含了第一个Message的top值，所以第一个Message不需要额外设置top值
           'top': FirstMessagePosTop + (index - 1)*elHeight + (index - 1)*GapOfMessage + 'px'
         });
@@ -85,13 +91,9 @@
 
       var $el = this.$el;
       var $text = this.$text;
-      
-      var index = messageList.indexOf(this) + 1;
 
+      ($el[0].style.cssText !== '') && ($el[0].style.cssText = "");
       $el.removeClass('comedown');
-      index > 1 && $el.css({
-        'top': '-40px'
-      });
       isFunction(onClose) && onClose();
       setTimeout(function () {
         $text.text('');
@@ -103,6 +105,7 @@
 
   var message = {};
   message.setting = function (options) {
+    // Object.assign(Message.prototype.options, options);
     Message.prototype.options = options;
   };
 
