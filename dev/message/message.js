@@ -3,6 +3,7 @@
   // tools
   var insertElementToBody = Util.insertElementToBody;
   var isFunction = Util.isFunction;
+  var toSelector = Util.toSelector;
 
   //message
   var PreFix = 'my_';
@@ -12,19 +13,27 @@
   var FirstMessagePosTop = 16; //第一个message元素的top值
   var GapOfMessage = 10; //多个message同时出现时，message之间的间隙
 
-  var Message = function(type) {
+  /*
+    {
+      FirstMessagePosTop: Number,
+      GapOfMessage: Number
+    }
+  */
+
+  var Message = function(type, options) {
+
+    this.GapOfMessage = options.GapOfMessage || GapOfMessage;
+    this.FirstMessagePosTop = options.FirstMessagePosTop || FirstMessagePosTop;
 
     var icon = $.node('i', '', ICONCLASS + ' ' + PreFix + 'message_' + type + '_icon');
     var text = $.node('span', '', TEXTCLASS);
     var container = $.node('div', icon + text, CONTAINERCLASS);
 
     insertElementToBody($(container));
-    
-    var $body = $('body');
 
-    var $message = $body.find('.' + CONTAINERCLASS);
+    var $message = $(toSelector(CONTAINERCLASS));
     this.$el = $message.eq($message.length - 1);
-    this.$text = this.$el.find('.' + TEXTCLASS);
+    this.$text = this.$el.find(toSelector(TEXTCLASS));
     
   }
 
@@ -45,6 +54,8 @@
     var index = messageList.indexOf(this) + 1;
 
     var message = this;
+    var FirstMessagePosTop = this.FirstMessagePosTop;
+    var GapOfMessage = this.GapOfMessage;
     setTimeout(function () {
 
       $text.text(content);
@@ -69,7 +80,7 @@
     index > 1 && $el.css({
       'top': '-40px'
     });
-    (isFunction(onClose)) && onClose();
+    isFunction(onClose) && onClose();
     setTimeout(function () {
       $text.text('');
     }, 1000);

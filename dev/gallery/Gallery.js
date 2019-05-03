@@ -13,6 +13,7 @@
   var isNumber = Util.isNumber;
   var appendStyle = Util.appendStyle;
   var buildRandomString = Util.buildRandomString;
+  var domAfterLoad = Util.domAfterLoad;
 
   // className
   var GALLERY_BUTTON_NEXT_CLASS = 'gallery-swiper-button-next';
@@ -26,12 +27,12 @@
   /*
     options:
     {
-      navgation: true/false, // 是否需要导航箭头
-      pagination: true/false, // 是否需要分页器
-      width: 'css value'/number,
-      height: 'css value'/number,
+      navgation: true | false, // 是否需要导航箭头
+      pagination: true | false, // 是否需要分页器
+      width: 'css unit' | number,
+      height: 'css unit' | number,
       bgColor: '',
-      useStyle: true/false,
+      useStyle: true | false,
       swiperOptions: {}
     }
   */
@@ -44,7 +45,7 @@
     $list = $(selector);
     this.$source = $list;
 
-    // 为每个实例创建一个随机className
+    // 为每个实例容器创建一个随机className
     var RANDOM_CLASS = buildRandomString();
     this.randomClassName = RANDOM_CLASS;
 
@@ -69,15 +70,20 @@
     swiperOptions = options.swiperOptions;
     this.swiperOptionsHandler(swiperOptions, pagination, navgation);
 
-    // gallery实例容器
-    this.$container = $(toSelector(RANDOM_CLASS));
+    var GALLERY = this;
+    // 判断元素是否挂载完成
+    domAfterLoad(toSelector(RANDOM_CLASS), function () {
+      // gallery实例容器
+      GALLERY.$container = $(toSelector(RANDOM_CLASS));
 
-    // 初始化样式
-    var width = options.width, height = options.height;
-    var bgColor = options.bgColor || 'opacity';
-    this.setStyle(maxZIndex, width, height, bgColor, navgation);
+      // 初始化样式
+      var width = options.width, height = options.height;
+      var bgColor = options.bgColor || 'opacity';
+      GALLERY.setStyle(maxZIndex, width, height, bgColor, navgation);
 
-    this.bindEvent(swiperOptions);
+      GALLERY.bindEvent(swiperOptions);
+
+    });
 
   }
 
@@ -153,7 +159,7 @@
     var $container = this.$container;
     //设置gallery元素的z-index为当前页面z-index最大值+1
     $container.css({
-      'z-index': maxZIndex === null ? 'auto' : maxZIndex
+      'z-index': maxZIndex === null ? 'auto' : maxZIndex + 1
     });
 
     //设置swiper容器宽高，默认皆为100%，移动端最好设为默认
@@ -196,12 +202,10 @@
         GALLERY.$swiper.slideTo(index, 0, false);
       }
 
-      $(toSelector(RANDOM_CLASS)).removeClass(GALLERY_CONTAINER_CLASS_HIDDEN);
+      $container.removeClass(GALLERY_CONTAINER_CLASS_HIDDEN);
     });
 
     //隐藏gallery容器
-    var $galleryWrapper = $container.find(toSelector(GALLERY_WRAPPER_CLASS));
-
     var close = function () {
       $container.addClass(GALLERY_CONTAINER_CLASS_HIDDEN);
     }
@@ -210,7 +214,7 @@
     var stopPropagation = function (e) {
       e.stopPropagation();
     }
-    $galleryWrapper.on('click', stopPropagation);
+    $container.find(toSelector(GALLERY_WRAPPER_CLASS)).on('click', stopPropagation);
 
   }
 

@@ -83,9 +83,7 @@
       insert(el);
     }
   }
-
   function dateFormater(date, format) {
-
     var full = function (number) {
       if (!isNumber(number)) throw new Error('`number` must be a number');
       number = parseInt(number);
@@ -129,7 +127,27 @@
     return result;
   }
   function buildRandomString() {
-    return Math.random().toString(36).substr(2);
+    var randomString = Math.random().toString(36).substr(2);
+    var letters = [];
+    for (var i = 65; i < 91; i++) {
+      letters.push(String.fromCharCode(i));
+    }
+    for (var i = 97; i < 123; i++) {
+      letters.push(String.fromCharCode(i));
+    }
+    var randomLetter = letters[Math.floor(Math.random()*letters.length)]; //保证第一位一定是字母
+    return randomLetter + randomString;
+  }
+  function domAfterLoad(selector, loadedCallback) {
+    var timer = null;
+    var dom = document.querySelectorAll(selector);
+    if (dom.length > 0) {
+      isFunction(loadedCallback) && loadedCallback();
+
+      timer && clearTimeout(timer);
+    } else {
+      timer = setTimeout(arguments.callee, 0);
+    }
   }
 
   var Util = {
@@ -145,7 +163,8 @@
     isNumber: isNumber,
     makeArray: makeArray,
     dateFormater: dateFormater,
-    buildRandomString: buildRandomString
+    buildRandomString: buildRandomString,
+    domAfterLoad: domAfterLoad
 
   }
 

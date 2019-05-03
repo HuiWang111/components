@@ -61,13 +61,14 @@
     //check
     var $container = $(container);
     if ($container[0].tagName.toLowerCase() !== 'ul') throw new Error('container must be a ul element');
+    this.$container = $container;
 
     if (typeof options.total === 'undefined') throw new Error('total is necessary option');
 
-    var mustNumber = ['total', 'pageSize', 'current'];
+    var mustBeNumber = ['total', 'pageSize', 'current'];
     for (var key in options) {
-      if (mustNumber.indexOf(key) > -1) {
-        if (typeof options[key] !== 'undefined') {
+      if (mustBeNumber.indexOf(key) > -1) {
+        if (typeof options[key] !== 'undefined') { //未配置该项时不报错
           if (!isNumber(options[key])) throw new Error(key + 'must be a number or string number');
         }
       }
@@ -78,181 +79,191 @@
     current = typeof options.current === 'undefined' ? 1 : parseInt(current);
 
     var totalPage = Math.ceil(total/pageSize);
-
-    var itemRender = options.itemRender;
-    //pagination
-    var i, ulInner = '';
-    for (i = 1; i <= totalPage; i++) {
-      var klass = i === current ? PAGINATION_ITEM_CLASS.appendClass(PAGINATION_ITEM_CLASS_ACTIVE) : PAGINATION_ITEM_CLASS;
-      klass = options.border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
-
-      var element = isFunction(itemRender) ? itemRender(i, 'pagination', $.node('a', i)) : $.node('a', i);
-
-      var pagination;
-      klass = klass.appendClass(PAGINATION_ITEM_CLASS + '-' + i);
-      pagination = $.node('li', element, klass);
-      /* 
-      if (totalPage < 10) {
-        klass = klass.appendClass(PAGINATION_ITEM_CLASS + '-' + i);
-        pagination = $.node('li', element, klass);
-      } else {
-        if (current < 5) {
-          if (i <= 5) {
-            klass = klass.appendClass(PAGINATION_ITEM_CLASS + '-' + i);
-            pagination = $.node('li', element, klass);
-          } else {
-
-          }
-        }
-      } 
-      */
-
-      ulInner += pagination;
-    }
-
-    //previous
-    var Pagination = this;
-    var previous = function () {
-      var klass = current === 1 ? PAGINATION_ITEM_CLASS_DISABLE : '';
-      klass = options.border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
-
-      var svg = current === 1 ? prevSvgDisable : prevSvg;
-      var prevAnchor = $.node('a', svg);
-
-      var element = isFunction(itemRender) ? itemRender(null, 'prev', prevAnchor) : prevAnchor;
-      Pagination.prevEl = element;
-      Pagination.prevOriginEl = prevAnchor;
-
-      return $.node('li', element, klass.appendClass(PAGINATION_ITEM_CLASS_PREV));
-    }
-    var prevItem = previous();
-
-    //next
-    var next = function () {
-      var klass = current === totalPage ? PAGINATION_ITEM_CLASS_DISABLE : '';
-      klass = options.border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
-
-      var svg = current === totalPage ? nextSvgDisable : nextSvg;
-      var nextAnchor = $.node('a', svg);
-
-      var element = isFunction(itemRender) ? itemRender(null, 'next', nextAnchor) : nextAnchor;
-      Pagination.nextEl = element;
-      Pagination.nextOriginEl = nextAnchor;
-
-      return $.node('li', element, klass.appendClass(PAGINATION_ITEM_CLASS_NEXT));
-    }
-    var nextItem = next();
-
-    $container.html(prevItem + ulInner + nextItem);
-
-    this.$container = $container;
-    this.onChange = options.onChange;
     this.totalPage = totalPage;
 
+    var itemRender = options.itemRender;
+    this.createDom(options, current, totalPage, itemRender);
+    
+    this.onChange = options.onChange;
     this.bindEvent();
 
   }
 
   win.Pagination = Pagination;
 
-  Pagination.prototype.bindEvent = function () {
+  Pagination.prototype = {
 
-    var Pagination = this;
-    var $container = Pagination.$container;
-    var $next = $container.find(toSelector(PAGINATION_ITEM_CLASS_NEXT));
-    var $prev = $container.find(toSelector(PAGINATION_ITEM_CLASS_PREV));
-    var $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
-    var onChange = Pagination.onChange;
-    var totalPage = Pagination.totalPage;
+    createDom: function (options, current, totalPage, itemRender) {
+      var $container = this.$container;
 
-    //click previous button
-    $prev.on('click', function () {
-      var $this = $(this);
-      if (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
-        var $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
-        var current = parseInt($active.children('a').text());
+      //pagination
+      var i, ulInner = '';
+      for (i = 1; i <= totalPage; i++) {
+        var klass = i === current ? PAGINATION_ITEM_CLASS.appendClass(PAGINATION_ITEM_CLASS_ACTIVE) : PAGINATION_ITEM_CLASS;
+        klass = options.border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
 
-        $active.removeClass(PAGINATION_ITEM_CLASS_ACTIVE).prev().addClass(PAGINATION_ITEM_CLASS_ACTIVE);
+        var element = isFunction(itemRender) ? itemRender(i, 'pagination', $.node('a', i)) : $.node('a', i);
 
-        current = current - 1;
-
-        if ( (current !== totalPage) && ($next.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
-          (Pagination.nextEl === Pagination.nextOriginEl) && $next.children('a').html(nextSvg);
-          $next.removeClass(PAGINATION_ITEM_CLASS_DISABLE);
-        }
-
-        if ( (current === 1) && (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
-          (Pagination.prevEl === Pagination.prevOriginEl) && $this.children('a').html(prevSvgDisable);
-          $this.addClass(PAGINATION_ITEM_CLASS_DISABLE);
-        }
-
-        isFunction(onChange) && onChange(current);
-      }
-    });
-
-    //click next button
-    $next.on('click', function () {
-      var $this = $(this);
-      if (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
-        var $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
-        var current = parseInt($active.children('a').text());
-
-        $active.removeClass(PAGINATION_ITEM_CLASS_ACTIVE).next().addClass(PAGINATION_ITEM_CLASS_ACTIVE);
-
-        current = current + 1;
-
-        if ( (current !== 1) && ($prev.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
-          console.log(Pagination.prevOriginEl);
-          (Pagination.prevEl === Pagination.prevOriginEl) && $prev.children('a').html(prevSvg);
-          $prev.removeClass(PAGINATION_ITEM_CLASS_DISABLE);
-        }
-
-        if ( (current === totalPage) && (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
-          (Pagination.nextEl === Pagination.nextOriginEl) && $this.children('a').html(nextSvgDisable);
-          $this.addClass(PAGINATION_ITEM_CLASS_DISABLE);
-        }
-
-        isFunction(onChange) && onChange(current);
-      }
-    });
-
-    //click paginations
-    $pagination.on('click', function () {
-      var $this = $(this);
-      if (!$this.hasClass(PAGINATION_ITEM_CLASS_ACTIVE)) {
-        $this.addClass(PAGINATION_ITEM_CLASS_ACTIVE)
-          .siblings(toSelector(PAGINATION_ITEM_CLASS_ACTIVE)).removeClass(PAGINATION_ITEM_CLASS_ACTIVE);
-
-        var current = parseInt($this.children('a').text());
-
-        if ($prev.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
-          if (current !== 1) {
-            $prev.removeClass(PAGINATION_ITEM_CLASS_DISABLE);
-            (Pagination.prevEl === Pagination.prevOriginEl) && $prev.children('a').html(prevSvg);
-          }
+        var pagination;
+        klass = klass.appendClass(PAGINATION_ITEM_CLASS + '-' + i);
+        pagination = $.node('li', element, klass);
+        /* 
+        if (totalPage < 10) {
+          klass = klass.appendClass(PAGINATION_ITEM_CLASS + '-' + i);
+          pagination = $.node('li', element, klass);
         } else {
-          if (current === 1) {
-            $prev.addClass(PAGINATION_ITEM_CLASS_DISABLE);
-            (Pagination.prevEl === Pagination.prevOriginEl) && $prev.children('a').html(prevSvgDisable);
-          }
-        }
+          if (current < 5) {
+            if (i <= 5) {
+              klass = klass.appendClass(PAGINATION_ITEM_CLASS + '-' + i);
+              pagination = $.node('li', element, klass);
+            } else {
 
-        if ($next.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
-          if (current !== totalPage) {
-            $next.removeClass(PAGINATION_ITEM_CLASS_DISABLE);
+            }
+          }
+        } 
+        */
+
+        ulInner += pagination;
+      }
+
+      //previous
+      var Pagination = this;
+      var previous = function () {
+        var klass = current === 1 ? PAGINATION_ITEM_CLASS_DISABLE : '';
+        klass = options.border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
+
+        var svg = current === 1 ? prevSvgDisable : prevSvg;
+        var prevAnchor = $.node('a', svg);
+
+        var element = isFunction(itemRender) ? itemRender(null, 'prev', prevAnchor) : prevAnchor;
+        Pagination.prevEl = element;
+        Pagination.prevOriginEl = prevAnchor;
+
+        return $.node('li', element, klass.appendClass(PAGINATION_ITEM_CLASS_PREV));
+      }
+      var prevItem = previous();
+
+      //next
+      var next = function () {
+        var klass = current === totalPage ? PAGINATION_ITEM_CLASS_DISABLE : '';
+        klass = options.border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
+
+        var svg = current === totalPage ? nextSvgDisable : nextSvg;
+        var nextAnchor = $.node('a', svg);
+
+        var element = isFunction(itemRender) ? itemRender(null, 'next', nextAnchor) : nextAnchor;
+        Pagination.nextEl = element;
+        Pagination.nextOriginEl = nextAnchor;
+
+        return $.node('li', element, klass.appendClass(PAGINATION_ITEM_CLASS_NEXT));
+      }
+      var nextItem = next();
+
+      $container.html(prevItem + ulInner + nextItem);
+
+    },
+
+    bindEvent: function () {
+
+      var Pagination = this;
+      var $container = Pagination.$container;
+      var onChange = Pagination.onChange;
+      var totalPage = Pagination.totalPage;
+
+      var $next = $container.find(toSelector(PAGINATION_ITEM_CLASS_NEXT));
+      var $prev = $container.find(toSelector(PAGINATION_ITEM_CLASS_PREV));
+      var $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
+      
+
+      //click previous button
+      $prev.on('click', function () {
+        var $this = $(this);
+        if (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
+          var $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
+          var current = parseInt($active.children('a').text());
+
+          $active.removeClass(PAGINATION_ITEM_CLASS_ACTIVE).prev().addClass(PAGINATION_ITEM_CLASS_ACTIVE);
+
+          current = current - 1;
+
+          if ( (current !== totalPage) && ($next.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
             (Pagination.nextEl === Pagination.nextOriginEl) && $next.children('a').html(nextSvg);
+            $next.removeClass(PAGINATION_ITEM_CLASS_DISABLE);
           }
-        } else {
-          if (current === totalPage) {
-            $next.addClass(PAGINATION_ITEM_CLASS_DISABLE);
-            (Pagination.nextEl === Pagination.nextOriginEl) && $next.children('a').html(nextSvgDisable);
+
+          if ( (current === 1) && (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
+            (Pagination.prevEl === Pagination.prevOriginEl) && $this.children('a').html(prevSvgDisable);
+            $this.addClass(PAGINATION_ITEM_CLASS_DISABLE);
           }
+
+          isFunction(onChange) && onChange(current);
         }
+      });
 
-        isFunction(onChange) && onChange(current);
-      }
-    });
+      //click next button
+      $next.on('click', function () {
+        var $this = $(this);
+        if (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
+          var $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
+          var current = parseInt($active.children('a').text());
 
-  }
+          $active.removeClass(PAGINATION_ITEM_CLASS_ACTIVE).next().addClass(PAGINATION_ITEM_CLASS_ACTIVE);
+
+          current = current + 1;
+
+          if ( (current !== 1) && ($prev.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
+            (Pagination.prevEl === Pagination.prevOriginEl) && $prev.children('a').html(prevSvg);
+            $prev.removeClass(PAGINATION_ITEM_CLASS_DISABLE);
+          }
+
+          if ( (current === totalPage) && (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
+            (Pagination.nextEl === Pagination.nextOriginEl) && $this.children('a').html(nextSvgDisable);
+            $this.addClass(PAGINATION_ITEM_CLASS_DISABLE);
+          }
+
+          isFunction(onChange) && onChange(current);
+        }
+      });
+
+      //click paginations
+      $pagination.on('click', function () {
+        var $this = $(this);
+        if (!$this.hasClass(PAGINATION_ITEM_CLASS_ACTIVE)) {
+          $this.addClass(PAGINATION_ITEM_CLASS_ACTIVE)
+            .siblings(toSelector(PAGINATION_ITEM_CLASS_ACTIVE)).removeClass(PAGINATION_ITEM_CLASS_ACTIVE);
+
+          var current = parseInt($this.children('a').text());
+
+          if ($prev.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
+            if (current !== 1) {
+              $prev.removeClass(PAGINATION_ITEM_CLASS_DISABLE);
+              (Pagination.prevEl === Pagination.prevOriginEl) && $prev.children('a').html(prevSvg);
+            }
+          } else {
+            if (current === 1) {
+              $prev.addClass(PAGINATION_ITEM_CLASS_DISABLE);
+              (Pagination.prevEl === Pagination.prevOriginEl) && $prev.children('a').html(prevSvgDisable);
+            }
+          }
+
+          if ($next.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
+            if (current !== totalPage) {
+              $next.removeClass(PAGINATION_ITEM_CLASS_DISABLE);
+              (Pagination.nextEl === Pagination.nextOriginEl) && $next.children('a').html(nextSvg);
+            }
+          } else {
+            if (current === totalPage) {
+              $next.addClass(PAGINATION_ITEM_CLASS_DISABLE);
+              (Pagination.nextEl === Pagination.nextOriginEl) && $next.children('a').html(nextSvgDisable);
+            }
+          }
+
+          isFunction(onChange) && onChange(current);
+        }
+      });
+
+    }
+
+  };
 
 }(window, jQuery, Util)

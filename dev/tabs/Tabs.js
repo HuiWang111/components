@@ -5,6 +5,7 @@
   var toSelector = Util.toSelector;
   var isString = Util.isString;
   var isFunction = Util.isFunction;
+  var domAfterLoad = Util.domAfterLoad;
 
   //className
   var TAB_ITEM_CLASS = 'tabs-tab-item';
@@ -50,82 +51,105 @@
   */
   function Tabs(container, options) {
 
-    if (options.useStyle) {
-      appendStyle({".flex":{"display":"-webkit-box","display":"-moz-box","display":"-webkit-flex","display":"-moz-flex","display":"-ms-flexbox","display":"flex"},".flex-1":{"-webkit-box-flex":1,"-moz-box-flex":1,"-webkit-flex":1,"-ms-flex":1,"flex":1,},".flex-column":{"-moz-flex-direction":"column","-webkit-flex-direction":"column","-ms-flex-direction":"column","flex-direction":"column",},".tabs-tab-wrapper":{"overflow":"hidden","white-space":"nowrap"},".tabs-tab-wrapper .tabs-tab-inner":{"display":"inline-block","transition":"all .5s"},".tabs-tab-wrapper .tabs-tab-item":{"display":"inline-block","padding":"12px 16px","cursor":"pointer"},".tabs-tab-wrapper .tabs-underline":{"height":"2px","transition":"all .5s"},".tabs-arrow":{"width":"30px","position":"relative"},".tabs-arrow.tabs-arrow-invisible":{"display":"none"},".tabs-arrow svg":{"width":"15px","height":"15px","position":"absolute","left":"50%","top":"50%","transform":"translate(-50%, -50%)","cursor":"pointer"},".tabs-arrow.tabs-arrow-disable svg":{"cursor":"not-allowed"},".tabs-pane-wrapper":{"transition":"all .5s"},".tabs-pane-item":{"display":"inline-block","vertical-align":"top"}});
-    }
-
-    var tabs = '', panes = '';
     var $container = $(container);
     $container.addClass('flex');
     $container.css({
       'overflow': 'hidden'
     });
-
-    var isIncludePane = isString(options.paneContainerSelector) && (options.paneContainerSelector.length > 0);
-    if (isIncludePane) {
-      var $paneContainer = $(options.paneContainerSelector);
-      $paneContainer.css({
-        'overflow': 'hidden'
-      });
-    }
-    
-    Array.isArray(options.tabsText) && options.tabsText.forEach(function (tabText, index) {
-      var klass = index === 0 ? TAB_ITEM_CLASS.appendClass(TAB_ITEM_CLASS_ACTIVE) : TAB_ITEM_CLASS;
-      
-      //tab
-      var tab = $.node('div', tabText, klass);
-      tabs += tab;
-
-      //pane
-      if (isIncludePane) {
-        var paneClass = index === 0 ? PANE_ITEM_CLASS.appendClass(PANE_ITEM_CLASS_ACTIVE) : PANE_ITEM_CLASS;
-        var pane = $.node('div', '', paneClass);
-        panes += pane;
-      }
-    });
-
-    var udColor =  options.underlineColor ? options.underlineColor : options.themeColor;
-    var attr = 'style="background-color: ' + udColor + ';"';
-    var underline = $.node('div', '', UNDERLINE_CLASS, attr);
-
-    var tabsInner = $.node('div', tabs + underline, TAB_ITEM_INNER_CLASS);
-    var tabsWrap = $.node('div', tabsInner, TAB_ITEM_WRAP_CLASS.appendClass('flex-1'));
-
-    var prev = $.node('div', prevSvgDisable, TAB_PREVIOUS_ARROW_CLASS.appendClass(TAB_ARROW_CLASS).appendClass(TAB_ARROW_CLASS_DISABLE).appendClass(TAB_ARROW_CLASS_INVISIBLE));
-    var next = $.node('div', nextSvg, TAB_NEXT_ARROW_CLASS.appendClass(TAB_ARROW_CLASS).appendClass(TAB_ARROW_CLASS_INVISIBLE));
-
-    $container.html(prev + tabsWrap + next);
-    isIncludePane && $paneContainer.html($.node('div', panes, PANE_ITEM_WRAP_CLASS));
-
-    if (options.activeColor || options.themeColor) {
-      var color = options.activeColor ? options.activeColor : options.themeColor;
-      appendStyle({
-        '.tabs-tab-item-active': {
-          'color': color
-        }
-      });
-    }
-    if (options.hoverColor || options.themeColor) {
-      var color = options.hoverColor ? options.hoverColor : options.themeColor;
-      appendStyle({
-        '.tabs-tab-item:hover': {
-          'color': color
-        }
-      });
-    }
-
-    this.$wrap = $(toSelector(TAB_ITEM_WRAP_CLASS));
     this.$container = $container;
-    isIncludePane && (this.$paneContainer = $paneContainer);
-    this.isIncludePane = isIncludePane;
-    this.onChange = options.onChange;
 
-    this.bindEvent();
+    this.initStyle(options);
+    
+    this.createDom(options);
+
+    var TABS = this;
+    // 判断元素是否挂载完成
+    domAfterLoad(toSelector(TAB_ITEM_WRAP_CLASS), function () {
+
+      TABS.$wrap = $(toSelector(TAB_ITEM_WRAP_CLASS));
+      
+      TABS.onChange = options.onChange;
+
+      TABS.bindEvent();
+
+    });
+    
   }
 
   win.Tabs = Tabs;
 
   Tabs.prototype = {
+
+    initStyle: function (options) {
+
+      if (options.useStyle) {
+        appendStyle({".flex":{"display":"-webkit-box","display":"-moz-box","display":"-webkit-flex","display":"-moz-flex","display":"-ms-flexbox","display":"flex"},".flex-1":{"-webkit-box-flex":1,"-moz-box-flex":1,"-webkit-flex":1,"-ms-flex":1,"flex":1,},".flex-column":{"-moz-flex-direction":"column","-webkit-flex-direction":"column","-ms-flex-direction":"column","flex-direction":"column",},".tabs-tab-wrapper":{"overflow":"hidden","white-space":"nowrap"},".tabs-tab-wrapper .tabs-tab-inner":{"display":"inline-block","transition":"all .5s"},".tabs-tab-wrapper .tabs-tab-item":{"display":"inline-block","padding":"12px 16px","cursor":"pointer"},".tabs-tab-wrapper .tabs-underline":{"height":"2px","transition":"all .5s"},".tabs-arrow":{"width":"30px","position":"relative"},".tabs-arrow.tabs-arrow-invisible":{"display":"none"},".tabs-arrow svg":{"width":"15px","height":"15px","position":"absolute","left":"50%","top":"50%","transform":"translate(-50%, -50%)","cursor":"pointer"},".tabs-arrow.tabs-arrow-disable svg":{"cursor":"not-allowed"},".tabs-pane-wrapper":{"transition":"all .5s"},".tabs-pane-item":{"display":"inline-block","vertical-align":"top"}});
+      }
+
+      var isIncludePane = isString(options.paneContainerSelector) && (options.paneContainerSelector.length > 0);
+      this.isIncludePane = isIncludePane;
+      if (isIncludePane) {
+        var $paneContainer = $(options.paneContainerSelector);
+        $paneContainer.css({
+          'overflow': 'hidden'
+        });
+        this.$paneContainer = $paneContainer;
+      }
+
+      if (options.activeColor || options.themeColor) {
+        var activeColor = options.activeColor ? options.activeColor : options.themeColor;
+        appendStyle({
+          '.tabs-tab-item-active': {
+            'color': activeColor
+          }
+        });
+      }
+      if (options.hoverColor || options.themeColor) {
+        var hoverColor = options.hoverColor ? options.hoverColor : options.themeColor;
+        appendStyle({
+          '.tabs-tab-item:hover': {
+            'color': hoverColor
+          }
+        });
+      }
+
+    },
+
+    createDom: function (options) {
+      var tabs = '', panes = '';
+      var $container = this.$container;
+      var $paneContainer = this.$paneContainer;
+      var isIncludePane = this.isIncludePane;
+
+      Array.isArray(options.tabsText) && options.tabsText.forEach(function (tabText, index) {
+        var klass = index === 0 ? TAB_ITEM_CLASS.appendClass(TAB_ITEM_CLASS_ACTIVE) : TAB_ITEM_CLASS;
+        
+        //tab
+        var tab = $.node('div', tabText, klass);
+        tabs += tab;
+  
+        //pane
+        if (isIncludePane) {
+          var paneClass = index === 0 ? PANE_ITEM_CLASS.appendClass(PANE_ITEM_CLASS_ACTIVE) : PANE_ITEM_CLASS;
+          var pane = $.node('div', '', paneClass);
+          panes += pane;
+        }
+      });
+      
+      var udColor =  options.underlineColor ? options.underlineColor : options.themeColor;
+      var attr = 'style="background-color: ' + udColor + ';"';
+      var underline = $.node('div', '', UNDERLINE_CLASS, attr);
+  
+      var tabsInner = $.node('div', tabs + underline, TAB_ITEM_INNER_CLASS);
+      var tabsWrap = $.node('div', tabsInner, TAB_ITEM_WRAP_CLASS.appendClass('flex-1'));
+  
+      var prev = $.node('div', prevSvgDisable, TAB_PREVIOUS_ARROW_CLASS.appendClass(TAB_ARROW_CLASS).appendClass(TAB_ARROW_CLASS_DISABLE).appendClass(TAB_ARROW_CLASS_INVISIBLE));
+      var next = $.node('div', nextSvg, TAB_NEXT_ARROW_CLASS.appendClass(TAB_ARROW_CLASS).appendClass(TAB_ARROW_CLASS_INVISIBLE));
+  
+      $container.html(prev + tabsWrap + next);
+      isIncludePane && $paneContainer.html($.node('div', panes, PANE_ITEM_WRAP_CLASS));
+
+    },
 
     bindEvent: function () {
       var tabs = this;
@@ -134,14 +158,15 @@
       var $underline = $tabWrap.find(toSelector(UNDERLINE_CLASS));
       var isIncludePane = tabs.isIncludePane;
 
+      // 计算每个tab的宽度
       var tabItemsWidthList = $tabItems.map(function (_, tabItem) {
         return $(tabItem).outerWidth();
       });
 
-      // underline
+      // underline宽度 = tab宽度
       $underline.width(tabItemsWidthList[0]);
 
-      //pane
+      //pane宽度
       if (isIncludePane) {
         var paneWidth = tabs.$paneContainer.width();
         var paneHeight = tabs.$paneContainer.height();
