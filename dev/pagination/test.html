@@ -18,7 +18,9 @@
   <script>
     new Pagination('.pagination-container', {
       total: 50,
-      // border: true,
+      border: false,
+      useStyle: true,
+      // themeColor: 'red',
       itemRender: function (current, type, originalElement) {
         if (type === 'prev') {
           return '<a>上一页</a>';
@@ -27,7 +29,9 @@
         }
         return originalElement;
       },
-      useStyle: true
+      onChange: function (current) {
+        console.log(current);
+      }
     });
   </script>
 </body>

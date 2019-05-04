@@ -39,7 +39,9 @@
       message.error('失败');
     });
     $('button.info').on('click', function () {
-      message.info('info info info info info');
+      message.info('info info info info info', 10, function () {
+        console.log('info close');
+      });
     });
   </script>
 </body>

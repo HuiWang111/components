@@ -7,12 +7,16 @@
   var buildRandomString = Util.buildRandomString;
   var domAfterLoad = Util.domAfterLoad;
 
-  //message
+  // className
   var TEXTCLASS = 'message_text_box';
   var CONTAINERCLASS = 'message_contaier';
   var ICONCLASS = 'message_icon';
-  var FirstMessagePosTop = 16; //第一个message元素的top值
-  var GapOfMessage = 10; //多个message同时出现时，message之间的间隙
+
+  // default
+  var defaultOptions = {
+    FirstMessagePosTop: 16, //第一个message元素的top值
+    GapOfMessage: 10 //多个message同时出现时，message之间的间隙
+  };
 
   /*
     options:
@@ -23,16 +27,17 @@
   */
   var Message = function(type) {
 
-    var options = this.options || {};
-    this.GapOfMessage = options.GapOfMessage || GapOfMessage;
-    this.FirstMessagePosTop = options.FirstMessagePosTop || FirstMessagePosTop;
+    this.GapOfMessage = defaultOptions.GapOfMessage;
+    this.FirstMessagePosTop = defaultOptions.FirstMessagePosTop;
 
-    //为每个实例的容器创建一个随机className
+    this.type = type;
+
+    //为每个Message实例的容器创建一个随机className
     var RANDOM_CLASS = buildRandomString();
 
-    var icon = $.node('i', '', ICONCLASS + ' ' + 'message_' + type + '_icon');
-    var text = $.node('span', '', TEXTCLASS);
-    var container = $.node('div', icon + text, CONTAINERCLASS.appendClass(RANDOM_CLASS));
+    var icon = $.node('i', '', ICONCLASS.appendClass('message_' + type + '_icon'));
+    var text = $.node('span', '', TEXTCLASS.appendClass('message_' + type + '_text_box'));
+    var container = $.node('div', icon + text, CONTAINERCLASS.appendClass(RANDOM_CLASS).appendClass('message_' + type + '_container'));
     insertElementToBody($(container));
     
     var MESSAGE = this;
@@ -53,12 +58,12 @@
       $el[0].style = "";
 
       var time;
-      if (isFunction(duration)) {
-        onClose = duration;
+      if (isFunction(duration)) { // 当第二个参数为函数时，将函数赋值给onClose, 显示时间使用默认
+        onClose = duration; 
         time = 3;
       } else {
         duration = parseFloat(duration);
-        time = isNaN(duration) ? 3 : duration;
+        time = isNaN(duration) ? 3 : duration; // 默认显示3秒后隐藏
       }
 
       var elHeight = $el.outerHeight();
@@ -71,12 +76,9 @@
         $text.text(content);
         $el.addClass('comedown');
 
-        var visibleMessageList = messageList.filter(function (msg) {
-          return msg.$el.hasClass('comedown');
-        });
-        var index = visibleMessageList.indexOf(message) + 1;
-        index > 1 && $el.css({ //comedown className已经包含了第一个Message的top值，所以第一个Message不需要额外设置top值
-          'top': FirstMessagePosTop + (index - 1)*elHeight + (index - 1)*GapOfMessage + 'px'
+        var index = messageList.indexOf(message);
+        $el.css({
+          'top': FirstMessagePosTop + index*elHeight + index*GapOfMessage + 'px' // 计算当前实例top值
         });
 
         setTimeout(function () {
@@ -92,7 +94,10 @@
       var $el = this.$el;
       var $text = this.$text;
 
-      ($el[0].style.cssText !== '') && ($el[0].style.cssText = "");
+      var index = messageList.indexOf(this);
+      messageList.splice(index, 1);
+
+      ($el[0].style.top !== '') && ($el[0].style.top = '');
       $el.removeClass('comedown');
       isFunction(onClose) && onClose();
       setTimeout(function () {
@@ -105,8 +110,7 @@
 
   var message = {};
   message.setting = function (options) {
-    // Object.assign(Message.prototype.options, options);
-    Message.prototype.options = options;
+    Object.assign(defaultOptions, options);
   };
 
   var messageList = [];
@@ -119,12 +123,13 @@
     
     //有隐藏的提示框就直接用该实例，否则创建新实例
     if (hiddenWarning.length > 0) {
+      messageList.push(hiddenWarning[0]);
       hiddenWarning[0].show(content, duration, onClose);
     } else {
       var warning = new Message('warning');
-      warningList.push(warning);
       messageList.push(warning);
       warning.show(content, duration, onClose);
+      warningList.push(warning);
     }
 
   };
@@ -137,12 +142,13 @@
     });
 
     if (hiddenSuccess.length > 0) {
+      messageList.push(hiddenSuccess[0]);
       hiddenSuccess[0].show(content, duration, onClose);
     } else {
       var success = new Message('success');
-      successList.push(success);
       messageList.push(success);
       success.show(content, duration, onClose);
+      successList.push(success);
     }
 
   };
@@ -155,12 +161,13 @@
     });
 
     if (hiddenError.length > 0) {
+      messageList.push(hiddenError[0]);
       hiddenError[0].show(content, duration, onClose);
     } else {
       var error = new Message('error');
-      errorList.push(error);
       messageList.push(error);
       error.show(content, duration, onClose);
+      errorList.push(error);
     }
 
   };
@@ -173,12 +180,13 @@
     });
 
     if (hiddenInfo.length > 0) {
+      messageList.push(hiddenInfo[0]);
       hiddenInfo[0].show(content, duration, onClose);
     } else {
       var info = new Message('info');
-      infoList.push(info);
       messageList.push(info);
       info.show(content, duration, onClose);
+      infoList.push(info);
     }
 
   };

@@ -126,17 +126,44 @@
 
     return result;
   }
-  function buildRandomString() {
+  function buildRandomString(length) {
+
+    function randomLetter(size) {
+      var letters = [];
+      for (var i = 65; i < 91; i++) {
+        letters.push(String.fromCharCode(i));
+      }
+      for (var i = 97; i < 123; i++) {
+        letters.push(String.fromCharCode(i));
+      }
+
+      var result = letters[Math.floor(Math.random()*letters.length)];
+      if (isNumber(size)) {
+        size = parseInt(size);
+        if (size > 1) {
+          for (var i = 1; i < size; i++) {
+            result += letters[Math.floor(Math.random()*letters.length)];
+          }
+        }
+      }
+
+      return result;
+    }
+
     var randomString = Math.random().toString(36).substr(2);
-    var letters = [];
-    for (var i = 65; i < 91; i++) {
-      letters.push(String.fromCharCode(i));
+    var letter = randomLetter();
+    randomString =  letter + randomString; //保证第一位一定是字母
+    if (isNumber(length)) {
+      length = parseInt(length);
+      if (randomString.length > length) {
+        randomString = randomString.substr(0, length);
+      } else if (randomString.length < length) {
+        var diff = length - randomString.length;
+        var letters = randomLetter(diff);
+        randomString += letters;
+      }
     }
-    for (var i = 97; i < 123; i++) {
-      letters.push(String.fromCharCode(i));
-    }
-    var randomLetter = letters[Math.floor(Math.random()*letters.length)]; //保证第一位一定是字母
-    return randomLetter + randomString;
+    return randomString;
   }
   function domAfterLoad(selector, loadedCallback) {
     var timer = null;
@@ -409,16 +436,32 @@
       if (item == null) return '';
   
       // If the item is an array, do a join
-      item = $.isArray(item) ? item.join('') : item;
+      item = Array.isArray(item) ? item.join('') : item;
   
       // Check for the class
       klass = klass ? ' class="' + klass + '"' : '';
   
       // Check for any attributes
-      attr = attr ? ' ' + attr : '';
-  
-      // Return the wrapped item
-      return '<' + wrapper + klass + attr + '>' + item + '</' + wrapper + '>';
+      var attributes = '';
+      if (attr) {
+        if (isString(attr)) {
+          attributes = ' ' + attr;
+        } else if (isObject(attr)) {
+          for (var key in attr) {
+            if ( (key.trim() === 'style') && isObject(attr[key]) && (attr[key] !== null) ) {
+              attributes += key + '=';
+              for (var k in attr[key]) {
+                attributes += '"' + k + ': ' + attr[key][k] + ';"';
+              }
+            } else {
+              var thisAttr = key + '="' + attr[key] + '"';
+              attributes += ' ' + thisAttr;
+            }
+          } 
+        }
+      }
+      
+      return '<' + wrapper + klass + attributes + '>' + item + '</' + wrapper + '>';
     }
   });
 

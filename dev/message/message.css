@@ -21,7 +21,6 @@ html, body {
   opacity: 0;
 }
 .message_contaier.comedown {
-  top: 16px;
   opacity: 1;
 }
 

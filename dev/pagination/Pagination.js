@@ -25,68 +25,82 @@
 
   var nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11183" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M683.981 511.9999999999999l-416.3580000000001-416.3319999999998 36.197999999999986-36.224000000000004 452.55700000000013 452.55699999999985-452.55699999999985 452.55700000000013-36.198000000000015-36.223999999999975z" p-id="11184" fill="#e6e6e6"></path></svg>';
 
+  //default
+  var defaultOptions = {
+    total: 0,
+    pageSize: 10,
+    current: 1,
+    border: true,
+    themeColor: '#1890ff',
+    useStyle: false,
+    onChange: null,
+    itemRender: null
+  };
 
   /* 
+    options:
     {
-      total: numer,
-      pageSize: number,
-      current: number,
-      border: true/false, //页码是否需要边框
-      themeColor: '',
-      prevText: '',
-      nextText: '',
-      useStyle: true/false,
-      onChange: function (index) {},
-      itemRender: function (current, type, originalElement) {}
+      total: Numer,
+      pageSize: Number,
+      current: Number,
+      border: true | false, // 页码是否需要边框
+      themeColor: String,
+      useStyle: true | false, // 不引入css文件，使用<style>标签
+      onChange: Function (current),
+      itemRender: Function (current, type, originalElement)
     }
   */
   function Pagination(container, options) {
 
-    //initStyle
-    var themeColor = options.themeColor || '#1890ff';
-    appendStyle({
-      '.pagination-item.pagination-item-active > a': {
-        'color': themeColor
-      },
-      '.pagination-item.pagination-item-active.pagination-item-border': {
-        'border-color': themeColor
-      }
-    });
-
-    //useStyle
-    if (options.useStyle) {
-      appendStyle({"ul":{"list-style":"none","padding":0,"margin":0},".pagination-item, .pagination-item-previous,.pagination-item-next":{"display":"inline-block","width":"30px","height":"30px","line-height":"30px","text-align":"center","border-radius":"4px","cursor":"pointer","vertical-align":"top","box-sizing":"border-box"},".pagination-item-previous, .pagination-item-next":{"width":"auto","min-width":"30px"},".pagination-item.pagination-item-border":{"border":"solid #d9d9d9 1px"},".pagination-item + .pagination-item,.pagination-item-next":{"margin-left":"8px"},".pagination-item-previous":{"margin-right":"8px"},".pagination-item > a, .pagination-item-previous > a, .pagination-item-next > a":{"display":"inline-block","width":"100%","height":"100%","color":"rgba(0, 0, 0, 0.65)","font-weight":100,"vertical-align":"top"},".pagination-item-previous > a > svg, .pagination-item-next > a > svg":{"width":"12px","height":"12px"},".pagination-item-previous.pagination-item-disable > a,.pagination-item-next.pagination-item-disable > a":{"color":"#d9d9d9","cursor":"not-allowed"}});
-    }
-
-    //check
-    var $container = $(container);
-    if ($container[0].tagName.toLowerCase() !== 'ul') throw new Error('container must be a ul element');
-    this.$container = $container;
-
-    if (typeof options.total === 'undefined') throw new Error('total is necessary option');
+    Object.assign(defaultOptions, options);
 
     var mustBeNumber = ['total', 'pageSize', 'current'];
-    for (var key in options) {
+    for (var key in defaultOptions) {
       if (mustBeNumber.indexOf(key) > -1) {
-        if (typeof options[key] !== 'undefined') { //未配置该项时不报错
-          if (!isNumber(options[key])) throw new Error(key + 'must be a number or string number');
-        }
+        if (!isNumber(defaultOptions[key])) throw new Error('`' + key + '` must be a number or string number');
       }
     }
 
-    total = parseInt(options.total);
-    pageSize = typeof options.pageSize === 'undefined' ? 10 : parseInt(options.pageSize);
-    current = typeof options.current === 'undefined' ? 1 : parseInt(current);
+    var total = parseInt(defaultOptions.total);
 
-    var totalPage = Math.ceil(total/pageSize);
-    this.totalPage = totalPage;
+    if (total > 0) {
 
-    var itemRender = options.itemRender;
-    this.createDom(options, current, totalPage, itemRender);
-    
-    this.onChange = options.onChange;
-    this.bindEvent();
+      //initStyle
+      var themeColor = defaultOptions.themeColor;
+      appendStyle({
+        '.pagination-item.pagination-item-active > a': {
+          'color': themeColor
+        },
+        '.pagination-item.pagination-item-active.pagination-item-border': {
+          'border-color': themeColor
+        },
+        '.pagination-item:hover > a': {
+          'color': themeColor
+        }
+      });
+  
+      //useStyle
+      if (defaultOptions.useStyle) {
+        appendStyle({"ul":{"list-style":"none","padding":0,"margin":0},".pagination-item, .pagination-item-previous,.pagination-item-next":{"display":"inline-block","width":"30px","height":"30px","line-height":"30px","text-align":"center","border-radius":"4px","cursor":"pointer","vertical-align":"top","box-sizing":"border-box"},".pagination-item-previous, .pagination-item-next":{"width":"auto","min-width":"30px"},".pagination-item.pagination-item-border":{"border":"solid #d9d9d9 1px"},".pagination-item + .pagination-item,.pagination-item-next":{"margin-left":"8px"},".pagination-item-previous":{"margin-right":"8px"},".pagination-item > a, .pagination-item-previous > a, .pagination-item-next > a":{"display":"inline-block","width":"100%","height":"100%","color":"rgba(0, 0, 0, 0.65)","font-weight":100,"vertical-align":"top"},".pagination-item-previous > a > svg, .pagination-item-next > a > svg":{"width":"12px","height":"12px"},".pagination-item-previous.pagination-item-disable > a,.pagination-item-next.pagination-item-disable > a":{"color":"#d9d9d9","cursor":"not-allowed"}});
+      }
+      
+      var $container = $(container);
+      if ($container[0].tagName.toLowerCase() !== 'ul') throw new Error('`container` must be a ul element');
+      this.$container = $container;
+  
+      pageSize = parseInt(defaultOptions.pageSize);
+      current = parseInt(defaultOptions.current);
+  
+      var totalPage = Math.ceil(total/pageSize);
+      this.totalPage = totalPage;
+  
+      var itemRender = defaultOptions.itemRender;
+      this.createDom(defaultOptions, current, totalPage, itemRender);
+      
+      this.onChange = defaultOptions.onChange;
+      this.bindEvent();
 
+    }
   }
 
   win.Pagination = Pagination;
@@ -102,7 +116,8 @@
         var klass = i === current ? PAGINATION_ITEM_CLASS.appendClass(PAGINATION_ITEM_CLASS_ACTIVE) : PAGINATION_ITEM_CLASS;
         klass = options.border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
 
-        var element = isFunction(itemRender) ? itemRender(i, 'pagination', $.node('a', i)) : $.node('a', i);
+        var originalElement = $.node('a', i);
+        var element = isFunction(itemRender) ? itemRender(i, 'pagination', originalElement) : originalElement;
 
         var pagination;
         klass = klass.appendClass(PAGINATION_ITEM_CLASS + '-' + i);
@@ -133,11 +148,11 @@
         klass = options.border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
 
         var svg = current === 1 ? prevSvgDisable : prevSvg;
-        var prevAnchor = $.node('a', svg);
+        var originalElement = $.node('a', svg);
 
-        var element = isFunction(itemRender) ? itemRender(null, 'prev', prevAnchor) : prevAnchor;
+        var element = isFunction(itemRender) ? itemRender(null, 'prev', originalElement) : originalElement;
         Pagination.prevEl = element;
-        Pagination.prevOriginEl = prevAnchor;
+        Pagination.prevOriginEl = originalElement;
 
         return $.node('li', element, klass.appendClass(PAGINATION_ITEM_CLASS_PREV));
       }
@@ -149,11 +164,11 @@
         klass = options.border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
 
         var svg = current === totalPage ? nextSvgDisable : nextSvg;
-        var nextAnchor = $.node('a', svg);
+        var originalElement = $.node('a', svg);
 
-        var element = isFunction(itemRender) ? itemRender(null, 'next', nextAnchor) : nextAnchor;
+        var element = isFunction(itemRender) ? itemRender(null, 'next', originalElement) : originalElement;
         Pagination.nextEl = element;
-        Pagination.nextOriginEl = nextAnchor;
+        Pagination.nextOriginEl = originalElement;
 
         return $.node('li', element, klass.appendClass(PAGINATION_ITEM_CLASS_NEXT));
       }

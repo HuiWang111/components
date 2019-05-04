@@ -29,23 +29,17 @@
   <script src="./Tabs.js"></script>
   <script>
     new Tabs('.tab-container', {
-      tabsText: ['哈哈哈哈哈哈哈哈哈', '嘻嘻嘻我洗我洗衣西我细腻', '啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦', 'aaaaaaaaaa', 'ccccccc', 'qqqqqqqq'],
+      tabsText: ['哈哈哈哈哈哈哈哈哈', '嘻嘻嘻我洗我洗衣西我细腻', '啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦', 'aaaaaaaaaa', 'ccccccc', 'qqqqqqqq'], //
       paneContainerSelector: '.tab-pane-container',
-      themeColor: '#3C8E38',
-      // underlineColor: '#3C8E38',
-      // activeColor: '#3C8E38',
-      // hoverColor: '#3C8E38',
-      // useStyle: true,
+      // themeColor: '#3C8E38',
       onChange: function (index) {
         console.log(index);
+      },
+      renderPaneItem: function (tabName, index) {
+        console.log(tabName);
+        return $.node('span', index);
       }
     });
-
-    var $panes = $('.tabs-pane-item');
-    $panes.eq(0).html('1234');
-    $panes.eq(1).html('5678');
-    $panes.eq(2).html('9012');
-    $panes.eq(3).html('3456');
 
   </script>
 </body>
