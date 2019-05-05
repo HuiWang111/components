@@ -1,4 +1,4 @@
-!function (win, $, Swiper, Util) {  
+;!function (win, $, Swiper, Util) {  
   
   // tools
   function isImgEl(el) {

@@ -1,4 +1,4 @@
-!function (win, $, Util) {
+;!function (win, $, Util) {
 
   // tools
   var insertElementToBody = Util.insertElementToBody;

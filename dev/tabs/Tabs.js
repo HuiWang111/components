@@ -1,4 +1,4 @@
-!function (win, $, Util) {
+;!function (win, $, Util) {
 
   //tools
   var appendStyle = Util.appendStyle;
@@ -33,16 +33,6 @@
 
   var nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11183" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M683.981 511.9999999999999l-416.3580000000001-416.3319999999998 36.197999999999986-36.224000000000004 452.55700000000013 452.55699999999985-452.55699999999985 452.55700000000013-36.198000000000015-36.223999999999975z" p-id="11184" fill="#e6e6e6"></path></svg>';
 
-  //default
-  var defaultOptions = {
-    tabsText: null,
-    paneContainerSelector: null,
-    themeColor: '#1890ff',
-    useStyle: false,
-    onChange: null,
-    renderPaneItem: null
-  };
-
   /* 
     {
       tabsText: Array,
@@ -54,6 +44,16 @@
     }
   */
   function Tabs(container, options) {
+
+    //default
+    var defaultOptions = {
+      tabsText: null,
+      paneContainerSelector: null,
+      themeColor: '#1890ff',
+      useStyle: false,
+      onChange: null,
+      renderPaneItem: null
+    };
 
     Object.assign(defaultOptions, options);
 
