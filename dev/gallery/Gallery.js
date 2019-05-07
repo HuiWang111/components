@@ -23,19 +23,18 @@
   var GALLERY_WRAPPER_CLASS = 'gallery-wrapper';
   var GALLERY_CONTAINER_CLASS = 'gallery-contaier';
   var GALLERY_CONTAINER_CLASS_HIDDEN = 'gallery-contaier-invisible';
-
-  /*
-    options:
-    {
-      navgation: true | false, // 是否需要导航箭头
-      pagination: true | false, // 是否需要分页器
-      width: String | Number, // 百分比或者px, 移动端宽高通常使用默认的100%
-      height: String | number,
-      bgColor: String,
-      useStyle: true | false,
-      swiperOptions: {}
-    }
-  */
+  
+  /**
+   *  options: {
+   *    navgation: true | false, // 是否需要导航箭头
+   *    pagination: true | false, // 是否需要分页器
+   *    width: String | Number, // 百分比或者px, 移动端宽高通常使用默认的100%
+   *    height: String | number,
+   *    bgColor: String,
+   *    useStyle: true | false,
+   *    swiperOptions: {}
+   *  }
+   */
   function Gallery(selector, options) {
 
     // default
@@ -54,7 +53,7 @@
     if ( (defaultOptions.width === '100%') && defaultOptions.navgation ) defaultOptions.navgation = false; // 宽度100%时不使用导航箭头
 
     if (defaultOptions.useStyle) {
-      appendStyle({"html, body":{"height":"100%"},".gallery-contaier":{"width":"100%","height":"100%","position":"fixed","left":0,"top":0,},".gallery-contaier.gallery-contaier-invisible":{"display":"none"},".gallery-contaier .gallery-wrapper":{"position":"absolute","left":"50%","top":"50%","transform":"translate(-50%, -50%)","z-index":1},".gallery-contaier .gallery-wrapper .gallery-swiper-container":{"width":"100%","height":"100%","margin":"0 auto"},".gallery-contaier .gallery-swiper-container .swiper-slide":{"position":"relative"},".gallery-contaier .gallery-swiper-container .swiper-slide img":{"width":"100%","position":"absolute","left":"50%","top":"50%","transform":"translate(-50%, -50%)"},".swiper-pagination-bullet-active":{"background-color":"#fff"},".swiper-button-next":{"right":0},".swiper-button-prev":{"left":0}});
+      appendStyle({"html, body":{"height":"100%"},".gallery-contaier":{"width":"100%","height":"100%","position":"fixed","left":0,"top":0,},".gallery-contaier.gallery-contaier-invisible":{"display":"none"},".gallery-contaier .gallery-wrapper":{"position":"absolute","left":"50%","top":"50%","transform":"translate(-50%, -50%)","z-index":1},".gallery-contaier .gallery-wrapper .gallery-swiper-container":{"width":"100%","height":"100%","margin":"0 auto"},".gallery-contaier .gallery-swiper-container .swiper-slide":{"position":"relative"},".gallery-contaier .gallery-swiper-container .swiper-slide img":{"width":"100%","position":"absolute","left":"50%","top":"50%","transform":"translate(-50%, -50%)"},".gallery-contaier .swiper-pagination-bullet-active":{"background-color":"#fff"},".gallery-contaier .swiper-button-next":{"right":0},".gallery-contaier .swiper-button-prev":{"left":0}});
     }
 
     // $source = $(selector);
@@ -249,4 +248,4 @@
 
   };
 
-}(window, jQuery, Swiper, Util);
+}(window, jQuery, Swiper, Util)

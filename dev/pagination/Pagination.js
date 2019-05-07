@@ -24,20 +24,19 @@
   var prevSvgDisable = '<svg t="1556266968537" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11039" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M340.01899999 512l416.35800001 416.332-36.198 36.224-452.557-452.557 452.557-452.557 36.198 36.224z" p-id="11040" fill="#e6e6e6"></path></svg>';
 
   var nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11183" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M683.981 511.9999999999999l-416.3580000000001-416.3319999999998 36.197999999999986-36.224000000000004 452.55700000000013 452.55699999999985-452.55699999999985 452.55700000000013-36.198000000000015-36.223999999999975z" p-id="11184" fill="#e6e6e6"></path></svg>';
-
-  /* 
-    options:
-    {
-      total: Numer,
-      pageSize: Number,
-      current: Number,
-      border: true | false, // 页码是否需要边框
-      themeColor: String,
-      useStyle: true | false, // 不引入css文件，使用<style>标签
-      onChange: Function (current),
-      itemRender: Function (current, type, originalElement)
-    }
-  */
+  
+  /**
+   *  options: {
+   *    total: Numer,
+   *    pageSize: Number,
+   *    current: Number,
+   *    border: true | false, // 页码是否需要边框
+   *    themeColor: String,
+   *    useStyle: true | false, // 不引入css文件，使用<style>标签
+   *    onChange: Function (current),
+   *    itemRender: Function (current, type, originalElement)
+   *  }
+   */
   function Pagination(container, options) {
 
     //default

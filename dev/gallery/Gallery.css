@@ -39,14 +39,14 @@ html, body {
 }
 
 /* swiper */
-.swiper-pagination-bullet-active {
+.gallery-contaier .swiper-pagination-bullet-active {
   background-color: #fff;
 }
 
-.swiper-button-next {
+.gallery-contaier .swiper-button-next {
   right: 0;
 }
-.swiper-button-prev {
+.gallery-contaier .swiper-button-prev {
   left: 0;
 }
 

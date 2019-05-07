@@ -17,14 +17,13 @@
     FirstMessagePosTop: 16, //第一个message元素的top值
     GapOfMessage: 10 //多个message同时出现时，message之间的间隙
   };
-
-  /*
-    options:
-    {
-      FirstMessagePosTop: Number,
-      GapOfMessage: Number
-    }
-  */
+  
+  /**
+   *  options: {
+   *    FirstMessagePosTop: Number,
+   *    GapOfMessage: Number
+   *  }
+   */
   var Message = function(type) {
 
     this.GapOfMessage = defaultOptions.GapOfMessage;
