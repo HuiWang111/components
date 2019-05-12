@@ -23,6 +23,12 @@
   function isFunction(target) {
     return typeof target === 'function';
   }
+
+  /**
+   * @description 将普通类名变为选择器 'className' => '.className', 'id' => '#id'
+   * @param {String} string
+   * @param {String} type 'class' || 'id'
+   */
   function toSelector (string, type) {
     type = type || 'class';
     type = (type !== 'class') && (type !== 'id') ? 'class' : type;
@@ -35,6 +41,11 @@
   function makeArray(arrayLike) {
     return emptyArray.slice.call(arrayLike);
   }
+
+  /**
+   * @description 将样式内容添加到<style>标签
+   * @param {Object} object
+   */
   function appendStyle(object) {
     if (!isObject(object) || isEmptyObject(object) || object === null) {
       return;
@@ -61,6 +72,11 @@
       document.querySelector('head').appendChild(styleTag);
     }
   }
+
+  /**
+   * @description 将元素挂在到body下
+   * @param {Node, NodeList, jQuery} el
+   */
   function insertElementToBody(el) {
     var script = document.querySelector('script');
     var parent = script ? script.parentNode : document.querySelector('body');
@@ -83,6 +99,13 @@
       insert(el);
     }
   }
+
+  /**
+   * @description 生成规定格式的日期
+   * @param {*} date 时间戳
+   * @param {String} format 格式
+   * @returns 日期字符串
+   */
   function dateFormater(date, format) {
     var full = function (number) {
       if (!isNumber(number)) throw new Error('`number` must be a number');
@@ -126,6 +149,12 @@
 
     return result;
   }
+
+  /**
+   * @description 创建一个规定长度的随机字符串，默认长度随机
+   * @param {Number} length
+   * @returns {String} 随机字符串
+   */
   function buildRandomString(length) {
 
     function randomLetter(size) {
@@ -165,6 +194,12 @@
     }
     return randomString;
   }
+
+  /**
+   * @description 检测元素是否挂在完成
+   * @param {String} selector
+   * @param {Function} loadedCallback
+   */
   function domAfterLoad(selector, loadedCallback) {
     var timer = null;
     var dom = document.querySelectorAll(selector);
@@ -177,7 +212,28 @@
     }
   }
 
-  //Set
+  /**
+   * @description 通过value值在对象中查找key
+   * @param {Object} object
+   * @param {*} target
+   * @returns {*} target对应的key
+   */
+  function keyOf(object, target) {
+    if (!isObject(object)) throw new Error(object + ' is not a object');
+
+    var list = ['size', 'nextKey'];
+    for(var key in object) {
+      if (!list.includes(key)) {
+        if (Object.is(object[key], target)) {
+          return key;
+        }
+      }
+    }
+  }
+
+  /**
+   * @description ES5 Set集合简易版
+   */
   function _Set() {
     var set;
     if (Array.isArray(arguments[0])) {
@@ -189,19 +245,11 @@
     var len = set.length;
     for(var i = 0; i < len; i++) {
       var value = set[i];
-      this[value] = value;
+      this[i] = value;
     }
 
     this.size = len;
-  }
-  function keyOf(object, target) {
-    if (!isObject(object)) throw new Error(object + ' is not a object');
-
-    for(var key in object) {
-      if (Object.is(object[key], target)) {
-        return key;
-      }
-    }
+    this.nextKey = len;
   }
 
   _Set.prototype = {
@@ -222,27 +270,32 @@
 
     add: function (item) {
       if (!this.has(item)) {
-        this[item] = item;
+        this[this.nextKey++] = item;
         this.size++;
       }
       return this;
     },
 
     delete: function (item) {
+      
       var key = keyOf(this, item);
       if (typeof key !== 'undefined') {
         delete this[key];
         this.size--;
+        return !0;
       }
+      return !1;
     },
 
     clear: function () {
+      var list = ['size', 'nextKey'];
       for(var key in this) {
-        if (key !== 'size') {
+        if (!list.includes(key)) {
           delete this[key];
         }
       }
       this.size = 0;
+      this.nextKey = 0;
     }
 
   }
@@ -261,13 +314,19 @@
     makeArray: makeArray,
     dateFormater: dateFormater,
     buildRandomString: buildRandomString,
-    domAfterLoad: domAfterLoad
+    domAfterLoad: domAfterLoad,
+    Set: _Set,
+    keyOf: keyOf
 
   }
 
   win.Util = Util; //export Util
 
   //String
+
+  /**
+   * @description 合并类名，自动以空格分割
+   */
   String.prototype.appendClass = function (className) {
     var string = this;
     
@@ -460,6 +519,10 @@
   }
 
   //jQuery
+
+  /**
+   * @description 设置或获取元素的translate值
+   */
   $.prototype.translate = function (x, y) {
     if (x == null && y == null) {
       return [
@@ -519,6 +582,10 @@
     this.translate(null, value);
   }
 
+  /**
+   * @description 查找元素的index
+   * @param {Function} callback
+   */
   $.prototype.findIndex = function (callback) {
     if (!isFunction(callback)) throw new Error('`callback` must be a function');
 
@@ -529,7 +596,16 @@
     }
   }
   
+  
   $.extend({
+    
+    /**
+     * @description 生成html字符串
+     * @param {String} wrapper tagName
+     * @param {String} item 元素子集
+     * @param {String} klass className
+     * @param {String | Object} attributes
+     */
     node: function (wrapper, item, klass, attr) {
       if (item == null) return '';
   
@@ -561,6 +637,7 @@
       
       return '<' + wrapper + klass + attributes + '>' + item + '</' + wrapper + '>';
     }
+    
   });
 
 }(window, jQuery)
