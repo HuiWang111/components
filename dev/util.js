@@ -177,6 +177,76 @@
     }
   }
 
+  //Set
+  function _Set() {
+    var set;
+    if (Array.isArray(arguments[0])) {
+      set = arguments[0];
+    } else {
+      set = Array.from(arguments);
+    }
+
+    var len = set.length;
+    for(var i = 0; i < len; i++) {
+      var value = set[i];
+      this[value] = value;
+    }
+
+    this.size = len;
+  }
+  function keyOf(object, target) {
+    if (!isObject(object)) throw new Error(object + ' is not a object');
+
+    for(var key in object) {
+      if (Object.is(object[key], target)) {
+        return key;
+      }
+    }
+  }
+
+  _Set.prototype = {
+    constructor: _Set,
+
+    has: function (item) {
+      var key  = keyOf(this, item);
+      return (typeof key !== 'undefined');
+    },
+
+    forEach: function (callback) {
+      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+
+      for (var key in this) {
+        callback(this[key], key, this);
+      }
+    },
+
+    add: function (item) {
+      if (!this.has(item)) {
+        this[item] = item;
+        this.size++;
+      }
+      return this;
+    },
+
+    delete: function (item) {
+      var key = keyOf(this, item);
+      if (typeof key !== 'undefined') {
+        delete this[key];
+        this.size--;
+      }
+    },
+
+    clear: function () {
+      for(var key in this) {
+        if (key !== 'size') {
+          delete this[key];
+        }
+      }
+      this.size = 0;
+    }
+
+  }
+
   var Util = {
 
     isString: isString,
@@ -209,33 +279,37 @@
   }
   if (!String.prototype.repeat) {
     String.prototype.repeat = function (number) {
+      number = parseInt(number);
+      if (number < 0) throw new Error('Invalid count value');
+      if (isNaN(number) || number === 0) return '';
 
-      var str = this, n = parseInt(number), res = "";
-
-      if (isNaN(n)) return '';
-
-      for(var i = 0; i < n; i++) {
-        res += str;
+      var string = this, result = "";
+      for(var i = 0; i < number; i++) {
+        result += string;
       }
       
-      return res;
+      return result;
     }
   }
 
   //Array
   if (!Array.from) {
     Array.from = function (arrayLike, callback) {
-      if (typeof arrayLike.length === 'undefined') return [];
+      var len = arrayLike.length;
+      if (typeof len === 'undefined') return [];
+
+      var object = {}
+      for (var key in arrayLike) {
+        object[parseFloat(key)] = arrayLike[key];
+      }
 
       var array = [];
-      if (isObject(arrayLike)) {
-        for (var key in arrayLike) {
-          if (!isNumber(key)) {
-            array.push(undefined);
-          } else {
-            var item = isFunction(callback) ? callback(arrayLike[key], key, arrayLike) : arrayLike[key];
-            array.push(item);
-          }
+      for (var i = 0; i < len; i++) {
+        if (isNaN(i)) {
+          array.push(undefined);
+        } else {
+          var item = isFunction(callback) ? callback(object[i], i, object) : object[i];
+          array.push(item);
         }
       }
 
@@ -248,31 +322,50 @@
     }
   }
   if (!Array.prototype.find) {
-    Array.prototype.find = function (callback, target) {
-      if (!isFunction(callback)) throw new Error('`callback` must be a function');
+    Array.prototype.find = function (callback, bind) {
+      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
       var array = this;
       for (var i = 0, len = array.length; i < len; i++) {
-        var found = typeof target === 'undefined' ? 
+        var found = typeof bind === 'undefined' ? 
           callback(array[i], i, array) : 
-          callback.call(target, array[i], i, array);
+          callback.call(bind, array[i], i, array);
 
         if (found) return array[i];
       }
     }
   }
   if (!Array.prototype.findIndex) {
-    Array.prototype.findIndex = function (callback, target) {
-      if (!isFunction(callback)) throw new Error('`callback` must be a function');
+    Array.prototype.findIndex = function (callback, bind) {
+      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
       var array = this;
       for (var i = 0, len = array.length; i < len; i++) {
-        var found = typeof target === 'undefined' ? 
+        var found = typeof bind === 'undefined' ? 
           callback(array[i], i, array) : 
-          callback.call(target, array[i], i, array);
+          callback.call(bind, array[i], i, array);
 
         if (found) return i;
       }
+
+      return -1;
+    }
+  }
+  if (!Array.prototype.includes) {
+    Array.prototype.includes = function (target, start) {
+      var array = this, len = array.length;
+      start = isTrueNumber(start) ? start : 0;
+      start = start >= 0 ? start : (len + start);
+
+      var result = false;
+      for (var i = start; i < len; i++) {
+        if (Object.is(target, array[i])) {
+          result = true;
+          break;
+        }
+      }
+
+      return result;
     }
   }
   if (!Array.prototype.fill) {
@@ -285,8 +378,9 @@
         });
         return array;
       } else if (start == null && end != null) {
-        if (!isTrueNumber(end)) throw new Error('`start` and `end` must be a number');
+        if (!isNumber(end)) throw new Error(end + ' is not a number');
 
+        end = parseInt(end);
         end = end < 0 ? len + end : end;
         if (end < 0) {
           return array;
@@ -297,8 +391,9 @@
           return array;
         }
       } else if (start != null && end == null) {
-        if (!isTrueNumber(start)) throw new Error('`start` and `end` must be a number');
+        if (!isNumber(start)) throw new Error(start + ' is not a number');
 
+        start = parseInt(start);
         start = start < 0 ? len + start : start;
         if (start < 0) {
           array = array.map(function () {
@@ -312,7 +407,10 @@
           return array;
         }
       } else {
-        if (!isTrueNumber(start) || !isTrueNumber(end)) throw new Error('`start` and `end` must be a number');
+        if (!isNumber(start) || !isNumber(end)) throw new Error(start + ' or ' + end + 'is not a number');
+
+        start = parseInt(start);
+        end = parseInt(end);
 
         start = start < 0 ? len + start : start;
         end = end < 0 ? len + end : end;
