@@ -1,13 +1,41 @@
 /**
+ * Util
+ */
+var isString = Util.isString;
+var isObject = Util.isObject;
+var isEmptyObject = Util.isEmptyObject;
+var toSelector = Util.toSelector;
+var appendStyle = Util.appendStyle;
+var isFunction = Util.isFunction;
+var insertElementToBody = Util.insertElementToBody;
+var isNumber = Util.isNumber;
+var isNumeric = Util.isNumeric;
+var makeArray = Util.makeArray;
+var dateFormater = Util.dateFormater;
+var buildRandomString = Util.buildRandomString;
+var domAfterLoad = Util.domAfterLoad;
+var Set = Util._Set;
+var keyOf = Util.keyOf;
+var tagOf = Util.tagOf;
+
+/**
+ * icons
+ */
+var prevSvg = '<svg t="1556267832953" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="12283" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M340.01899999 512l416.35800001 416.332-36.198 36.224-452.557-452.557 452.557-452.557 36.198 36.224z" p-id="12284"></path></svg>';
+
+var nextSvg = '<svg t="1556267747828" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11819" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M683.981 511.9999999999999l-416.3580000000001-416.3319999999998 36.197999999999986-36.224000000000004 452.55700000000013 452.55699999999985-452.55699999999985 452.55700000000013-36.198000000000015-36.223999999999975z" p-id="11820"></path></svg>';
+
+var prevSvgDisable = '<svg t="1556266968537" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11039" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M340.01899999 512l416.35800001 416.332-36.198 36.224-452.557-452.557 452.557-452.557 36.198 36.224z" p-id="11040" fill="#e6e6e6"></path></svg>';
+
+var nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11183" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M683.981 511.9999999999999l-416.3580000000001-416.3319999999998 36.197999999999986-36.224000000000004 452.55700000000013 452.55699999999985-452.55699999999985 452.55700000000013-36.198000000000015-36.223999999999975z" p-id="11184" fill="#e6e6e6"></path></svg>';
+
+
+/*==========================Components==========================*/
+
+/**
  * Tabs
  */
-;!function (win, $, Util) {
-
-  //tools
-  var appendStyle = Util.appendStyle;
-  var toSelector = Util.toSelector;
-  var isFunction = Util.isFunction;
-  var domAfterLoad = Util.domAfterLoad;
+;!function (win, $) {
 
   //className
   var TAB_ITEM_CLASS = 'tabs-tab-item';
@@ -26,15 +54,6 @@
   var TAB_NEXT_ARROW_CLASS = 'tabs-next-arrow';
 
   var UNDERLINE_CLASS = 'tabs-underline';
-
-  //icon
-  var prevSvg = '<svg t="1556267832953" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="12283" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M340.01899999 512l416.35800001 416.332-36.198 36.224-452.557-452.557 452.557-452.557 36.198 36.224z" p-id="12284"></path></svg>';
-
-  var nextSvg = '<svg t="1556267747828" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11819" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M683.981 511.9999999999999l-416.3580000000001-416.3319999999998 36.197999999999986-36.224000000000004 452.55700000000013 452.55699999999985-452.55699999999985 452.55700000000013-36.198000000000015-36.223999999999975z" p-id="11820"></path></svg>';
-
-  var prevSvgDisable = '<svg t="1556266968537" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11039" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M340.01899999 512l416.35800001 416.332-36.198 36.224-452.557-452.557 452.557-452.557 36.198 36.224z" p-id="11040" fill="#e6e6e6"></path></svg>';
-
-  var nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11183" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M683.981 511.9999999999999l-416.3580000000001-416.3319999999998 36.197999999999986-36.224000000000004 452.55700000000013 452.55699999999985-452.55699999999985 452.55700000000013-36.198000000000015-36.223999999999975z" p-id="11184" fill="#e6e6e6"></path></svg>';
   
   /**
    *  @param options: {
@@ -282,18 +301,12 @@
 
   }
 
-}(window, jQuery, Util)
+}(window, jQuery)
 
 /**
  * Pagination
  */
-;!function (win, $, Util) {
-
-  var isNumber = Util.isNumber;
-  var appendStyle = Util.appendStyle;
-  var toSelector = Util.toSelector;
-  var isFunction = Util.isFunction;
-
+;!function (win, $) {
 
   //className
   var PAGINATION_ITEM_CLASS = 'pagination-item';
@@ -303,16 +316,6 @@
   var PAGINATION_ITEM_CLASS_DISABLE = 'pagination-item-disable';
   var PAGINATION_ITEM_CLASS_PREV = 'pagination-item-previous';
   var PAGINATION_ITEM_CLASS_NEXT = 'pagination-item-next';
-
-
-  //icon
-  var prevSvg = '<svg t="1556267832953" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="12283" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M340.01899999 512l416.35800001 416.332-36.198 36.224-452.557-452.557 452.557-452.557 36.198 36.224z" p-id="12284"></path></svg>';
-
-  var nextSvg = '<svg t="1556267747828" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11819" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M683.981 511.9999999999999l-416.3580000000001-416.3319999999998 36.197999999999986-36.224000000000004 452.55700000000013 452.55699999999985-452.55699999999985 452.55700000000013-36.198000000000015-36.223999999999975z" p-id="11820"></path></svg>';
-
-  var prevSvgDisable = '<svg t="1556266968537" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11039" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M340.01899999 512l416.35800001 416.332-36.198 36.224-452.557-452.557 452.557-452.557 36.198 36.224z" p-id="11040" fill="#e6e6e6"></path></svg>';
-
-  var nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11183" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M683.981 511.9999999999999l-416.3580000000001-416.3319999999998 36.197999999999986-36.224000000000004 452.55700000000013 452.55699999999985-452.55699999999985 452.55700000000013-36.198000000000015-36.223999999999975z" p-id="11184" fill="#e6e6e6"></path></svg>';
   
   /**
    *  @param options: {
@@ -345,7 +348,7 @@
     var mustBeNumber = ['total', 'pageSize', 'current'];
     for (var key in defaultOptions) {
       if (mustBeNumber.indexOf(key) > -1) {
-        if (!isNumber(defaultOptions[key])) throw new Error('`' + key + '` must be a number or string number');
+        if (!isNumeric(defaultOptions[key])) throw new Error('`' + key + '` must be a number or string number');
       }
     }
 
@@ -569,19 +572,12 @@
 
   };
 
-}(window, jQuery, Util)
+}(window, jQuery)
 
 /**
  * Message
  */
-;!function (win, $, Util) {
-
-  // tools
-  var insertElementToBody = Util.insertElementToBody;
-  var isFunction = Util.isFunction;
-  var toSelector = Util.toSelector;
-  var buildRandomString = Util.buildRandomString;
-  var domAfterLoad = Util.domAfterLoad;
+;!function (win, $) {
 
   // className
   var TEXTCLASS = 'message_text_box';
@@ -768,27 +764,17 @@
 
   win.message = message;
 
-}(window, jQuery, Util)
+}(window, jQuery)
 
 /**
  * Gallery
  */
-;!function (win, $, Swiper, Util) {  
+;!function (win, $, Swiper) {  
   
   // tools
   function isImgEl(el) {
-    if (typeof el.length !== 'undefined') {
-      return el[0].tagName.toLowerCase() === 'img';
-    }
-    return el.tagName.toLowerCase() === 'img';
+    return tagOf(el) === 'img';
   }
-  var insertElementToBody = Util.insertElementToBody;
-  var toSelector = Util.toSelector;
-  var isTrueNumber = Util.isTrueNumber;
-  var isNumber = Util.isNumber;
-  var appendStyle = Util.appendStyle;
-  var buildRandomString = Util.buildRandomString;
-  var domAfterLoad = Util.domAfterLoad;
 
   // className
   var GALLERY_BUTTON_NEXT_CLASS = 'gallery-swiper-button-next';
@@ -840,7 +826,7 @@
 
     // 获取当前页面最大的z-index值
     var $hasZIndex = $('*').filter(function (_, item) {
-      return isNumber($(item).css('z-index')) && parseInt($(item).css('z-index')) > 0;
+      return isNumeric($(item).css('z-index')) && parseInt($(item).css('z-index')) > 0;
     });
     var maxZIndex = $hasZIndex.length === 0 ? null : Array.from($hasZIndex).reduce(function (prev, item) {
       var zIndex = parseFloat($(item).css('z-index'));
@@ -966,8 +952,8 @@
       var diff = containerWidth - widthValue;
       var wider = diff > 0 ? (diff > 100 ? 100 : wider) : 0;
       
-      width = isTrueNumber(width) ? width + 'px' : width;
-      height =  isTrueNumber(height) ? height + 'px' : height;
+      width = isNumber(width) ? width + 'px' : width;
+      height =  isNumber(height) ? height + 'px' : height;
   
       var $galleryWrapper = $container.find(toSelector(GALLERY_WRAPPER_CLASS));
       $galleryWrapper.css({
@@ -1023,4 +1009,4 @@
 
   };
 
-}(window, jQuery, Swiper, Util)
+}(window, jQuery, Swiper)

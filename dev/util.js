@@ -14,10 +14,10 @@
     for (key in target) return !1;
     return !0;
   }
-  function isNumber(target) {
+  function isNumeric(target) {
     return !isNaN(parseFloat(target));
   }
-  function isTrueNumber(target) {
+  function isNumber(target) {
     return (typeof target === 'number');
   }
   function isFunction(target) {
@@ -26,8 +26,8 @@
 
   /**
    * @description 将普通类名变为选择器 'className' => '.className', 'id' => '#id'
-   * @param {String} string
-   * @param {String} type 'class' || 'id'
+   * @param { String } string
+   * @param { String } type 'class' || 'id'
    */
   function toSelector (string, type) {
     type = type || 'class';
@@ -44,7 +44,7 @@
 
   /**
    * @description 将样式内容添加到<style>标签
-   * @param {Object} object
+   * @param { Object } object
    */
   function appendStyle(object) {
     if (!isObject(object) || isEmptyObject(object) || object === null) {
@@ -75,7 +75,7 @@
 
   /**
    * @description 将元素挂在到body下
-   * @param {Node, NodeList, jQuery} el
+   * @param { Node | NodeList | jQuery } el
    */
   function insertElementToBody(el) {
     var script = document.querySelector('script');
@@ -102,18 +102,18 @@
 
   /**
    * @description 生成规定格式的日期
-   * @param {*} date 时间戳
-   * @param {String} format 格式
+   * @param { * } date 时间戳
+   * @param { String } format 格式
    * @returns 日期字符串
    */
   function dateFormater(date, format) {
     var full = function (number) {
-      if (!isNumber(number)) throw new Error('`number` must be a number');
+      if (!isNumeric(number)) throw new Error('`number` must be a number');
       number = parseInt(number);
       return number < 10 ? ('0' + number) : number;
     }
 
-    if ( !isNumber(date) ) {
+    if ( !isNumeric(date) ) {
       date = new Date();
     } else {
       date = parseInt(date);
@@ -152,8 +152,8 @@
 
   /**
    * @description 创建一个规定长度的随机字符串，默认长度随机
-   * @param {Number} length
-   * @returns {String} 随机字符串
+   * @param { Number } length
+   * @returns { String } 随机字符串
    */
   function buildRandomString(length) {
 
@@ -167,7 +167,7 @@
       }
 
       var result = letters[Math.floor(Math.random()*letters.length)];
-      if (isNumber(size)) {
+      if (isNumeric(size)) {
         size = parseInt(size);
         if (size > 1) {
           for (var i = 1; i < size; i++) {
@@ -182,7 +182,7 @@
     var randomString = Math.random().toString(36).substr(2);
     var letter = randomLetter();
     randomString =  letter + randomString; //保证第一位一定是字母
-    if (isNumber(length)) {
+    if (isNumeric(length)) {
       length = parseInt(length);
       if (randomString.length > length) {
         randomString = randomString.substr(0, length);
@@ -196,9 +196,9 @@
   }
 
   /**
-   * @description 检测元素是否挂在完成
-   * @param {String} selector
-   * @param {Function} loadedCallback
+   * @description 检测元素是否挂载完成
+   * @param { String } selector
+   * @param { Function } loadedCallback 挂载完成回调
    */
   function domAfterLoad(selector, loadedCallback) {
     var timer = null;
@@ -214,22 +214,98 @@
 
   /**
    * @description 通过value值在对象中查找key
-   * @param {Object} object
-   * @param {*} target
-   * @returns {*} target对应的key
+   * @param { Object } object
+   * @param { * } target
+   * @param { Array | String } exclude 排除不查找的键值
+   * @returns { String } target对应的key
    */
-  function keyOf(object, target) {
+  function keyOf(object, target, exclude) {
     if (!isObject(object)) throw new Error(object + ' is not a object');
 
-    var list = ['size', 'nextKey'];
+    if (!Array.isArray(exclude)) {
+      exclude = [exclude];
+    }
+
     for(var key in object) {
-      if (!list.includes(key)) {
+      if (!exclude.includes(key)) {
         if (Object.is(object[key], target)) {
           return key;
         }
       }
     }
   }
+
+  /**
+   * @description 返回元素的标签
+   * @param { Node | NodeList | jQuery } el
+   */
+  function tagOf(el) {
+    if (typeof el === 'undefined') {
+      return el.tagName.toLowerCase();
+    }
+    return el[0].tagName.toLowerCase();
+  }
+
+  /**
+   * @description 数组去重
+   * @param { Array } array
+   */
+  function uniq(array) {
+    if (!Array.isArray(array)) throw new Error(array + ' is not a function');
+
+    var result = [];
+    array.forEach(function (item) {
+      if (!result.includes(item)) {
+        result.push(item);
+      }
+    });
+
+    return result;
+  }
+
+  /**
+   * @description 两数组的差集
+   * @param { Array } array
+   * @param { Array } list
+   */
+  function diff(array, list) {
+    if (!Array.isArray(array)) throw new Error(array + ' is not a function');
+    if (!Array.isArray(list)) throw new Error(list + ' is not a function');
+
+    var result = [];
+    uniq(array).forEach(function (item) {
+      if (!list.includes(item)) {
+        result.push(item);
+      }
+    });
+
+    return result;
+  }
+
+  var Util = {
+
+    isString: isString,
+    isObject: isObject,
+    isEmptyObject: isEmptyObject,
+    toSelector: toSelector,
+    appendStyle: appendStyle,
+    isFunction: isFunction,
+    insertElementToBody: insertElementToBody,
+    isNumber: isNumber,
+    isNumeric: isNumeric,
+    makeArray: makeArray,
+    dateFormater: dateFormater,
+    buildRandomString: buildRandomString,
+    domAfterLoad: domAfterLoad,
+    Set: _Set,
+    keyOf: keyOf,
+    tagOf: tagOf,
+    uniq: uniq,
+    diff: diff
+
+  }
+
+  win.Util = Util; //export Util
 
   /**
    * @description ES5 Set集合简易版
@@ -241,6 +317,8 @@
     } else {
       set = Array.from(arguments);
     }
+
+    set = uniq(set);
 
     var len = set.length;
     for(var i = 0; i < len; i++) {
@@ -256,7 +334,7 @@
     constructor: _Set,
 
     has: function (item) {
-      var key  = keyOf(this, item);
+      var key  = keyOf(this, item, ['size', 'nextKey']);
       return (typeof key !== 'undefined');
     },
 
@@ -278,7 +356,7 @@
 
     delete: function (item) {
       
-      var key = keyOf(this, item);
+      var key = keyOf(this, item, ['size', 'nextKey']);
       if (typeof key !== 'undefined') {
         delete this[key];
         this.size--;
@@ -299,28 +377,6 @@
     }
 
   }
-
-  var Util = {
-
-    isString: isString,
-    isObject: isObject,
-    isEmptyObject: isEmptyObject,
-    toSelector: toSelector,
-    appendStyle: appendStyle,
-    isFunction: isFunction,
-    insertElementToBody: insertElementToBody,
-    isTrueNumber: isTrueNumber,
-    isNumber: isNumber,
-    makeArray: makeArray,
-    dateFormater: dateFormater,
-    buildRandomString: buildRandomString,
-    domAfterLoad: domAfterLoad,
-    Set: _Set,
-    keyOf: keyOf
-
-  }
-
-  win.Util = Util; //export Util
 
   //String
 
@@ -413,7 +469,7 @@
   if (!Array.prototype.includes) {
     Array.prototype.includes = function (target, start) {
       var array = this, len = array.length;
-      start = isTrueNumber(start) ? start : 0;
+      start = isNumber(start) ? start : 0;
       start = start >= 0 ? start : (len + start);
 
       var result = false;
@@ -437,7 +493,7 @@
         });
         return array;
       } else if (start == null && end != null) {
-        if (!isNumber(end)) throw new Error(end + ' is not a number');
+        if (!isNumeric(end)) throw new Error(end + ' is not a number');
 
         end = parseInt(end);
         end = end < 0 ? len + end : end;
@@ -450,7 +506,7 @@
           return array;
         }
       } else if (start != null && end == null) {
-        if (!isNumber(start)) throw new Error(start + ' is not a number');
+        if (!isNumeric(start)) throw new Error(start + ' is not a number');
 
         start = parseInt(start);
         start = start < 0 ? len + start : start;
@@ -466,7 +522,7 @@
           return array;
         }
       } else {
-        if (!isNumber(start) || !isNumber(end)) throw new Error(start + ' or ' + end + 'is not a number');
+        if (!isNumeric(start) || !isNumeric(end)) throw new Error(start + ' or ' + end + 'is not a number');
 
         start = parseInt(start);
         end = parseInt(end);
@@ -522,6 +578,8 @@
 
   /**
    * @description 设置或获取元素的translate值
+   * @param { Number | Function } x
+   * @param { Number | Function } y
    */
   $.prototype.translate = function (x, y) {
     if (x == null && y == null) {
@@ -594,6 +652,8 @@
       var found = callback(i, $el[i], $el);
       if (found) return i;
     }
+
+    return -1;
   }
   
   
