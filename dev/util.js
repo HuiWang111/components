@@ -1,8 +1,251 @@
-;!function(win, $) {
-
+!function(win, $) {
+  
   var emptyArray = [];
+  if (!emptyArray.map) {
+    alert('您的浏览器过旧，请升级浏览器！');
+    return;
+  }
 
-  // tools function
+  /* ========ES6兼容性处理======== */
+  if (!String.prototype.repeat) {
+    String.prototype.repeat = function (count) {
+      count = parseInt(count);
+      if (count < 0) throw new Error('Invalid count value');
+      if (isNaN(count) || count === 0) return '';
+
+      var string = this, result = "";
+      for(var i = 0; i < count; i++) {
+        result += string;
+      }
+      
+      return result;
+    }
+  }
+
+  if (!Array.from) {
+    Array.from = function (arrayLike, callback) {
+      var len = arrayLike.length;
+      if (typeof len === 'undefined') return [];
+
+      var object = {}
+      for (var key in arrayLike) {
+        object[parseFloat(key)] = arrayLike[key];
+      }
+
+      var array = [];
+      for (var i = 0; i < len; i++) {
+        if (isNaN(i)) {
+          array.push(undefined);
+        } else {
+          var item = isFunction(callback) ? callback(object[i], i, object) : object[i];
+          array.push(item);
+        }
+      }
+
+      return array;
+    }
+  }
+  if (!Array.prototype.find) {
+    Array.prototype.find = function (callback, context) {
+      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+
+      var array = this;
+      for (var i = 0, len = array.length; i < len; i++) {
+        var found = typeof context === 'undefined' ? 
+          callback(array[i], i, array) : 
+          callback.call(context, array[i], i, array);
+
+        if (found) return array[i];
+      }
+    }
+  }
+  if (!Array.prototype.findIndex) {
+    Array.prototype.findIndex = function (callback, context) {
+      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+
+      var array = this;
+      for (var i = 0, len = array.length; i < len; i++) {
+        var found = typeof context === 'undefined' ? 
+          callback(array[i], i, array) : 
+          callback.call(context, array[i], i, array);
+
+        if (found === true) return i;
+      }
+
+      return -1;
+    }
+  }
+  if (!Array.prototype.includes) {
+    Array.prototype.includes = function (target, start) {
+      var array = this, len = array.length;
+      start = isNumber(start) ? start : 0;
+      start = start >= 0 ? start : (len + start);
+
+      var result = false;
+      for (var i = start; i < len; i++) {
+        if (Object.is(target, array[i])) {
+          result = true;
+          break;
+        }
+      }
+
+      return result;
+    }
+  }
+  if (!Array.prototype.fill) {
+    Array.prototype.fill = function (fill, start, end) {
+      var array = this;
+      var len = array.length;
+      if (start == null && end == null) {
+        array = array.map(function () {
+          return fill;
+        });
+        return array;
+      } else if (start == null && end != null) {
+        if (!isNumeric(end)) throw new Error(end + ' is not a number');
+
+        end = parseInt(end);
+        end = end < 0 ? len + end : end;
+        if (end < 0) {
+          return array;
+        } else {
+          array = array.map(function (item, index) {
+            return index < end ? fill : item;
+          });
+          return array;
+        }
+      } else if (start != null && end == null) {
+        if (!isNumeric(start)) throw new Error(start + ' is not a number');
+
+        start = parseInt(start);
+        start = start < 0 ? len + start : start;
+        if (start < 0) {
+          array = array.map(function () {
+            return fill;
+          });
+          return array;
+        } else {
+          array = array.map(function (item, index) {
+            return index >= start ? fill : item;
+          });
+          return array;
+        }
+      } else {
+        if (!isNumeric(start) || !isNumeric(end)) throw new Error(start + ' or ' + end + 'is not a number');
+
+        start = parseInt(start);
+        end = parseInt(end);
+
+        start = start < 0 ? len + start : start;
+        end = end < 0 ? len + end : end;
+        if (start < 0 && end < 0) {
+          return array;
+        } else if (start > 0 && end < 0) { //存疑虑
+          return array;
+        } else if (start < 0 && end > 0) {
+          array = array.map(function (item, index) {
+            return index < end ? fill : item;
+          });
+          return array;
+        } else {
+          array = array.map(function (item, index) {
+            return (index >= start) && (index < end) ? fill : item;
+          });
+          return array;
+        }
+      }
+    }
+  }
+
+  if (!Object.is) {
+    Object.is = function(x, y) {
+      if (x === y) { 
+        return x !== 0 || 1 / x === 1 / y; //针对 +0不等于-0, 
+      } else {
+        return x !== x && y !== y; //NaN === NaN => false
+      }
+    };
+  }
+  if (!Object.assign) {
+    Object.assign = function () {
+
+      var receiver = Array.from(arguments).slice(0, 1)[0], suppliers = Array.from(arguments).slice(1);
+
+      suppliers.forEach(function (supplier) {
+        Object.keys(supplier).forEach(function (key) {
+          receiver[key] = supplier[key];
+        });
+      });
+
+      return receiver;
+    }
+  }
+
+  /**
+   * @description 组件的通用父类
+   */
+  function Component() {
+    this.init();
+  }
+  Object.assign(Component.prototype, {
+    constructor: Component,
+    init: function() {
+      this.render();
+      this.setStyle();
+      this.mount();
+    },
+    render: function() {},
+    setStyle: function() {},
+    /**
+     * @description 将组件元素挂载到dom
+     * @param { Array } array 需要被挂载的元素列表
+     * [{
+     *    html: String, //需要挂载的dom字符串
+     *    selector: String, //需要挂载最外层容器的选择器
+     *    container: Node | String, //挂载目标容器
+     *    condition: true | false //挂载条件
+     * }]
+     */
+    mount: function(array) {
+      if (!array) return;
+      if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
+
+      this.componentWillMount();
+
+      for (var i = 0, len = array.length; i < len; i++) {
+        var item = array[i],
+            container = item.contianer,
+            html = item.html,
+            condition = item.condition;
+
+        if ( !(container === 'body' || isDom(container)) ) {
+          throw new Error(container + ' is not a DOMElement');
+        }
+
+        if (condition) {
+          if (container === 'body') {
+            insertElementToBody($(html));
+          } else {
+            $(container).html(html);
+          }
+        }
+      }
+
+      /* 判断挂载完成后执行绑定事件 */
+      var last = lastOf(array);
+      var bind = function () {
+        this.componentDidMount();
+        this.bindEvents();
+      }
+      domAfterLoad(last.selector, $.proxy(bind, this));
+    },
+    componentWillMount: function () {},
+    componentDidMount: function () {},
+    bindEvents: function() {}
+  });
+  win.Component = Component;
+
+  // utils function
   function isString(target) {
     return typeof target === 'string';
   }
@@ -14,14 +257,37 @@
     for (key in target) return !1;
     return !0;
   }
+  /**
+   * @description 判断是否是数字，包括字符串数值
+   */
   function isNumeric(target) {
     return !isNaN(parseFloat(target));
   }
+  /**
+   * @description 判断是否是Number实例
+   */
   function isNumber(target) {
     return (typeof target === 'number');
   }
   function isFunction(target) {
-    return typeof target === 'function';
+    return (typeof target === 'function');
+  }
+  /**
+   * @description 判断是否为dom元素
+   * @param Other 除了HTMLCollection/jQuery/HTMLElement/NodeList以外的也可以算作dom的原型对象
+   */
+  function isDom(target, Other) {
+    return (
+      target instanceof HTMLCollection
+    ) || (
+      target instanceof jQuery
+    ) || (
+      target instanceof HTMLElement
+    ) || (
+      target instanceof NodeList
+    ) || (
+      Other && (target instanceof Other)
+    )
   }
 
   /**
@@ -29,14 +295,16 @@
    * @param { String } string
    * @param { String } type 'class' || 'id'
    */
-  function toSelector (string, type) {
-    type = type || 'class';
-    type = (type !== 'class') && (type !== 'id') ? 'class' : type;
+  function toSelector(string, type) {
+    if (!isString(string) || string === '') return;
 
-    var selectorRe = type === 'class' ? /^\./g : /^#/g;
-    var prefix = type === 'class' ? '.' : '#';
+    type = type == null ? 'class' : type;
 
-    return selectorRe.test(string) ? string : prefix + string;
+    var prefix = type === 'class' ? '.' : (
+      type === 'id' ? '#' : ''
+    );
+
+    return prefix + string;
   }
   function makeArray(arrayLike) {
     return emptyArray.slice.call(arrayLike);
@@ -133,18 +401,24 @@
     switch(format) {
       case 'yyyy-mm-dd hh:mm:ss':
         result = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second; break;
+      case 'yyyy-mm-dd hh:mm':
+        result = year + '-' + month + '-' + day + ' ' + hour + ':' + minute; break;
       case 'mm-dd yyyy':
         result = month + '-' + day + ' ' + year; break;
       case 'yyyy-mm-dd':
         result = year + '-' + month + '-' + day; break;
       case 'yyyy/mm/dd hh:mm:ss':
         result = year + '/' + month + '/' + day + ' ' + hour + ':' + minute + ':' + second; break;
+      case 'yyyy/mm/dd hh:mm':
+        result = year + '/' + month + '/' + day + ' ' + hour + ':' + minute; break;
       case 'yyyy/mm/dd':
         result = year + '/' + month + '/' + day; break;
       case 'hh:mm:ss':
         result = hour + ':' + minute + ':' + second; break;
+      case 'hh:mm':
+        result = hour + ':' + minute; break;
 
-      default: throw new Error('not support this format');
+      default: throw new Error('not support this format:`' + format + '`');
     }
 
     return result;
@@ -153,7 +427,7 @@
   /**
    * @description 创建一个规定长度的随机字符串，默认长度随机
    * @param { Number } length
-   * @returns { String } 随机字符串
+   * @returns 随机字符串
    */
   function buildRandomString(length) {
 
@@ -196,19 +470,31 @@
   }
 
   /**
-   * @description 检测元素是否挂载完成
+   * @description 检测元素挂载完成后执行回调
    * @param { String } selector
    * @param { Function } loadedCallback 挂载完成回调
+   * @param { Number } maxTimes 最大尝试检测次数，默认500
    */
-  function domAfterLoad(selector, loadedCallback) {
+  function domAfterLoad(selector, loadedCallback, maxTimes, times) {
+    times = times || 0;
+    maxTimes = isNumber(maxTimes) ? maxTimes : 500;
     var timer = null;
     var dom = document.querySelectorAll(selector);
     if (dom.length > 0) {
-      isFunction(loadedCallback) && loadedCallback();
-
       timer && clearTimeout(timer);
+      isFunction(loadedCallback) && loadedCallback();
     } else {
-      timer = setTimeout(arguments.callee, 0);
+      if (times >= maxTimes) { //超过最大尝试检测次数
+        isFunction(loadedCallback) && console.warn('`' + selector + '`未加载到dom，回调未执行');
+        return;
+      }
+      times++;
+      
+      var fn = arguments.callee;
+      var next = function() {
+        fn(selector, loadedCallback, maxTimes, times);
+      }
+      timer = setTimeout(next, 0);
     }
   }
 
@@ -216,21 +502,60 @@
    * @description 通过value值在对象中查找key
    * @param { Object } object
    * @param { * } target
-   * @param { Array | String } exclude 排除不查找的键值
-   * @returns { String } target对应的key
+   * @param { String } excludes 排除不查找的键值，以逗号分割多个键值
+   * @returns target对应的key
    */
-  function keyOf(object, target, exclude) {
+  function keyOf(object, target, excludes) {
     if (!isObject(object)) throw new Error(object + ' is not a object');
+    
+    var isNil = excludes == null;
+    if (!isNil && !isString(excludes)) throw new Error(excludes + ' is not a string');
 
-    if (!Array.isArray(exclude)) {
-      exclude = [exclude];
+    !isNil && (excludes = excludes.split(','));
+    for(var key in object) {
+      if (isNil) {
+        if (Object.is(object[key], target)) return key;
+      } else {
+        if (!excludes.includes(key)) {
+          if (Object.is(object[key], target)) return key;
+        }
+      }
+    }
+    return;
+  }
+  
+  /**
+   * @description 删除对象中的键值
+   * @param { Object } object
+   * @param { String | undefined } keys 需要删除的键值,以逗号分割多个键值
+   * @param { String | undefined } excludes 排除不删的键值,以逗号分割多个键值
+   * keys和excludes同时存在，keys取两者的差集
+   */
+  function deleteKeys(object, keys, excludes) {
+    if (!isObject(object)) throw new Error(object + ' is not a object');
+    if (keys != null && !isString(keys)) throw new Error(keys + ' is not a string');
+    if (excludes != null && !isString(excludes)) throw new Error(excludes + ' is not a string');
+
+    var keyList, excludeList;
+    if (keys == null) {
+      keyList = null;
+      excludeList = excludes == null ? null : excludes.split(',');
+    } else {
+      if (excludes == null) {
+        keyList = keys.split(',');
+      } else {
+        keyList = diff(keys.split(','), excludes.split(','));
+      }
+      excludeList = null;
     }
 
-    for(var key in object) {
-      if (!exclude.includes(key)) {
-        if (Object.is(object[key], target)) {
-          return key;
-        }
+    for (var key in object) {
+      if (keyList == null && excludeList == null) {
+        delete object[key];
+      } else if (keyList != null && excludeList == null) {
+        keyList.includes(key) && delete object[key];
+      } else if (keyList == null && excludeList != null) {
+        !excludeList.includes(key) && delete object[key];
       }
     }
   }
@@ -251,7 +576,7 @@
    * @param { Array } array
    */
   function uniq(array) {
-    if (!Array.isArray(array)) throw new Error(array + ' is not a function');
+    if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
 
     var result = [];
     array.forEach(function (item) {
@@ -264,7 +589,7 @@
   }
 
   /**
-   * @description 两数组的差集
+   * @description  去除第一个数组中与后一个数组相同的元素
    * @param { Array } array
    * @param { Array } list
    */
@@ -274,38 +599,53 @@
 
     var result = [];
     uniq(array).forEach(function (item) {
-      if (!list.includes(item)) {
-        result.push(item);
-      }
+      !list.includes(item) && result.push(item);
     });
 
     return result;
   }
 
-  var Util = {
+  /**
+   * @description 两数组的交集
+   */
+  function ins(array, list) {
+    if (!Array.isArray(array)) throw new Error(array + ' is not a function');
+    if (!Array.isArray(list)) throw new Error(list + ' is not a function');
 
-    isString: isString,
-    isObject: isObject,
-    isEmptyObject: isEmptyObject,
-    toSelector: toSelector,
-    appendStyle: appendStyle,
-    isFunction: isFunction,
-    insertElementToBody: insertElementToBody,
-    isNumber: isNumber,
-    isNumeric: isNumeric,
-    makeArray: makeArray,
-    dateFormater: dateFormater,
-    buildRandomString: buildRandomString,
-    domAfterLoad: domAfterLoad,
-    Set: _Set,
-    keyOf: keyOf,
-    tagOf: tagOf,
-    uniq: uniq,
-    diff: diff
+    array = uniq(array);
+    list = uniq(list);
 
+    var result = [];
+    array.forEach(function (item) {
+      list.includes(item) && result.push(item);
+    });
+
+    return result;
   }
 
-  win.Util = Util; //export Util
+  /**
+   * @description 两数组的差集  
+   */  
+  function difference(array, list) {
+    if (!Array.isArray(array)) throw new Error(array + ' is not a function');
+    if (!Array.isArray(list)) throw new Error(list + ' is not a function');
+
+    var insection = ins(array, list);
+    var arr1 = diff(array, insection);
+    var arr2 = diff(list, insection);
+    
+    return arr1.concat(arr2);
+  }
+
+  /**
+   * @description 获取元素(带有length属性的对象都可以)的最后一个元素
+   */
+  function lastOf(object) {
+    if (!object) return;
+    if (typeof object.length === 'undefined') return object;
+
+    return object[object.length - 1];
+  }
 
   /**
    * @description ES5 Set集合简易版
@@ -333,12 +673,12 @@
   _Set.prototype = {
     constructor: _Set,
 
-    has: function (item) {
+    has: function(item) {
       var key  = keyOf(this, item, ['size', 'nextKey']);
       return (typeof key !== 'undefined');
     },
 
-    forEach: function (callback) {
+    forEach: function(callback) {
       if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
       for (var key in this) {
@@ -346,7 +686,7 @@
       }
     },
 
-    add: function (item) {
+    add: function(item) {
       if (!this.has(item)) {
         this[this.nextKey++] = item;
         this.size++;
@@ -354,8 +694,7 @@
       return this;
     },
 
-    delete: function (item) {
-      
+    delete: function(item) {
       var key = keyOf(this, item, ['size', 'nextKey']);
       if (typeof key !== 'undefined') {
         delete this[key];
@@ -365,21 +704,53 @@
       return !1;
     },
 
-    clear: function () {
+    clear: function() {
       var list = ['size', 'nextKey'];
-      for(var key in this) {
-        if (!list.includes(key)) {
-          delete this[key];
-        }
-      }
+      deleteKeys(this, null, list);
       this.size = 0;
       this.nextKey = 0;
     }
-
   }
 
-  //String
+  var Util = {
 
+    // 类型方法
+    isString: isString,
+    isObject: isObject,
+    isEmptyObject: isEmptyObject,
+    isFunction: isFunction,
+    isNumber: isNumber,
+    isNumeric: isNumeric,
+    isDom: isDom,
+
+    // dom方法
+    toSelector: toSelector,
+    appendStyle: appendStyle,
+    insertElementToBody: insertElementToBody,
+    domAfterLoad: domAfterLoad,
+    tagOf: tagOf,
+
+    // 数组方法
+    uniq: uniq,
+    diff: diff,
+    ins: ins,
+    difference: difference,
+    makeArray: makeArray,
+
+    // 对象方法
+    deleteKeys: deleteKeys,
+    keyOf: keyOf,
+    lastOf: lastOf,
+    
+    // 其他方法
+    dateFormater: dateFormater,
+    buildRandomString: buildRandomString,
+    Set: _Set,
+
+  }
+  win.Util = Util; //export Util
+
+  /* ========String======== */
   /**
    * @description 合并类名，自动以空格分割
    */
@@ -392,190 +763,8 @@
 
     return string;
   }
-  if (!String.prototype.repeat) {
-    String.prototype.repeat = function (number) {
-      number = parseInt(number);
-      if (number < 0) throw new Error('Invalid count value');
-      if (isNaN(number) || number === 0) return '';
 
-      var string = this, result = "";
-      for(var i = 0; i < number; i++) {
-        result += string;
-      }
-      
-      return result;
-    }
-  }
-
-  //Array
-  if (!Array.from) {
-    Array.from = function (arrayLike, callback) {
-      var len = arrayLike.length;
-      if (typeof len === 'undefined') return [];
-
-      var object = {}
-      for (var key in arrayLike) {
-        object[parseFloat(key)] = arrayLike[key];
-      }
-
-      var array = [];
-      for (var i = 0; i < len; i++) {
-        if (isNaN(i)) {
-          array.push(undefined);
-        } else {
-          var item = isFunction(callback) ? callback(object[i], i, object) : object[i];
-          array.push(item);
-        }
-      }
-
-      return array;
-    }
-  }
-  if (!Array.isArray) {
-    Array.isArray = function (object) {
-      return object instanceof Array;
-    }
-  }
-  if (!Array.prototype.find) {
-    Array.prototype.find = function (callback, bind) {
-      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
-
-      var array = this;
-      for (var i = 0, len = array.length; i < len; i++) {
-        var found = typeof bind === 'undefined' ? 
-          callback(array[i], i, array) : 
-          callback.call(bind, array[i], i, array);
-
-        if (found) return array[i];
-      }
-    }
-  }
-  if (!Array.prototype.findIndex) {
-    Array.prototype.findIndex = function (callback, bind) {
-      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
-
-      var array = this;
-      for (var i = 0, len = array.length; i < len; i++) {
-        var found = typeof bind === 'undefined' ? 
-          callback(array[i], i, array) : 
-          callback.call(bind, array[i], i, array);
-
-        if (found) return i;
-      }
-
-      return -1;
-    }
-  }
-  if (!Array.prototype.includes) {
-    Array.prototype.includes = function (target, start) {
-      var array = this, len = array.length;
-      start = isNumber(start) ? start : 0;
-      start = start >= 0 ? start : (len + start);
-
-      var result = false;
-      for (var i = start; i < len; i++) {
-        if (Object.is(target, array[i])) {
-          result = true;
-          break;
-        }
-      }
-
-      return result;
-    }
-  }
-  if (!Array.prototype.fill) {
-    Array.prototype.fill = function (fill, start, end) {
-      var array = this;
-      var len = array.length;
-      if (start == null && end == null) {
-        array = array.map(function () {
-          return fill;
-        });
-        return array;
-      } else if (start == null && end != null) {
-        if (!isNumeric(end)) throw new Error(end + ' is not a number');
-
-        end = parseInt(end);
-        end = end < 0 ? len + end : end;
-        if (end < 0) {
-          return array;
-        } else {
-          array = array.map(function (item, index) {
-            return index < end ? fill : item;
-          });
-          return array;
-        }
-      } else if (start != null && end == null) {
-        if (!isNumeric(start)) throw new Error(start + ' is not a number');
-
-        start = parseInt(start);
-        start = start < 0 ? len + start : start;
-        if (start < 0) {
-          array = array.map(function () {
-            return fill;
-          });
-          return array;
-        } else {
-          array = array.map(function (item, index) {
-            return index >= start ? fill : item;
-          });
-          return array;
-        }
-      } else {
-        if (!isNumeric(start) || !isNumeric(end)) throw new Error(start + ' or ' + end + 'is not a number');
-
-        start = parseInt(start);
-        end = parseInt(end);
-
-        start = start < 0 ? len + start : start;
-        end = end < 0 ? len + end : end;
-        if (start < 0 && end < 0) {
-          return array;
-        } else if (start > 0 && end < 0) { //存疑虑
-          return array;
-        } else if (start < 0 && end > 0) {
-          array = array.map(function (item, index) {
-            return index < end ? fill : item;
-          });
-          return array;
-        } else {
-          array = array.map(function (item, index) {
-            return (index >= start) && (index < end) ? fill : item;
-          });
-          return array;
-        }
-      }
-    }
-  }
-
-
-  //Object
-  if (!Object.is) {
-    Object.is = function(x, y) {
-      if (x === y) { 
-        return x !== 0 || 1 / x === 1 / y; //针对 +0不等于-0, 
-      } else {
-        return x !== x && y !== y; //NaN === NaN => false
-      }
-    };
-  }
-  if (!Object.assign) {
-    Object.assign = function () {
-
-      var receiver = Array.from(arguments).slice(0, 1)[0], suppliers = Array.from(arguments).slice(1);
-
-      suppliers.forEach(function (supplier) {
-        Object.keys(supplier).forEach(function (key) {
-          receiver[key] = supplier[key];
-        });
-      });
-
-      return receiver;
-    }
-  }
-
-  //jQuery
-
+  /* ========jQuery======== */
   /**
    * @description 设置或获取元素的translate值
    * @param { Number | Function } x
@@ -591,7 +780,6 @@
 
     var xValue, yValue;
     if (y == null) {
-
       xValue = isFunction(x) ? parseFloat(x()) : parseFloat(x);
       if (!isNaN(xValue)) {
         this.css({
@@ -599,9 +787,7 @@
         });
       }
       return this;
-
     } else if (x == null) {
-
       yValue = isFunction(y) ? parseFloat(y()) : parseFloat(y);
       if (!isNaN(yValue)) {
         this.css({
@@ -609,9 +795,7 @@
         });
       }
       return this;
-
     } else {
-
       xValue = isFunction(x) ? parseFloat(x()) : parseFloat(x);
       yValue = isFunction(y) ? parseFloat(y()) : parseFloat(y);
       if (!isNaN(xValue) && !isNaN(yValue)) {
@@ -620,29 +804,24 @@
         });
       }
       return this;
-
     }
   }
   $.prototype.translateX = function (value) {
-
     if (value == null) {
       return parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[4]);
     }
-
     this.translate(value);
   }
   $.prototype.translateY = function (value) {
-
     if (value == null) {
       return parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[5]);
     }
-
     this.translate(null, value);
   }
 
   /**
    * @description 查找元素的index
-   * @param {Function} callback
+   * @param { Function } callback
    */
   $.prototype.findIndex = function (callback) {
     if (!isFunction(callback)) throw new Error('`callback` must be a function');
@@ -650,7 +829,7 @@
     var $el = this;
     for (var i = 0, len = $el.length; i < len; i++) {
       var found = callback(i, $el[i], $el);
-      if (found) return i;
+      if (found === true) return i;
     }
 
     return -1;
@@ -696,6 +875,15 @@
       }
       
       return '<' + wrapper + klass + attributes + '>' + item + '</' + wrapper + '>';
+    },
+
+    /**
+     * @description 子类使用this.super()继承父类
+     */
+    inherit: function (SuperClass, SubClass) {
+      SubClass.prototype = new SuperClass();
+      SubClass.prototype.constructor = SubClass;
+      SubClass.prototype.super = SuperClass;
     }
     
   });
