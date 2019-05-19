@@ -674,7 +674,7 @@
     constructor: _Set,
 
     has: function(item) {
-      var key  = keyOf(this, item, ['size', 'nextKey']);
+      var key  = keyOf(this, item, 'size,nextKey');
       return (typeof key !== 'undefined');
     },
 
@@ -695,7 +695,7 @@
     },
 
     delete: function(item) {
-      var key = keyOf(this, item, ['size', 'nextKey']);
+      var key = keyOf(this, item, 'size,nextKey');
       if (typeof key !== 'undefined') {
         delete this[key];
         this.size--;
@@ -705,8 +705,7 @@
     },
 
     clear: function() {
-      var list = ['size', 'nextKey'];
-      deleteKeys(this, null, list);
+      deleteKeys(this, null, 'size,nextKey');
       this.size = 0;
       this.nextKey = 0;
     }

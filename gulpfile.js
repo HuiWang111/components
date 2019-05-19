@@ -12,9 +12,7 @@ gulp.task('compressJS',function(){
   .pipe(babel({
     presets: ['es2015']
   }))
-  .pipe(uglify({
-    mangle: false
-  }))
+  .pipe(uglify())
   .pipe(rename({
     suffix: '.min'
   }))
