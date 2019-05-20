@@ -6,23 +6,28 @@
     return;
   }
 
-  /* ========ES6兼容性处理======== */
-  if (!String.prototype.repeat) {
-    String.prototype.repeat = function (count) {
-      count = parseInt(count);
-      if (count < 0) throw new Error('Invalid count value');
-      if (isNaN(count) || count === 0) return '';
+  if (!emptyArray.fill) {
 
-      var string = this, result = "";
-      for(var i = 0; i < count; i++) {
-        result += string;
+    Object.is = function (x, y) {
+      if (x === y) { 
+        return x !== 0 || 1 / x === 1 / y; // +0不等于-0
+      } else {
+        return x !== x && y !== y; // NaN === NaN => true
       }
-      
-      return result;
-    }
-  }
+    };
 
-  if (!Array.from) {
+    Object.assign = function () {
+      var receiver = Array.from(arguments).slice(0, 1)[0], suppliers = Array.from(arguments).slice(1);
+
+      suppliers.forEach(function (supplier) {
+        Object.keys(supplier).forEach(function (key) {
+          receiver[key] = supplier[key];
+        });
+      });
+
+      return receiver;
+    };
+
     Array.from = function (arrayLike, callback) {
       var len = arrayLike.length;
       if (typeof len === 'undefined') return [];
@@ -43,142 +48,132 @@
       }
 
       return array;
-    }
-  }
-  if (!Array.prototype.find) {
-    Array.prototype.find = function (callback, context) {
-      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+    };
 
-      var array = this;
-      for (var i = 0, len = array.length; i < len; i++) {
-        var found = typeof context === 'undefined' ? 
-          callback(array[i], i, array) : 
-          callback.call(context, array[i], i, array);
-
-        if (found) return array[i];
-      }
-    }
-  }
-  if (!Array.prototype.findIndex) {
-    Array.prototype.findIndex = function (callback, context) {
-      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
-
-      var array = this;
-      for (var i = 0, len = array.length; i < len; i++) {
-        var found = typeof context === 'undefined' ? 
-          callback(array[i], i, array) : 
-          callback.call(context, array[i], i, array);
-
-        if (found === true) return i;
-      }
-
-      return -1;
-    }
-  }
-  if (!Array.prototype.includes) {
-    Array.prototype.includes = function (target, start) {
-      var array = this, len = array.length;
-      start = isNumber(start) ? start : 0;
-      start = start >= 0 ? start : (len + start);
-
-      var result = false;
-      for (var i = start; i < len; i++) {
-        if (Object.is(target, array[i])) {
-          result = true;
-          break;
+    Object.assign(String.prototype, {
+      repeat (count) {
+        count = parseInt(count);
+        if (count < 0) throw new Error('Invalid count value');
+        if (isNaN(count) || count === 0) return '';
+  
+        var string = this, result = "";
+        for(var i = 0; i < count; i++) {
+          result += string;
         }
+        
+        return result;
       }
+    });
 
-      return result;
-    }
-  }
-  if (!Array.prototype.fill) {
-    Array.prototype.fill = function (fill, start, end) {
-      var array = this;
-      var len = array.length;
-      if (start == null && end == null) {
-        array = array.map(function () {
-          return fill;
-        });
-        return array;
-      } else if (start == null && end != null) {
-        if (!isNumeric(end)) throw new Error(end + ' is not a number');
-
-        end = parseInt(end);
-        end = end < 0 ? len + end : end;
-        if (end < 0) {
-          return array;
-        } else {
-          array = array.map(function (item, index) {
-            return index < end ? fill : item;
-          });
-          return array;
+    Object.assign(Array.prototype, {
+      find (callback, context) {
+        if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+  
+        var array = this;
+        for (var i = 0, len = array.length; i < len; i++) {
+          var found = typeof context === 'undefined' ? 
+            callback(array[i], i, array) : 
+            callback.call(context, array[i], i, array);
+  
+          if (found === true) return array[i];
         }
-      } else if (start != null && end == null) {
-        if (!isNumeric(start)) throw new Error(start + ' is not a number');
+      },
 
-        start = parseInt(start);
-        start = start < 0 ? len + start : start;
-        if (start < 0) {
+      findIndex (callback, context) {
+        if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+  
+        var array = this;
+        for (var i = 0, len = array.length; i < len; i++) {
+          var found = typeof context === 'undefined' ? 
+            callback(array[i], i, array) : 
+            callback.call(context, array[i], i, array);
+  
+          if (found === true) return i;
+        }
+  
+        return -1;
+      },
+
+      includes (target, start) {
+        var array = this, len = array.length;
+        start = isNumber(start) ? start : 0;
+        start = start >= 0 ? start : (len + start);
+  
+        var result = false;
+        for (var i = start; i < len; i++) {
+          if (Object.is(target, array[i])) {
+            result = true;
+            break;
+          }
+        }
+  
+        return result;
+      },
+
+      fill (fill, start, end) {
+        var array = this;
+        var len = array.length;
+        if (start == null && end == null) {
           array = array.map(function () {
             return fill;
           });
           return array;
+        } else if (start == null && end != null) {
+          if (!isNumeric(end)) throw new Error(end + ' is not a number');
+  
+          end = parseInt(end);
+          end = end < 0 ? len + end : end;
+          if (end < 0) {
+            return array;
+          } else {
+            array = array.map(function (item, index) {
+              return index < end ? fill : item;
+            });
+            return array;
+          }
+        } else if (start != null && end == null) {
+          if (!isNumeric(start)) throw new Error(start + ' is not a number');
+  
+          start = parseInt(start);
+          start = start < 0 ? len + start : start;
+          if (start < 0) {
+            array = array.map(function () {
+              return fill;
+            });
+            return array;
+          } else {
+            array = array.map(function (item, index) {
+              return index >= start ? fill : item;
+            });
+            return array;
+          }
         } else {
-          array = array.map(function (item, index) {
-            return index >= start ? fill : item;
-          });
-          return array;
-        }
-      } else {
-        if (!isNumeric(start) || !isNumeric(end)) throw new Error(start + ' or ' + end + 'is not a number');
-
-        start = parseInt(start);
-        end = parseInt(end);
-
-        start = start < 0 ? len + start : start;
-        end = end < 0 ? len + end : end;
-        if (start < 0 && end < 0) {
-          return array;
-        } else if (start > 0 && end < 0) { //存疑虑
-          return array;
-        } else if (start < 0 && end > 0) {
-          array = array.map(function (item, index) {
-            return index < end ? fill : item;
-          });
-          return array;
-        } else {
-          array = array.map(function (item, index) {
-            return (index >= start) && (index < end) ? fill : item;
-          });
-          return array;
+          if (!isNumeric(start) || !isNumeric(end)) throw new Error(start + ' or ' + end + 'is not a number');
+  
+          start = parseInt(start);
+          end = parseInt(end);
+  
+          start = start < 0 ? len + start : start;
+          end = end < 0 ? len + end : end;
+          if (start < 0 && end < 0) {
+            return array;
+          } else if (start > 0 && end < 0) { //存疑虑
+            return array;
+          } else if (start < 0 && end > 0) {
+            array = array.map(function (item, index) {
+              return index < end ? fill : item;
+            });
+            return array;
+          } else {
+            array = array.map(function (item, index) {
+              return (index >= start) && (index < end) ? fill : item;
+            });
+            return array;
+          }
         }
       }
-    }
-  }
+    });
 
-  if (!Object.is) {
-    Object.is = function(x, y) {
-      if (x === y) { 
-        return x !== 0 || 1 / x === 1 / y; //针对 +0不等于-0, 
-      } else {
-        return x !== x && y !== y; //NaN === NaN => false
-      }
-    };
-  }
-  if (!Object.assign) {
-    Object.assign = function () {
-
-      var receiver = Array.from(arguments).slice(0, 1)[0], suppliers = Array.from(arguments).slice(1);
-
-      suppliers.forEach(function (supplier) {
-        Object.keys(supplier).forEach(function (key) {
-          receiver[key] = supplier[key];
-        });
-      });
-
-      return receiver;
-    }
   }
 
   /**
@@ -189,13 +184,13 @@
   }
   Object.assign(Component.prototype, {
     constructor: Component,
-    init: function() {
+    init () {
       this.render();
       this.setStyle();
       this.mount();
     },
-    render: function() {},
-    setStyle: function() {},
+    render () {},
+    setStyle () {},
     /**
      * @description 将组件元素挂载到dom
      * @param { Array } array 需要被挂载的元素列表
@@ -206,7 +201,7 @@
      *    condition: true | false //挂载条件
      * }]
      */
-    mount: function(array) {
+    mount (array) {
       if (!array) return;
       if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
 
@@ -233,15 +228,14 @@
 
       /* 判断挂载完成后执行绑定事件 */
       var last = lastOf(array);
-      var bind = function () {
+      domAfterLoad(last.selector, () => {
         this.componentDidMount();
         this.bindEvents();
-      }
-      domAfterLoad(last.selector, $.proxy(bind, this));
+      });
     },
-    componentWillMount: function () {},
-    componentDidMount: function () {},
-    bindEvents: function() {}
+    componentWillMount () {},
+    componentDidMount () {},
+    bindEvents () {}
   });
   win.Component = Component;
 
@@ -349,7 +343,7 @@
     var script = document.querySelector('script');
     var parent = script ? script.parentNode : document.querySelector('body');
 
-    var insert = function (v) {
+    var insert = (v) => {
       if (script) {
         parent.insertBefore(v, script);
       } else {
@@ -360,11 +354,10 @@
     var len = el.length;
     if (typeof len !== 'undefined') {
       for (var i = 0; i < len; i++) {
-        if (!el[i]) continue;
-        insert(el[i]);
+        el[i] && insert(el[i]);
       }
     } else {
-      insert(el);
+      el && insert(el);
     }
   }
 
@@ -375,8 +368,8 @@
    * @returns 日期字符串
    */
   function dateFormater(date, format) {
-    var full = function (number) {
-      if (!isNumeric(number)) throw new Error('`number` must be a number');
+    var full = (number) => {
+      if (!isNumeric(number)) throw new Error(number + ' is not a number');
       number = parseInt(number);
       return number < 10 ? ('0' + number) : number;
     }
@@ -491,10 +484,9 @@
       times++;
       
       var fn = arguments.callee;
-      var next = function() {
+      timer = setTimeout(() => {
         fn(selector, loadedCallback, maxTimes, times);
-      }
-      timer = setTimeout(next, 0);
+      }, 0);
     }
   }
 

@@ -19,3 +19,12 @@ gulp.task('compressJS',function(){
   .pipe(gulp.dest('dist'));
 
 });
+
+gulp.task('testJS', function () {
+  return gulp.src('test/test.js')
+  .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
+  .pipe(babel({
+    presets: ['es2015']
+  }))
+  .pipe(gulp.dest('dist'));
+});
