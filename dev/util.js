@@ -1,6 +1,6 @@
 !function(win, $) {
   
-  var emptyArray = [];
+  const emptyArray = [];
   if (!emptyArray.map) {
     alert('您的浏览器过旧，请升级浏览器！');
     return;
@@ -17,7 +17,7 @@
     };
 
     Object.assign = function () {
-      var receiver = Array.from(arguments).slice(0, 1)[0], suppliers = Array.from(arguments).slice(1);
+      const receiver = emptyArray.slice.call(arguments).slice(0, 1)[0], suppliers = emptyArray.slice.call(arguments).slice(1);
 
       suppliers.forEach(function (supplier) {
         Object.keys(supplier).forEach(function (key) {
@@ -29,20 +29,20 @@
     };
 
     Array.from = function (arrayLike, callback) {
-      var len = arrayLike.length;
-      if (typeof len === 'undefined') return [];
+      const len = arrayLike.length || arrayLike.size;
+      if (typeof len !== 'number') return [];
 
-      var object = {}
-      for (var key in arrayLike) {
+      const object = {}
+      for (const key in arrayLike) {
         object[parseFloat(key)] = arrayLike[key];
       }
 
-      var array = [];
-      for (var i = 0; i < len; i++) {
+      const array = [];
+      for (const i in object) {
         if (isNaN(i)) {
           array.push(undefined);
         } else {
-          var item = isFunction(callback) ? callback(object[i], i, object) : object[i];
+          const item = isFunction(callback) ? callback(object[i], i, object) : object[i];
           array.push(item);
         }
       }
@@ -56,8 +56,9 @@
         if (count < 0) throw new Error('Invalid count value');
         if (isNaN(count) || count === 0) return '';
   
-        var string = this, result = "";
-        for(var i = 0; i < count; i++) {
+        const string = this;
+        let result = "";
+        for(let i = 0; i < count; i++) {
           result += string;
         }
         
@@ -67,11 +68,11 @@
 
     Object.assign(Array.prototype, {
       find (callback, context) {
-        if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+        if (typeof callback !== 'function') throw new Error(callback + ' is not a function');
   
-        var array = this;
-        for (var i = 0, len = array.length; i < len; i++) {
-          var found = typeof context === 'undefined' ? 
+        const array = this;
+        for (let i = 0, len = array.length; i < len; i++) {
+          const found = typeof context === 'undefined' ? 
             callback(array[i], i, array) : 
             callback.call(context, array[i], i, array);
   
@@ -80,11 +81,11 @@
       },
 
       findIndex (callback, context) {
-        if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+        if (typeof callback !== 'function') throw new Error(callback + ' is not a function');
   
-        var array = this;
-        for (var i = 0, len = array.length; i < len; i++) {
-          var found = typeof context === 'undefined' ? 
+        const array = this;
+        for (let i = 0, len = array.length; i < len; i++) {
+          const found = typeof context === 'undefined' ? 
             callback(array[i], i, array) : 
             callback.call(context, array[i], i, array);
   
@@ -95,12 +96,12 @@
       },
 
       includes (target, start) {
-        var array = this, len = array.length;
-        start = isNumber(start) ? start : 0;
+        const array = this, len = array.length;
+        start = typeof start === 'number' ? start : 0;
         start = start >= 0 ? start : (len + start);
   
-        var result = false;
-        for (var i = start; i < len; i++) {
+        let result = false;
+        for (let i = start; i < len; i++) {
           if (Object.is(target, array[i])) {
             result = true;
             break;
@@ -111,8 +112,12 @@
       },
 
       fill (fill, start, end) {
-        var array = this;
-        var len = array.length;
+        const isNumeric = function (target) {
+          return !isNaN(parseFloat(target));
+        }
+
+        const array = this;
+        const len = array.length;
         if (start == null && end == null) {
           array = array.map(function () {
             return fill;
@@ -207,11 +212,8 @@
 
       this.componentWillMount();
 
-      for (var i = 0, len = array.length; i < len; i++) {
-        var item = array[i],
-            container = item.contianer,
-            html = item.html,
-            condition = item.condition;
+      for (let i = 0, len = array.length; i < len; i++) {
+        const { container, html, condition } = array[i];
 
         if ( !(container === 'body' || isDom(container)) ) {
           throw new Error(container + ' is not a DOMElement');
@@ -227,7 +229,7 @@
       }
 
       /* 判断挂载完成后执行绑定事件 */
-      var last = lastOf(array);
+      const last = lastOf(array);
       domAfterLoad(last.selector, () => {
         this.componentDidMount();
         this.bindEvents();
@@ -247,8 +249,7 @@
     return (typeof target === 'object') && !(target instanceof Array);
   }
   function isEmptyObject(target) {
-    var key;
-    for (key in target) return !1;
+    for (const _ in target) return !1;
     return !0;
   }
   /**
@@ -294,7 +295,7 @@
 
     type = type == null ? 'class' : type;
 
-    var prefix = type === 'class' ? '.' : (
+    const prefix = type === 'class' ? '.' : (
       type === 'id' ? '#' : ''
     );
 
@@ -313,22 +314,22 @@
       return;
     }
 
-    var style = "", key;
+    let style = "", key;
     for (key in object) {
-      var obj = object[key], k, styl = "";
+      let obj = object[key], k, styl = "";
       for (k in obj) {
         styl += (k + ': ' + obj[k] + ';');
       }
       style = style === '' ? (key + ' { ' + styl + ' }') : (style + '\n' + (key + ' { ' + styl + ' }'));
     }
 
-    var oldStyleTag = document.querySelector('style');
+    const oldStyleTag = document.querySelector('style');
     if (oldStyleTag) {
-      var oldStyle = oldStyleTag.innerHTML;
-      var newStyle = oldStyle === '' ? style : oldStyle + '\n' + style;
+      const oldStyle = oldStyleTag.innerHTML;
+      const newStyle = oldStyle === '' ? style : oldStyle + '\n' + style;
       oldStyleTag.innerHTML = newStyle;
     } else {
-      var styleTag = document.createElement('style');
+      const styleTag = document.createElement('style');
       styleTag.type = 'text/css';
       styleTag.innerHTML = style;
       document.querySelector('head').appendChild(styleTag);
@@ -340,10 +341,10 @@
    * @param { Node | NodeList | jQuery } el
    */
   function insertElementToBody(el) {
-    var script = document.querySelector('script');
-    var parent = script ? script.parentNode : document.querySelector('body');
+    const script = document.querySelector('script');
+    const parent = script ? script.parentNode : document.querySelector('body');
 
-    var insert = (v) => {
+    const insert = (v) => {
       if (script) {
         parent.insertBefore(v, script);
       } else {
@@ -351,9 +352,9 @@
       }
     }
 
-    var len = el.length;
+    const len = el.length;
     if (typeof len !== 'undefined') {
-      for (var i = 0; i < len; i++) {
+      for (let i = 0; i < len; i++) {
         el[i] && insert(el[i]);
       }
     } else {
@@ -368,7 +369,7 @@
    * @returns 日期字符串
    */
   function dateFormater(date, format) {
-    var full = (number) => {
+    const full = (number) => {
       if (!isNumeric(number)) throw new Error(number + ' is not a number');
       number = parseInt(number);
       return number < 10 ? ('0' + number) : number;
@@ -385,11 +386,11 @@
       }
     }
 
-    var year = date.getFullYear(), month = full(date.getMonth() + 1), day = full(date.getDate()),
+    const year = date.getFullYear(), month = full(date.getMonth() + 1), day = full(date.getDate()),
 
     hour = full(date.getHours()), minute = full(date.getMinutes()), second = full(date.getSeconds());
 
-    var result;
+    let result;
     format = format || 'yyyy/mm/dd hh:mm:ss';
     switch(format) {
       case 'yyyy-mm-dd hh:mm:ss':
@@ -425,19 +426,19 @@
   function buildRandomString(length) {
 
     function randomLetter(size) {
-      var letters = [];
-      for (var i = 65; i < 91; i++) {
+      const letters = [];
+      for (let i = 65; i < 91; i++) {
         letters.push(String.fromCharCode(i));
       }
-      for (var i = 97; i < 123; i++) {
+      for (let i = 97; i < 123; i++) {
         letters.push(String.fromCharCode(i));
       }
 
-      var result = letters[Math.floor(Math.random()*letters.length)];
+      let result = letters[Math.floor(Math.random()*letters.length)];
       if (isNumeric(size)) {
         size = parseInt(size);
         if (size > 1) {
-          for (var i = 1; i < size; i++) {
+          for (let i = 1; i < size; i++) {
             result += letters[Math.floor(Math.random()*letters.length)];
           }
         }
@@ -446,16 +447,16 @@
       return result;
     }
 
-    var randomString = Math.random().toString(36).substr(2);
-    var letter = randomLetter();
+    let randomString = Math.random().toString(36).substr(2);
+    const letter = randomLetter();
     randomString =  letter + randomString; //保证第一位一定是字母
     if (isNumeric(length)) {
       length = parseInt(length);
       if (randomString.length > length) {
         randomString = randomString.substr(0, length);
       } else if (randomString.length < length) {
-        var diff = length - randomString.length;
-        var letters = randomLetter(diff);
+        const diff = length - randomString.length;
+        const letters = randomLetter(diff);
         randomString += letters;
       }
     }
@@ -471,8 +472,8 @@
   function domAfterLoad(selector, loadedCallback, maxTimes, times) {
     times = times || 0;
     maxTimes = isNumber(maxTimes) ? maxTimes : 500;
-    var timer = null;
-    var dom = document.querySelectorAll(selector);
+    let timer = null;
+    const dom = document.querySelectorAll(selector);
     if (dom.length > 0) {
       timer && clearTimeout(timer);
       isFunction(loadedCallback) && loadedCallback();
@@ -483,7 +484,7 @@
       }
       times++;
       
-      var fn = arguments.callee;
+      const fn = arguments.callee;
       timer = setTimeout(() => {
         fn(selector, loadedCallback, maxTimes, times);
       }, 0);
@@ -500,11 +501,11 @@
   function keyOf(object, target, excludes) {
     if (!isObject(object)) throw new Error(object + ' is not a object');
     
-    var isNil = excludes == null;
+    const isNil = excludes == null;
     if (!isNil && !isString(excludes)) throw new Error(excludes + ' is not a string');
 
     !isNil && (excludes = excludes.split(','));
-    for(var key in object) {
+    for(const key in object) {
       if (isNil) {
         if (Object.is(object[key], target)) return key;
       } else {
@@ -528,7 +529,7 @@
     if (keys != null && !isString(keys)) throw new Error(keys + ' is not a string');
     if (excludes != null && !isString(excludes)) throw new Error(excludes + ' is not a string');
 
-    var keyList, excludeList;
+    let keyList, excludeList;
     if (keys == null) {
       keyList = null;
       excludeList = excludes == null ? null : excludes.split(',');
@@ -541,7 +542,7 @@
       excludeList = null;
     }
 
-    for (var key in object) {
+    for (const key in object) {
       if (keyList == null && excludeList == null) {
         delete object[key];
       } else if (keyList != null && excludeList == null) {
@@ -570,7 +571,7 @@
   function uniq(array) {
     if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
 
-    var result = [];
+    const result = [];
     array.forEach(function (item) {
       if (!result.includes(item)) {
         result.push(item);
@@ -589,7 +590,7 @@
     if (!Array.isArray(array)) throw new Error(array + ' is not a function');
     if (!Array.isArray(list)) throw new Error(list + ' is not a function');
 
-    var result = [];
+    const result = [];
     uniq(array).forEach(function (item) {
       !list.includes(item) && result.push(item);
     });
@@ -607,7 +608,7 @@
     array = uniq(array);
     list = uniq(list);
 
-    var result = [];
+    const result = [];
     array.forEach(function (item) {
       list.includes(item) && result.push(item);
     });
@@ -619,12 +620,12 @@
    * @description 两数组的差集  
    */  
   function difference(array, list) {
-    if (!Array.isArray(array)) throw new Error(array + ' is not a function');
-    if (!Array.isArray(list)) throw new Error(list + ' is not a function');
+    if (!Array.isArray(array)) throw new Error(array + ' is not a array');
+    if (!Array.isArray(list)) throw new Error(list + ' is not a array');
 
-    var insection = ins(array, list);
-    var arr1 = diff(array, insection);
-    var arr2 = diff(list, insection);
+    const insection = ins(array, list);
+    const arr1 = diff(array, insection);
+    const arr2 = diff(list, insection);
     
     return arr1.concat(arr2);
   }
@@ -642,8 +643,8 @@
   /**
    * @description ES5 Set集合简易版
    */
-  function _Set() {
-    var set;
+  function rSet() {
+    let set;
     if (Array.isArray(arguments[0])) {
       set = arguments[0];
     } else {
@@ -652,9 +653,9 @@
 
     set = uniq(set);
 
-    var len = set.length;
-    for(var i = 0; i < len; i++) {
-      var value = set[i];
+    const len = set.length;
+    for(let i = 0; i < len; i++) {
+      let value = set[i];
       this[i] = value;
     }
 
@@ -662,18 +663,18 @@
     this.nextKey = len;
   }
 
-  _Set.prototype = {
-    constructor: _Set,
+  rSet.prototype = {
+    constructor: rSet,
 
     has: function(item) {
-      var key  = keyOf(this, item, 'size,nextKey');
+      const key  = keyOf(this, item, 'size,nextKey');
       return (typeof key !== 'undefined');
     },
 
     forEach: function(callback) {
       if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
-      for (var key in this) {
+      for (const key in this) {
         callback(this[key], key, this);
       }
     },
@@ -687,7 +688,7 @@
     },
 
     delete: function(item) {
-      var key = keyOf(this, item, 'size,nextKey');
+      const key = keyOf(this, item, 'size,nextKey');
       if (typeof key !== 'undefined') {
         delete this[key];
         this.size--;
@@ -703,7 +704,7 @@
     }
   }
 
-  var Util = {
+  const Util = {
 
     // 类型方法
     isString: isString,
@@ -736,7 +737,7 @@
     // 其他方法
     dateFormater: dateFormater,
     buildRandomString: buildRandomString,
-    Set: _Set,
+    rSet: rSet,
 
   }
   win.Util = Util; //export Util
@@ -746,7 +747,7 @@
    * @description 合并类名，自动以空格分割
    */
   String.prototype.appendClass = function (className) {
-    var string = this;
+    let string = this;
     
     if (className.length !== 0) {
       string += string.length === 0 ? className : (' ' + className);
@@ -769,7 +770,7 @@
       ];
     }
 
-    var xValue, yValue;
+    let xValue, yValue;
     if (y == null) {
       xValue = isFunction(x) ? parseFloat(x()) : parseFloat(x);
       if (!isNaN(xValue)) {
@@ -817,9 +818,9 @@
   $.prototype.findIndex = function (callback) {
     if (!isFunction(callback)) throw new Error('`callback` must be a function');
 
-    var $el = this;
-    for (var i = 0, len = $el.length; i < len; i++) {
-      var found = callback(i, $el[i], $el);
+    const $el = this;
+    for (let i = 0, len = $el.length; i < len; i++) {
+      const found = callback(i, $el[i], $el);
       if (found === true) return i;
     }
 
@@ -846,19 +847,19 @@
       klass = klass ? ' class="' + klass + '"' : '';
   
       // Check for any attributes
-      var attributes = '';
+      let attributes = '';
       if (attr) {
         if (isString(attr)) {
           attributes = ' ' + attr;
         } else if (isObject(attr)) {
-          for (var key in attr) {
+          for (const key in attr) {
             if ( (key.trim() === 'style') && isObject(attr[key]) && (attr[key] !== null) ) {
               attributes += key + '=';
-              for (var k in attr[key]) {
+              for (const k in attr[key]) {
                 attributes += '"' + k + ': ' + attr[key][k] + ';"';
               }
             } else {
-              var thisAttr = key + '="' + attr[key] + '"';
+              const thisAttr = key + '="' + attr[key] + '"';
               attributes += ' ' + thisAttr;
             }
           } 
