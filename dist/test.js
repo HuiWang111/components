@@ -35,3 +35,15 @@ var handler = {
     });
   }
 };
+
+var set = new Set();
+
+function test() {
+  var _arguments = arguments;
+
+  var testinner = function testinner() {
+    return _arguments.callee(1);
+  };
+
+  testinner();
+}

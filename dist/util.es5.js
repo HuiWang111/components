@@ -1,6 +1,10 @@
-!function(win, $) {
-  
-  const emptyArray = [];
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+!function (win, $) {
+
+  var emptyArray = [];
   if (!emptyArray.map) {
     alert('您的浏览器过旧，请升级浏览器！');
     return;
@@ -9,7 +13,7 @@
   if (!emptyArray.fill) {
 
     Object.is = function (x, y) {
-      if (x === y) { 
+      if (x === y) {
         return x !== 0 || 1 / x === 1 / y; // +0不等于-0
       } else {
         return x !== x && y !== y; // NaN === NaN => true
@@ -17,7 +21,8 @@
     };
 
     Object.assign = function () {
-      const receiver = emptyArray.slice.call(arguments).slice(0, 1)[0], suppliers = emptyArray.slice.call(arguments).slice(1);
+      var receiver = emptyArray.slice.call(arguments).slice(0, 1)[0],
+          suppliers = emptyArray.slice.call(arguments).slice(1);
 
       suppliers.forEach(function (supplier) {
         Object.keys(supplier).forEach(function (key) {
@@ -29,20 +34,20 @@
     };
 
     Array.from = function (arrayLike, callback) {
-      const len = arrayLike.length || arrayLike.size;
+      var len = arrayLike.length || arrayLike.size;
       if (typeof len !== 'number') return [];
 
-      const object = {}
-      for (const key in arrayLike) {
+      var object = {};
+      for (var key in arrayLike) {
         object[parseFloat(key)] = arrayLike[key];
       }
 
-      const array = [];
-      for (const i in object) {
+      var array = [];
+      for (var i in object) {
         if (isNaN(i)) {
           array.push(undefined);
         } else {
-          const item = isFunction(callback) ? callback(object[i], i, object) : object[i];
+          var item = isFunction(callback) ? callback(object[i], i, object) : object[i];
           array.push(item);
         }
       }
@@ -51,134 +56,128 @@
     };
 
     Object.assign(String.prototype, {
-      repeat (count) {
+      repeat: function repeat(count) {
         count = parseInt(count);
         if (count < 0) throw new Error('Invalid count value');
         if (isNaN(count) || count === 0) return '';
-  
-        const string = this;
-        let result = "";
-        for(let i = 0; i < count; i++) {
+
+        var string = this;
+        var result = "";
+        for (var i = 0; i < count; i++) {
           result += string;
         }
-        
+
         return result;
       }
     });
 
     Object.assign(Array.prototype, {
-      find (callback, context) {
+      find: function find(callback, context) {
         if (typeof callback !== 'function') throw new Error(callback + ' is not a function');
-  
-        const array = this;
-        for (let i = 0, len = array.length; i < len; i++) {
-          const found = typeof context === 'undefined' ? 
-            callback(array[i], i, array) : 
-            callback.call(context, array[i], i, array);
-  
+
+        var array = this;
+        for (var i = 0, len = array.length; i < len; i++) {
+          var found = typeof context === 'undefined' ? callback(array[i], i, array) : callback.call(context, array[i], i, array);
+
           if (found === true) return array[i];
         }
       },
-
-      findIndex (callback, context) {
+      findIndex: function findIndex(callback, context) {
         if (typeof callback !== 'function') throw new Error(callback + ' is not a function');
-  
-        const array = this;
-        for (let i = 0, len = array.length; i < len; i++) {
-          const found = typeof context === 'undefined' ? 
-            callback(array[i], i, array) : 
-            callback.call(context, array[i], i, array);
-  
+
+        var array = this;
+        for (var i = 0, len = array.length; i < len; i++) {
+          var found = typeof context === 'undefined' ? callback(array[i], i, array) : callback.call(context, array[i], i, array);
+
           if (found === true) return i;
         }
-  
+
         return -1;
       },
-
-      includes (target, start) {
-        const array = this, len = array.length;
+      includes: function includes(target, start) {
+        var array = this,
+            len = array.length;
         start = typeof start === 'number' ? start : 0;
-        start = start >= 0 ? start : (len + start);
-  
-        let result = false;
-        for (let i = start; i < len; i++) {
+        start = start >= 0 ? start : len + start;
+
+        var result = false;
+        for (var i = start; i < len; i++) {
           if (Object.is(target, array[i])) {
             result = true;
             break;
           }
         }
-  
+
         return result;
       },
-
-      fill (fill, start, end) {
-        const isNumeric = function (target) {
+      fill: function fill(_fill, start, end) {
+        var isNumeric = function isNumeric(target) {
           return !isNaN(parseFloat(target));
-        }
+        };
 
-        let array = this;
-        const len = array.length;
+        var array = this;
+        var len = array.length;
         if (start == null && end == null) {
           array = array.map(function () {
-            return fill;
+            return _fill;
           });
           return array;
         } else if (start == null && end != null) {
           if (!isNumeric(end)) throw new Error(end + ' is not a number');
-  
+
           end = parseInt(end);
           end = end < 0 ? len + end : end;
           if (end < 0) {
             return array;
           } else {
             array = array.map(function (item, index) {
-              return index < end ? fill : item;
+              return index < end ? _fill : item;
             });
             return array;
           }
         } else if (start != null && end == null) {
           if (!isNumeric(start)) throw new Error(start + ' is not a number');
-  
+
           start = parseInt(start);
           start = start < 0 ? len + start : start;
           if (start < 0) {
             array = array.map(function () {
-              return fill;
+              return _fill;
             });
             return array;
           } else {
             array = array.map(function (item, index) {
-              return index >= start ? fill : item;
+              return index >= start ? _fill : item;
             });
             return array;
           }
         } else {
           if (!isNumeric(start) || !isNumeric(end)) throw new Error(start + ' or ' + end + 'is not a number');
-  
+
           start = parseInt(start);
           end = parseInt(end);
-  
+
           start = start < 0 ? len + start : start;
           end = end < 0 ? len + end : end;
           if (start < 0 && end < 0) {
             return array;
-          } else if (start > 0 && end < 0) { //存疑虑
+          } else if (start > 0 && end < 0) {
+            //存疑虑
             return array;
           } else if (start < 0 && end > 0) {
             array = array.map(function (item, index) {
-              return index < end ? fill : item;
+              return index < end ? _fill : item;
             });
             return array;
           } else {
             array = array.map(function (item, index) {
-              return (index >= start) && (index < end) ? fill : item;
+              return index >= start && index < end ? _fill : item;
             });
             return array;
           }
         }
       }
     });
-
   }
 
   /**
@@ -189,13 +188,14 @@
   }
   Object.assign(Component.prototype, {
     constructor: Component,
-    init () {
+    init: function init() {
       this.render();
       this.setStyle();
       this.mount();
     },
-    render () {},
-    setStyle () {},
+    render: function render() {},
+    setStyle: function setStyle() {},
+
     /**
      * @description 将组件元素挂载到dom
      * @param { Array } array 需要被挂载的元素列表
@@ -206,16 +206,22 @@
      *    condition: true | false //挂载条件
      * }]
      */
-    mount (array) {
+    mount: function mount(array) {
+      var _this = this;
+
       if (!array) return;
       if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
 
       this.componentWillMount();
 
-      for (let i = 0, len = array.length; i < len; i++) {
-        const { container, html, condition } = array[i];
+      for (var i = 0, len = array.length; i < len; i++) {
+        var _array$i = array[i],
+            container = _array$i.container,
+            html = _array$i.html,
+            condition = _array$i.condition;
 
-        if ( !(container === 'body' || isDom(container)) ) {
+
+        if (!(container === 'body' || isDom(container))) {
           throw new Error(container + ' is not a DOMElement');
         }
 
@@ -229,15 +235,15 @@
       }
 
       /* 判断挂载完成后执行绑定事件 */
-      const last = lastOf(array);
-      domAfterLoad(last.selector, () => {
-        this.componentDidMount();
-        this.bindEvents();
+      var last = lastOf(array);
+      domAfterLoad(last.selector, function () {
+        _this.componentDidMount();
+        _this.bindEvents();
       });
     },
-    componentWillMount () {},
-    componentDidMount () {},
-    bindEvents () {}
+    componentWillMount: function componentWillMount() {},
+    componentDidMount: function componentDidMount() {},
+    bindEvents: function bindEvents() {}
   });
   win.Component = Component;
 
@@ -246,11 +252,12 @@
     return typeof target === 'string';
   }
   function isObject(target) {
-    return (typeof target === 'object') && !(target instanceof Array);
+    return (typeof target === 'undefined' ? 'undefined' : _typeof(target)) === 'object' && !(target instanceof Array);
   }
   function isEmptyObject(target) {
-    for (const _ in target) return !1;
-    return !0;
+    for (var _ in target) {
+      return !1;
+    }return !0;
   }
   /**
    * @description 判断是否是数字，包括字符串数值
@@ -262,17 +269,17 @@
    * @description 判断是否是Number实例
    */
   function isNumber(target) {
-    return (typeof target === 'number');
+    return typeof target === 'number';
   }
   function isFunction(target) {
-    return (typeof target === 'function');
+    return typeof target === 'function';
   }
   function toNumber(target) {
     var number = parseFloat(target);
     return isNaN(number) ? false : number;
   }
   function isInteger(target) {
-    return isNumber(target) && (target % 1 === 0);
+    return isNumber(target) && target % 1 === 0;
   }
   function isLength(target) {
     return isInteger(target) && target > -1;
@@ -282,19 +289,7 @@
    * @param Other 除了HTMLCollection/jQuery/HTMLElement/NodeList/Zepto以外的也可以算作dom的原型对象
    */
   function isDom(target, Other) {
-    return (
-      target instanceof HTMLCollection
-    ) || (
-      target instanceof jQuery
-    ) || (
-      target instanceof HTMLElement
-    ) || (
-      target instanceof NodeList
-    ) || (
-      target instanceof Zepto
-    ) || (
-      Other && (target instanceof Other)
-    )
+    return target instanceof HTMLCollection || target instanceof jQuery || target instanceof HTMLElement || target instanceof NodeList || target instanceof Zepto || Other && target instanceof Other;
   }
 
   /**
@@ -302,7 +297,9 @@
    * @param { String } string
    * @param { String } type 'class' || 'id'
    */
-  function toSelector(string, type = 'class') {
+  function toSelector(string) {
+    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'class';
+
     if (!isString(string) || string === '') return;
     if (type !== 'class' && type !== 'id') return string;
     return (type === 'class' ? '.' : '#') + string;
@@ -320,22 +317,25 @@
       return;
     }
 
-    let style = "", key;
+    var style = "",
+        key = void 0;
     for (key in object) {
-      let obj = object[key], k, styl = "";
+      var obj = object[key],
+          k = void 0,
+          styl = "";
       for (k in obj) {
-        styl += (k + ': ' + obj[k] + ';');
+        styl += k + ': ' + obj[k] + ';';
       }
-      style = style === '' ? (key + ' { ' + styl + ' }') : (style + '\n' + (key + ' { ' + styl + ' }'));
+      style = style === '' ? key + ' { ' + styl + ' }' : style + '\n' + (key + ' { ' + styl + ' }');
     }
 
-    const oldStyleTag = document.querySelector('style');
+    var oldStyleTag = document.querySelector('style');
     if (oldStyleTag) {
-      const oldStyle = oldStyleTag.innerHTML;
-      const newStyle = oldStyle === '' ? style : oldStyle + '\n' + style;
+      var oldStyle = oldStyleTag.innerHTML;
+      var newStyle = oldStyle === '' ? style : oldStyle + '\n' + style;
       oldStyleTag.innerHTML = newStyle;
     } else {
-      const styleTag = document.createElement('style');
+      var styleTag = document.createElement('style');
       styleTag.type = 'text/css';
       styleTag.innerHTML = style;
       document.querySelector('head').appendChild(styleTag);
@@ -347,20 +347,20 @@
    * @param { Node | NodeList | jQuery } el
    */
   function insertElementToBody(el) {
-    const script = document.querySelector('script');
-    const parent = script ? script.parentNode : document.querySelector('body');
+    var script = document.querySelector('script');
+    var parent = script ? script.parentNode : document.querySelector('body');
 
-    const insert = (v) => {
+    var insert = function insert(v) {
       if (script) {
         parent.insertBefore(v, script);
       } else {
         parent.appendChild(v);
       }
-    }
+    };
 
-    const len = el.length;
+    var len = el.length;
     if (typeof len !== 'undefined') {
-      for (let i = 0; i < len; i++) {
+      for (var i = 0; i < len; i++) {
         el[i] && insert(el[i]);
       }
     } else {
@@ -374,14 +374,16 @@
    * @param { String } format 格式
    * @returns 日期字符串
    */
-  function dateFormater(date, format = 'yyyy/mm/dd hh:mm:ss') {
-    const full = (number) => {
+  function dateFormater(date) {
+    var format = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'yyyy/mm/dd hh:mm:ss';
+
+    var full = function full(number) {
       if (!isNumeric(number)) throw new Error(number + ' is not a number');
       number = parseInt(number);
-      return number < 10 ? ('0' + number) : number;
-    }
+      return number < 10 ? '0' + number : number;
+    };
 
-    if ( !isNumeric(date) ) {
+    if (!isNumeric(date)) {
       date = new Date();
     } else {
       date = parseInt(date);
@@ -392,32 +394,36 @@
       }
     }
 
-    const year = date.getFullYear(), month = full(date.getMonth() + 1), day = full(date.getDate()),
+    var year = date.getFullYear(),
+        month = full(date.getMonth() + 1),
+        day = full(date.getDate()),
+        hour = full(date.getHours()),
+        minute = full(date.getMinutes()),
+        second = full(date.getSeconds());
 
-    hour = full(date.getHours()), minute = full(date.getMinutes()), second = full(date.getSeconds());
-
-    let result;
-    switch(format) {
+    var result = void 0;
+    switch (format) {
       case 'yyyy-mm-dd hh:mm:ss':
-        result = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second; break;
+        result = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;break;
       case 'yyyy-mm-dd hh:mm':
-        result = year + '-' + month + '-' + day + ' ' + hour + ':' + minute; break;
+        result = year + '-' + month + '-' + day + ' ' + hour + ':' + minute;break;
       case 'mm-dd yyyy':
-        result = month + '-' + day + ' ' + year; break;
+        result = month + '-' + day + ' ' + year;break;
       case 'yyyy-mm-dd':
-        result = year + '-' + month + '-' + day; break;
+        result = year + '-' + month + '-' + day;break;
       case 'yyyy/mm/dd hh:mm:ss':
-        result = year + '/' + month + '/' + day + ' ' + hour + ':' + minute + ':' + second; break;
+        result = year + '/' + month + '/' + day + ' ' + hour + ':' + minute + ':' + second;break;
       case 'yyyy/mm/dd hh:mm':
-        result = year + '/' + month + '/' + day + ' ' + hour + ':' + minute; break;
+        result = year + '/' + month + '/' + day + ' ' + hour + ':' + minute;break;
       case 'yyyy/mm/dd':
-        result = year + '/' + month + '/' + day; break;
+        result = year + '/' + month + '/' + day;break;
       case 'hh:mm:ss':
-        result = hour + ':' + minute + ':' + second; break;
+        result = hour + ':' + minute + ':' + second;break;
       case 'hh:mm':
-        result = hour + ':' + minute; break;
+        result = hour + ':' + minute;break;
 
-      default: throw new Error('not support this format:`' + format + '`');
+      default:
+        throw new Error('not support this format:`' + format + '`');
     }
 
     return result;
@@ -430,38 +436,38 @@
    */
   function buildRandomString(length) {
 
-    const randomLetter = (size) => {
-      const letters = [];
-      for (let i = 65; i < 91; i++) {
+    var randomLetter = function randomLetter(size) {
+      var letters = [];
+      for (var i = 65; i < 91; i++) {
         letters.push(String.fromCharCode(i));
       }
-      for (let j = 97; j < 123; j++) {
-        letters.push(String.fromCharCode(j));
+      for (var _i = 97; _i < 123; _i++) {
+        letters.push(String.fromCharCode(_i));
       }
 
-      let result = letters[Math.floor(Math.random()*letters.length)];
+      var result = letters[Math.floor(Math.random() * letters.length)];
       if (isNumeric(size)) {
         size = parseInt(size);
         if (size > 1) {
-          for (let i = 1; i < size; i++) {
-            result += letters[Math.floor(Math.random()*letters.length)];
+          for (var _i2 = 1; _i2 < size; _i2++) {
+            result += letters[Math.floor(Math.random() * letters.length)];
           }
         }
       }
 
       return result;
-    }
+    };
 
-    let randomString = Math.random().toString(36).substr(2);
-    const letter = randomLetter();
-    randomString =  letter + randomString; //保证第一位一定是字母
+    var randomString = Math.random().toString(36).substr(2);
+    var letter = randomLetter();
+    randomString = letter + randomString; //保证第一位一定是字母
     if (isNumeric(length)) {
       length = parseInt(length);
       if (randomString.length > length) {
         randomString = randomString.substr(0, length);
       } else if (randomString.length < length) {
-        const diff = length - randomString.length;
-        const letters = randomLetter(diff);
+        var diff = length - randomString.length;
+        var letters = randomLetter(diff);
         randomString += letters;
       }
     }
@@ -474,23 +480,28 @@
    * @param { Function } loadedCallback 挂载完成回调
    * @param { Number } maxTimes 最大尝试检测次数，默认500
    */
-  function domAfterLoad(selector, loadedCallback, maxTimes = 500, times = 0) {
+  function domAfterLoad(selector, loadedCallback) {
+    var _arguments = arguments;
+    var maxTimes = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 500;
+    var times = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+
     if (!isNumber(maxTimes)) return;
 
-    let timer = null;
-    const dom = document.querySelectorAll(selector);
+    var timer = null;
+    var dom = document.querySelectorAll(selector);
     if (dom.length > 0) {
       timer && clearTimeout(timer);
       isFunction(loadedCallback) && loadedCallback();
     } else {
-      if (times >= maxTimes) { //超过最大尝试检测次数
+      if (times >= maxTimes) {
+        //超过最大尝试检测次数
         isFunction(loadedCallback) && console.warn('`' + selector + '`未加载到dom，回调未执行');
         return;
       }
       times++;
-      
-      timer = setTimeout(() => {
-        arguments.callee(selector, loadedCallback, maxTimes, times);
+
+      timer = setTimeout(function () {
+        _arguments.callee(selector, loadedCallback, maxTimes, times);
       }, 0);
     }
   }
@@ -504,12 +515,12 @@
    */
   function keyOf(object, target, excludes) {
     if (!isObject(object)) throw new Error(object + ' is not a object');
-    
-    const isNil = excludes == null;
+
+    var isNil = excludes == null;
     if (!isNil && !isString(excludes)) throw new Error(excludes + ' is not a string');
 
     !isNil && (excludes = excludes.split(','));
-    for(const key in object) {
+    for (var key in object) {
       if (isNil) {
         if (Object.is(object[key], target)) return key;
       } else {
@@ -520,7 +531,7 @@
     }
     return;
   }
-  
+
   /**
    * @description 删除对象中的键值
    * @param { Object } object
@@ -533,7 +544,8 @@
     if (keys != null && !isString(keys)) throw new Error(keys + ' is not a string');
     if (excludes != null && !isString(excludes)) throw new Error(excludes + ' is not a string');
 
-    let keyList, excludeList;
+    var keyList = void 0,
+        excludeList = void 0;
     if (keys == null) {
       keyList = null;
       excludeList = excludes == null ? null : excludes.split(',');
@@ -546,7 +558,7 @@
       excludeList = null;
     }
 
-    for (const key in object) {
+    for (var key in object) {
       if (keyList == null && excludeList == null) {
         delete object[key];
       } else if (keyList != null && excludeList == null) {
@@ -562,7 +574,7 @@
    * @param { Node | NodeList | jQuery } el
    */
   function tagOf(el) {
-    if (!isLength(el.length)) {
+    if (typeof el === 'undefined') {
       return el.tagName.toLowerCase();
     }
     return el[0].tagName.toLowerCase();
@@ -575,7 +587,7 @@
   function uniq(array) {
     if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
 
-    const result = [];
+    var result = [];
     array.forEach(function (item) {
       if (!result.includes(item)) {
         result.push(item);
@@ -594,7 +606,7 @@
     if (!Array.isArray(array)) throw new Error(array + ' is not a function');
     if (!Array.isArray(list)) throw new Error(list + ' is not a function');
 
-    const result = [];
+    var result = [];
     uniq(array).forEach(function (item) {
       !list.includes(item) && result.push(item);
     });
@@ -609,7 +621,7 @@
     if (!Array.isArray(array)) throw new Error(array + ' is not a function');
     if (!Array.isArray(list)) throw new Error(list + ' is not a function');
 
-    const result = [];
+    var result = [];
     array.forEach(function (item) {
       list.includes(item) && result.push(item);
     });
@@ -619,13 +631,13 @@
 
   /**
    * @description 两数组的差集  
-   */  
+   */
   function difference(array, list) {
 
-    const insection = ins(array, list);
-    const arr1 = remove(array, insection);
-    const arr2 = remove(list, insection);
-    
+    var insection = ins(array, list);
+    var arr1 = remove(array, insection);
+    var arr2 = remove(list, insection);
+
     return arr1.concat(arr2);
   }
 
@@ -633,7 +645,7 @@
    * @description 获取元素(带有length属性的对象都可以)的最后一个元素
    */
   function lastOf(object) {
-    const len = object.length;
+    var len = object.length;
     if (!object || !isLength(len)) return;
 
     return object[len - 1];
@@ -643,7 +655,7 @@
    * @description ES5 Set集合简易版
    */
   function rSet() {
-    let set;
+    var set = void 0;
     if (Array.isArray(arguments[0])) {
       set = arguments[0];
     } else {
@@ -652,9 +664,9 @@
 
     set = uniq(set);
 
-    const len = set.length;
-    for(let i = 0; i < len; i++) {
-      let value = set[i];
+    var len = set.length;
+    for (var i = 0; i < len; i++) {
+      var value = set[i];
       this[i] = value;
     }
 
@@ -678,20 +690,20 @@
   rSet.prototype = {
     constructor: rSet,
 
-    has: function(item) {
-      const key  = keyOf(this, item, 'size,nextKey');
-      return (typeof key !== 'undefined');
+    has: function has(item) {
+      var key = keyOf(this, item, 'size,nextKey');
+      return typeof key !== 'undefined';
     },
 
-    forEach: function(callback) {
+    forEach: function forEach(callback) {
       if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
-      for (const key in this) {
+      for (var key in this) {
         callback(this[key], key, this);
       }
     },
 
-    add: function(item) {
+    add: function add(item) {
       if (!this.has(item)) {
         this[this.nextKey++] = item;
         this.size++;
@@ -699,8 +711,8 @@
       return this;
     },
 
-    delete: function(item) {
-      const key = keyOf(this, item);
+    delete: function _delete(item) {
+      var key = keyOf(this, item);
       if (typeof key !== 'undefined') {
         delete this[key];
         this.size--;
@@ -709,54 +721,54 @@
       return !1;
     },
 
-    clear: function() {
+    clear: function clear() {
       deleteKeys(this);
       this.size = 0;
       this.nextKey = 0;
     }
-  }
+  };
 
-  const Util = {
+  var Util = {
 
     // 类型方法
-    isString,
-    isObject,
-    isEmptyObject,
-    isFunction,
-    isNumber,
-    isNumeric,
-    isDom,
-    isInteger,
-    isLength,
+    isString: isString,
+    isObject: isObject,
+    isEmptyObject: isEmptyObject,
+    isFunction: isFunction,
+    isNumber: isNumber,
+    isNumeric: isNumeric,
+    isDom: isDom,
+    isInteger: isInteger,
+    isLength: isLength,
 
     // number方法
-    toNumber,
+    toNumber: toNumber,
 
     // dom方法
-    toSelector,
-    appendStyle,
-    insertElementToBody,
-    domAfterLoad,
-    tagOf,
+    toSelector: toSelector,
+    appendStyle: appendStyle,
+    insertElementToBody: insertElementToBody,
+    domAfterLoad: domAfterLoad,
+    tagOf: tagOf,
 
     // 数组方法
-    uniq,
-    remove,
-    ins,
-    difference,
-    makeArray,
+    uniq: uniq,
+    remove: remove,
+    ins: ins,
+    difference: difference,
+    makeArray: makeArray,
 
     // 对象方法
-    deleteKeys,
-    keyOf,
-    lastOf,
-    
-    // 其他方法
-    dateFormater,
-    buildRandomString,
-    rSet,
+    deleteKeys: deleteKeys,
+    keyOf: keyOf,
+    lastOf: lastOf,
 
-  }
+    // 其他方法
+    dateFormater: dateFormater,
+    buildRandomString: buildRandomString,
+    rSet: rSet
+
+  };
   win.Util = Util; //export Util
 
   /* ========String======== */
@@ -764,14 +776,14 @@
    * @description 合并类名，自动以空格分割
    */
   String.prototype.appendClass = function (className) {
-    let string = this;
-    
+    var string = this;
+
     if (className.length !== 0) {
-      string += string.length === 0 ? className : (' ' + className);
+      string += string.length === 0 ? className : ' ' + className;
     }
 
     return string;
-  }
+  };
 
   /* ========jQuery======== */
   /**
@@ -781,13 +793,11 @@
    */
   $.prototype.translate = function (x, y) {
     if (x == null && y == null) {
-      return [
-        parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[4]),
-        parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[5])
-      ];
+      return [parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[4]), parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[5])];
     }
 
-    let xValue, yValue;
+    var xValue = void 0,
+        yValue = void 0;
     if (y == null) {
       xValue = isFunction(x) ? parseFloat(x()) : parseFloat(x);
       if (!isNaN(xValue)) {
@@ -814,19 +824,19 @@
       }
       return this;
     }
-  }
+  };
   $.prototype.translateX = function (value) {
     if (value == null) {
       return parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[4]);
     }
     this.translate(value);
-  }
+  };
   $.prototype.translateY = function (value) {
     if (value == null) {
       return parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[5]);
     }
     this.translate(null, value);
-  }
+  };
 
   /**
    * @description 查找元素的index
@@ -835,18 +845,17 @@
   $.prototype.findIndex = function (callback) {
     if (!isFunction(callback)) throw new Error('`callback` must be a function');
 
-    const $el = this;
-    for (let i = 0, len = $el.length; i < len; i++) {
-      const found = callback(i, $el[i], $el);
+    var $el = this;
+    for (var i = 0, len = $el.length; i < len; i++) {
+      var found = callback(i, $el[i], $el);
       if (found === true) return i;
     }
 
     return -1;
-  }
-  
-  
+  };
+
   $.extend({
-    
+
     /**
      * @description 生成html字符串
      * @param {String} wrapper tagName
@@ -854,47 +863,46 @@
      * @param {String} klass className
      * @param {String | Object} attributes
      */
-    node: function (wrapper, item, klass, attr) {
+    node: function node(wrapper, item, klass, attr) {
       if (item == null) return '';
-  
+
       // If the item is an array, do a join
       item = Array.isArray(item) ? item.join('') : item;
-  
+
       // Check for the class
       klass = klass ? ' class="' + klass + '"' : '';
-  
+
       // Check for any attributes
-      let attributes = '';
+      var attributes = '';
       if (attr) {
         if (isString(attr)) {
           attributes = ' ' + attr;
         } else if (isObject(attr)) {
-          for (const key in attr) {
-            if ( (key.trim() === 'style') && isObject(attr[key]) && (attr[key] !== null) ) {
+          for (var key in attr) {
+            if (key.trim() === 'style' && isObject(attr[key]) && attr[key] !== null) {
               attributes += key + '=';
-              for (const k in attr[key]) {
+              for (var k in attr[key]) {
                 attributes += '"' + k + ': ' + attr[key][k] + ';"';
               }
             } else {
-              const thisAttr = key + '="' + attr[key] + '"';
+              var thisAttr = key + '="' + attr[key] + '"';
               attributes += ' ' + thisAttr;
             }
-          } 
+          }
         }
       }
-      
+
       return '<' + wrapper + klass + attributes + '>' + item + '</' + wrapper + '>';
     },
 
     /**
      * @description 子类使用this.super()继承父类
      */
-    inherit: function (SuperClass, SubClass) {
+    inherit: function inherit(SuperClass, SubClass) {
       SubClass.prototype = new SuperClass();
       SubClass.prototype.constructor = SubClass;
       SubClass.prototype.super = SuperClass;
     }
-    
-  });
 
-}(window, jQuery)
+  });
+}(window, jQuery);

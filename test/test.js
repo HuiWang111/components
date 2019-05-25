@@ -25,3 +25,13 @@ const handler = {
   }
 }
 
+const set = new Set();
+
+function test() {
+  const testinner = () => {
+    return arguments.callee(1);
+  }
+
+  testinner();
+}
+

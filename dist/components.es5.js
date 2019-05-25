@@ -1,37 +1,41 @@
+'use strict';
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 /* utils */
-const { 
-  isString,
-  isObject,
-  isEmptyObject,
-  isFunction,
-  isNumber,
-  isNumeric,
-  isDom,
-  toSelector,
-  appendStyle,
-  insertElementToBody,
-  domAfterLoad,
-  tagOf,
-  remove,
-  difference,
-  uniq,
-  ins,
-  makeArray,
-  keyOf,
-  deleteKeys,
-  dateFormater,
-  buildRandomString,
-  rSet
-} = Util;
+var _Util = Util,
+    isString = _Util.isString,
+    isObject = _Util.isObject,
+    isEmptyObject = _Util.isEmptyObject,
+    isFunction = _Util.isFunction,
+    isNumber = _Util.isNumber,
+    isNumeric = _Util.isNumeric,
+    isDom = _Util.isDom,
+    toSelector = _Util.toSelector,
+    appendStyle = _Util.appendStyle,
+    insertElementToBody = _Util.insertElementToBody,
+    domAfterLoad = _Util.domAfterLoad,
+    tagOf = _Util.tagOf,
+    remove = _Util.remove,
+    difference = _Util.difference,
+    uniq = _Util.uniq,
+    ins = _Util.ins,
+    makeArray = _Util.makeArray,
+    keyOf = _Util.keyOf,
+    deleteKeys = _Util.deleteKeys,
+    dateFormater = _Util.dateFormater,
+    buildRandomString = _Util.buildRandomString,
+    rSet = _Util.rSet;
 
 /* icons */
-const prevSvg = '<svg t="1556267832953" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="12283" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M340.01899999 512l416.35800001 416.332-36.198 36.224-452.557-452.557 452.557-452.557 36.198 36.224z" p-id="12284"></path></svg>';
 
-const nextSvg = '<svg t="1556267747828" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11819" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M683.981 511.9999999999999l-416.3580000000001-416.3319999999998 36.197999999999986-36.224000000000004 452.55700000000013 452.55699999999985-452.55699999999985 452.55700000000013-36.198000000000015-36.223999999999975z" p-id="11820"></path></svg>';
+var prevSvg = '<svg t="1556267832953" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="12283" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M340.01899999 512l416.35800001 416.332-36.198 36.224-452.557-452.557 452.557-452.557 36.198 36.224z" p-id="12284"></path></svg>';
 
-const prevSvgDisable = '<svg t="1556266968537" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11039" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M340.01899999 512l416.35800001 416.332-36.198 36.224-452.557-452.557 452.557-452.557 36.198 36.224z" p-id="11040" fill="#e6e6e6"></path></svg>';
+var nextSvg = '<svg t="1556267747828" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11819" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M683.981 511.9999999999999l-416.3580000000001-416.3319999999998 36.197999999999986-36.224000000000004 452.55700000000013 452.55699999999985-452.55699999999985 452.55700000000013-36.198000000000015-36.223999999999975z" p-id="11820"></path></svg>';
 
-const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11183" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M683.981 511.9999999999999l-416.3580000000001-416.3319999999998 36.197999999999986-36.224000000000004 452.55700000000013 452.55699999999985-452.55699999999985 452.55700000000013-36.198000000000015-36.223999999999975z" p-id="11184" fill="#e6e6e6"></path></svg>';
+var prevSvgDisable = '<svg t="1556266968537" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11039" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M340.01899999 512l416.35800001 416.332-36.198 36.224-452.557-452.557 452.557-452.557 36.198 36.224z" p-id="11040" fill="#e6e6e6"></path></svg>';
+
+var nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11183" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M683.981 511.9999999999999l-416.3580000000001-416.3319999999998 36.197999999999986-36.224000000000004 452.55700000000013 452.55699999999985-452.55699999999985 452.55700000000013-36.198000000000015-36.223999999999975z" p-id="11184" fill="#e6e6e6"></path></svg>';
 
 /* ========Components======== */
 
@@ -39,23 +43,23 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
 !function (win, $) {
 
   //className
-  const TAB_ITEM_CLASS = 'tabs-tab-item';
-  const TAB_ITEM_CLASS_ACTIVE = 'tabs-tab-item-active';
-  const TAB_ITEM_WRAP_CLASS = 'tabs-tab-wrapper';
-  const TAB_ITEM_INNER_CLASS = 'tabs-tab-inner';
+  var TAB_ITEM_CLASS = 'tabs-tab-item';
+  var TAB_ITEM_CLASS_ACTIVE = 'tabs-tab-item-active';
+  var TAB_ITEM_WRAP_CLASS = 'tabs-tab-wrapper';
+  var TAB_ITEM_INNER_CLASS = 'tabs-tab-inner';
 
-  const PANE_ITEM_CLASS = 'tabs-pane-item';
-  const PANE_ITEM_CLASS_ACTIVE = 'tabs-pane-item-active';
-  const PANE_ITEM_WRAP_CLASS = 'tabs-pane-wrapper';
+  var PANE_ITEM_CLASS = 'tabs-pane-item';
+  var PANE_ITEM_CLASS_ACTIVE = 'tabs-pane-item-active';
+  var PANE_ITEM_WRAP_CLASS = 'tabs-pane-wrapper';
 
-  const TAB_ARROW_CLASS = 'tabs-arrow';
-  const TAB_ARROW_CLASS_DISABLE = 'tabs-arrow-disable';
-  const TAB_ARROW_CLASS_INVISIBLE = 'tabs-arrow-invisible';
-  const TAB_PREVIOUS_ARROW_CLASS = 'tabs-prev-arrow';
-  const TAB_NEXT_ARROW_CLASS = 'tabs-next-arrow';
+  var TAB_ARROW_CLASS = 'tabs-arrow';
+  var TAB_ARROW_CLASS_DISABLE = 'tabs-arrow-disable';
+  var TAB_ARROW_CLASS_INVISIBLE = 'tabs-arrow-invisible';
+  var TAB_PREVIOUS_ARROW_CLASS = 'tabs-prev-arrow';
+  var TAB_NEXT_ARROW_CLASS = 'tabs-next-arrow';
 
-  const UNDERLINE_CLASS = 'tabs-underline';
-  
+  var UNDERLINE_CLASS = 'tabs-underline';
+
   /**
    *  @param options: {
    *    tabsText: Array,
@@ -69,8 +73,8 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
   function Tabs(container, options) {
 
     //default
-    const defaultOptions = {
-      tabsText: [],
+    var defaultOptions = {
+      tabsText: null,
       paneContainerSelector: null,
       themeColor: '#1890ff',
       useStyle: false,
@@ -78,11 +82,9 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
       renderPaneItem: null
     };
 
-    const opt = Object.assign({}, defaultOptions, options);
+    Object.assign(defaultOptions, options);
 
-    this.options = opt;
-
-    if (Array.isArray(opt.tabsText)) {
+    if (Array.isArray(defaultOptions.tabsText)) {
 
       var $container = $(container);
       $container.addClass('flex');
@@ -90,33 +92,34 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
         'overflow': 'hidden'
       });
       this.$container = $container;
-  
-      this.initStyle(opt);
-      
-      this.render(opt);
-  
+
+      this.initStyle(defaultOptions);
+
+      this.render(defaultOptions);
+
       var TABS = this;
-      domAfterLoad(toSelector(TAB_ITEM_WRAP_CLASS), function () { // 判断元素是否挂载完成
-  
+      domAfterLoad(toSelector(TAB_ITEM_WRAP_CLASS), function () {
+        // 判断元素是否挂载完成
+
         TABS.$wrap = $(toSelector(TAB_ITEM_WRAP_CLASS));
-        
+
         TABS.onChange = defaultOptions.onChange;
-  
+
         TABS.bindEvent();
-  
       });
     }
-
   };
 
   win.Tabs = Tabs;
 
   Tabs.prototype = {
 
-    initStyle: function (options) {
+    initStyle: function initStyle(options) {
 
       if (options.useStyle) {
-        appendStyle({".flex":{"display":"-webkit-box","display":"-moz-box","display":"-webkit-flex","display":"-moz-flex","display":"-ms-flexbox","display":"flex"},".flex-1":{"-webkit-box-flex":1,"-moz-box-flex":1,"-webkit-flex":1,"-ms-flex":1,"flex":1,},".flex-column":{"-moz-flex-direction":"column","-webkit-flex-direction":"column","-ms-flex-direction":"column","flex-direction":"column",},".tabs-tab-wrapper":{"overflow":"hidden","white-space":"nowrap"},".tabs-tab-wrapper .tabs-tab-inner":{"display":"inline-block","transition":"all .5s"},".tabs-tab-wrapper .tabs-tab-item":{"display":"inline-block","padding":"12px 16px","cursor":"pointer"},".tabs-tab-wrapper .tabs-underline":{"height":"2px","transition":"all .5s"},".tabs-arrow":{"width":"30px","position":"relative"},".tabs-arrow.tabs-arrow-invisible":{"display":"none"},".tabs-arrow svg":{"width":"15px","height":"15px","position":"absolute","left":"50%","top":"50%","transform":"translate(-50%, -50%)","cursor":"pointer"},".tabs-arrow.tabs-arrow-disable svg":{"cursor":"not-allowed"},".tabs-pane-wrapper":{"transition":"all .5s"},".tabs-pane-item":{"display":"inline-block","vertical-align":"top"}});
+        var _flex;
+
+        appendStyle({ ".flex": (_flex = { "display": "-webkit-box" }, _defineProperty(_flex, 'display', "-moz-box"), _defineProperty(_flex, 'display', "-webkit-flex"), _defineProperty(_flex, 'display', "-moz-flex"), _defineProperty(_flex, 'display', "-ms-flexbox"), _defineProperty(_flex, 'display', "flex"), _flex), ".flex-1": { "-webkit-box-flex": 1, "-moz-box-flex": 1, "-webkit-flex": 1, "-ms-flex": 1, "flex": 1 }, ".flex-column": { "-moz-flex-direction": "column", "-webkit-flex-direction": "column", "-ms-flex-direction": "column", "flex-direction": "column" }, ".tabs-tab-wrapper": { "overflow": "hidden", "white-space": "nowrap" }, ".tabs-tab-wrapper .tabs-tab-inner": { "display": "inline-block", "transition": "all .5s" }, ".tabs-tab-wrapper .tabs-tab-item": { "display": "inline-block", "padding": "12px 16px", "cursor": "pointer" }, ".tabs-tab-wrapper .tabs-underline": { "height": "2px", "transition": "all .5s" }, ".tabs-arrow": { "width": "30px", "position": "relative" }, ".tabs-arrow.tabs-arrow-invisible": { "display": "none" }, ".tabs-arrow svg": { "width": "15px", "height": "15px", "position": "absolute", "left": "50%", "top": "50%", "transform": "translate(-50%, -50%)", "cursor": "pointer" }, ".tabs-arrow.tabs-arrow-disable svg": { "cursor": "not-allowed" }, ".tabs-pane-wrapper": { "transition": "all .5s" }, ".tabs-pane-item": { "display": "inline-block", "vertical-align": "top" } });
       }
 
       var $paneContainer = $(options.paneContainerSelector);
@@ -140,19 +143,20 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
       });
     },
 
-    render: function (options) {
-      var tabs = '', panes = '';
+    render: function render(options) {
+      var tabs = '',
+          panes = '';
       var $container = this.$container;
       var $paneContainer = this.$paneContainer;
       var isIncludePane = this.isIncludePane;
 
       options.tabsText.forEach(function (tabText, index) {
         var klass = index === 0 ? TAB_ITEM_CLASS.appendClass(TAB_ITEM_CLASS_ACTIVE) : TAB_ITEM_CLASS;
-        
+
         //tab
         var tab = $.node('div', tabText, klass);
         tabs += tab;
-  
+
         //pane
         if (isIncludePane) {
           var paneClass = index === 0 ? PANE_ITEM_CLASS.appendClass(PANE_ITEM_CLASS_ACTIVE) : PANE_ITEM_CLASS;
@@ -161,20 +165,20 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
           panes += pane;
         }
       });
-      
-      var underline = $.node('div', '', UNDERLINE_CLASS, { style: {'background-color': options.themeColor} });
-  
+
+      var underline = $.node('div', '', UNDERLINE_CLASS, { style: { 'background-color': options.themeColor } });
+
       var tabsInner = $.node('div', tabs + underline, TAB_ITEM_INNER_CLASS);
-      var tabsWrap = $.node('div', tabsInner, TAB_ITEM_WRAP_CLASS);
-  
+      var tabsWrap = $.node('div', tabsInner, TAB_ITEM_WRAP_CLASS.appendClass('flex-1'));
+
       var prev = $.node('div', prevSvgDisable, TAB_PREVIOUS_ARROW_CLASS.appendClass(TAB_ARROW_CLASS).appendClass(TAB_ARROW_CLASS_DISABLE).appendClass(TAB_ARROW_CLASS_INVISIBLE));
       var next = $.node('div', nextSvg, TAB_NEXT_ARROW_CLASS.appendClass(TAB_ARROW_CLASS).appendClass(TAB_ARROW_CLASS_INVISIBLE));
-  
+
       $container.html(prev + tabsWrap + next);
       isIncludePane && $paneContainer.html($.node('div', panes, PANE_ITEM_WRAP_CLASS));
     },
 
-    bindEvent: function () {
+    bindEvent: function bindEvent() {
       var tabs = this;
       var $tabWrap = tabs.$wrap;
       var $tabItems = $tabWrap.find(toSelector(TAB_ITEM_CLASS));
@@ -193,13 +197,13 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
       if (isIncludePane) {
         var paneWidth = tabs.$paneContainer.width();
         var paneHeight = tabs.$paneContainer.height();
-  
+
         var $paneWrap = tabs.$paneContainer.find(toSelector(PANE_ITEM_WRAP_CLASS));
         var $panes = tabs.$paneContainer.find(toSelector(PANE_ITEM_CLASS));
-  
+
         $panes.width(paneWidth);
         $panes.height(paneHeight);
-        $paneWrap.width(paneWidth*($panes.length));
+        $paneWrap.width(paneWidth * $panes.length);
         $paneWrap.height(paneHeight);
       }
 
@@ -213,7 +217,8 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
         $arrow.removeClass(TAB_ARROW_CLASS_INVISIBLE);
 
         wrapWidth = $tabWrap.width(); //重新计算外包元素宽度
-        var prevDistance = 0, nextDistance = innerWidth - wrapWidth;
+        var prevDistance = 0,
+            nextDistance = innerWidth - wrapWidth;
         $arrow.on('click', function () {
           var $this = $(this);
 
@@ -232,13 +237,12 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
                 $this.addClass(TAB_ARROW_CLASS_DISABLE);
                 $this.html(prevSvgDisable);
               }
-              
+
               var $next = $this.nextAll(toSelector(TAB_NEXT_ARROW_CLASS));
               if ($next.hasClass(TAB_ARROW_CLASS_DISABLE)) {
                 $next.removeClass(TAB_ARROW_CLASS_DISABLE);
                 $next.html(nextSvg);
               }
-
             }
           } else if ($this.hasClass(TAB_NEXT_ARROW_CLASS)) {
             if (!$this.hasClass(TAB_ARROW_CLASS_DISABLE)) {
@@ -249,40 +253,39 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
                 var distance = nextDistance < wrapWidth ? nextDistance : wrapWidth;
                 prevDistance += distance;
                 nextDistance -= distance;
-                return translateXValue + (-distance);
+                return translateXValue + -distance;
               });
 
               if (nextDistance === 0 && !$this.hasClass(TAB_ARROW_CLASS_DISABLE)) {
                 $this.addClass(TAB_ARROW_CLASS_DISABLE);
                 $this.html(nextSvgDisable);
               }
-  
+
               var $prev = $this.prevAll(toSelector(TAB_PREVIOUS_ARROW_CLASS));
               if ($prev.hasClass(TAB_ARROW_CLASS_DISABLE)) {
                 $prev.removeClass(TAB_ARROW_CLASS_DISABLE);
                 $prev.html(prevSvg);
               }
-
             }
           }
         });
       }
 
       //click tab item
-      $tabItems.on('click', function() {
-        
-        if ( !$(this).hasClass(TAB_ITEM_CLASS_ACTIVE) ) {
+      $tabItems.on('click', function () {
+
+        if (!$(this).hasClass(TAB_ITEM_CLASS_ACTIVE)) {
 
           // change active
-          $(this).addClass(TAB_ITEM_CLASS_ACTIVE).siblings(toSelector(TAB_ITEM_CLASS_ACTIVE)).
-            removeClass(TAB_ITEM_CLASS_ACTIVE);
+          $(this).addClass(TAB_ITEM_CLASS_ACTIVE).siblings(toSelector(TAB_ITEM_CLASS_ACTIVE)).removeClass(TAB_ITEM_CLASS_ACTIVE);
 
           var index = Array.from($tabItems).indexOf(this);
 
           // move underline
           $underline.width(tabItemsWidthList[index]);
           $underline.translateX(function () {
-            var i, distance = 0;
+            var i,
+                distance = 0;
             for (i = 0; i < index; i++) {
               distance += tabItemsWidthList[i];
             }
@@ -291,19 +294,16 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
 
           // change pane
           if (isIncludePane) {
-            $paneWrap.translateX(-(paneWidth*index));
-            $panes.eq(index).addClass(PANE_ITEM_CLASS_ACTIVE).siblings(toSelector(PANE_ITEM_CLASS_ACTIVE)).
-              removeClass(PANE_ITEM_CLASS_ACTIVE);
+            $paneWrap.translateX(-(paneWidth * index));
+            $panes.eq(index).addClass(PANE_ITEM_CLASS_ACTIVE).siblings(toSelector(PANE_ITEM_CLASS_ACTIVE)).removeClass(PANE_ITEM_CLASS_ACTIVE);
           }
 
           isFunction(tabs.onChange) && tabs.onChange(index);
-
         }
       });
     }
 
-  }
-
+  };
 }(window, jQuery)
 
 /**
@@ -319,7 +319,7 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
   var PAGINATION_ITEM_CLASS_DISABLE = 'pagination-item-disable';
   var PAGINATION_ITEM_CLASS_PREV = 'pagination-item-previous';
   var PAGINATION_ITEM_CLASS_NEXT = 'pagination-item-next';
-  
+
   /**
    *  @param options: {
    *    total: Numer,
@@ -372,28 +372,27 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
           'color': themeColor
         }
       });
-  
+
       //useStyle
       if (defaultOptions.useStyle) {
-        appendStyle({"ul":{"list-style":"none","padding":0,"margin":0},".pagination-item, .pagination-item-previous,.pagination-item-next":{"display":"inline-block","width":"30px","height":"30px","line-height":"30px","text-align":"center","border-radius":"4px","cursor":"pointer","vertical-align":"top","box-sizing":"border-box"},".pagination-item-previous, .pagination-item-next":{"width":"auto","min-width":"30px"},".pagination-item.pagination-item-border":{"border":"solid #d9d9d9 1px"},".pagination-item + .pagination-item,.pagination-item-next":{"margin-left":"8px"},".pagination-item-previous":{"margin-right":"8px"},".pagination-item > a, .pagination-item-previous > a, .pagination-item-next > a":{"display":"inline-block","width":"100%","height":"100%","color":"rgba(0, 0, 0, 0.65)","font-weight":100,"vertical-align":"top"},".pagination-item-previous > a > svg, .pagination-item-next > a > svg":{"width":"12px","height":"12px"},".pagination-item-previous.pagination-item-disable > a,.pagination-item-next.pagination-item-disable > a":{"color":"#d9d9d9","cursor":"not-allowed"}});
+        appendStyle({ "ul": { "list-style": "none", "padding": 0, "margin": 0 }, ".pagination-item, .pagination-item-previous,.pagination-item-next": { "display": "inline-block", "width": "30px", "height": "30px", "line-height": "30px", "text-align": "center", "border-radius": "4px", "cursor": "pointer", "vertical-align": "top", "box-sizing": "border-box" }, ".pagination-item-previous, .pagination-item-next": { "width": "auto", "min-width": "30px" }, ".pagination-item.pagination-item-border": { "border": "solid #d9d9d9 1px" }, ".pagination-item + .pagination-item,.pagination-item-next": { "margin-left": "8px" }, ".pagination-item-previous": { "margin-right": "8px" }, ".pagination-item > a, .pagination-item-previous > a, .pagination-item-next > a": { "display": "inline-block", "width": "100%", "height": "100%", "color": "rgba(0, 0, 0, 0.65)", "font-weight": 100, "vertical-align": "top" }, ".pagination-item-previous > a > svg, .pagination-item-next > a > svg": { "width": "12px", "height": "12px" }, ".pagination-item-previous.pagination-item-disable > a,.pagination-item-next.pagination-item-disable > a": { "color": "#d9d9d9", "cursor": "not-allowed" } });
       }
-      
+
       var $container = $(container);
       if ($container[0].tagName.toLowerCase() !== 'ul') throw new Error('`container` must be a ul element');
       this.$container = $container;
-  
+
       pageSize = parseInt(defaultOptions.pageSize);
       current = parseInt(defaultOptions.current);
-  
-      var totalPage = Math.ceil(total/pageSize);
+
+      var totalPage = Math.ceil(total / pageSize);
       this.totalPage = totalPage;
-  
+
       var itemRender = defaultOptions.itemRender;
       this.createDom(defaultOptions, current, totalPage, itemRender);
-      
+
       this.onChange = defaultOptions.onChange;
       this.bindEvent();
-
     }
   }
 
@@ -401,11 +400,12 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
 
   Pagination.prototype = {
 
-    createDom: function (options, current, totalPage, itemRender) {
+    createDom: function createDom(options, current, totalPage, itemRender) {
       var $container = this.$container;
 
       //pagination
-      var i, ulInner = '';
+      var i,
+          ulInner = '';
       for (i = 1; i <= totalPage; i++) {
         var klass = i === current ? PAGINATION_ITEM_CLASS.appendClass(PAGINATION_ITEM_CLASS_ACTIVE) : PAGINATION_ITEM_CLASS;
         klass = options.border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
@@ -426,8 +426,7 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
               klass = klass.appendClass(PAGINATION_ITEM_CLASS + '-' + i);
               pagination = $.node('li', element, klass);
             } else {
-
-            }
+             }
           }
         } 
         */
@@ -437,7 +436,7 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
 
       //previous
       var Pagination = this;
-      var previous = function () {
+      var previous = function previous() {
         var klass = current === 1 ? PAGINATION_ITEM_CLASS_DISABLE : '';
         klass = options.border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
 
@@ -449,11 +448,11 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
         Pagination.prevOriginEl = originalElement;
 
         return $.node('li', element, klass.appendClass(PAGINATION_ITEM_CLASS_PREV));
-      }
+      };
       var prevItem = previous();
 
       //next
-      var next = function () {
+      var next = function next() {
         var klass = current === totalPage ? PAGINATION_ITEM_CLASS_DISABLE : '';
         klass = options.border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
 
@@ -465,14 +464,13 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
         Pagination.nextOriginEl = originalElement;
 
         return $.node('li', element, klass.appendClass(PAGINATION_ITEM_CLASS_NEXT));
-      }
+      };
       var nextItem = next();
 
       $container.html(prevItem + ulInner + nextItem);
-
     },
 
-    bindEvent: function () {
+    bindEvent: function bindEvent() {
 
       var Pagination = this;
       var $container = Pagination.$container;
@@ -482,7 +480,6 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
       var $next = $container.find(toSelector(PAGINATION_ITEM_CLASS_NEXT));
       var $prev = $container.find(toSelector(PAGINATION_ITEM_CLASS_PREV));
       var $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
-      
 
       //click previous button
       $prev.on('click', function () {
@@ -495,13 +492,13 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
 
           current = current - 1;
 
-          if ( (current !== totalPage) && ($next.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
-            (Pagination.nextEl === Pagination.nextOriginEl) && $next.children('a').html(nextSvg);
+          if (current !== totalPage && $next.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
+            Pagination.nextEl === Pagination.nextOriginEl && $next.children('a').html(nextSvg);
             $next.removeClass(PAGINATION_ITEM_CLASS_DISABLE);
           }
 
-          if ( (current === 1) && (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
-            (Pagination.prevEl === Pagination.prevOriginEl) && $this.children('a').html(prevSvgDisable);
+          if (current === 1 && !$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
+            Pagination.prevEl === Pagination.prevOriginEl && $this.children('a').html(prevSvgDisable);
             $this.addClass(PAGINATION_ITEM_CLASS_DISABLE);
           }
 
@@ -520,13 +517,13 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
 
           current = current + 1;
 
-          if ( (current !== 1) && ($prev.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
-            (Pagination.prevEl === Pagination.prevOriginEl) && $prev.children('a').html(prevSvg);
+          if (current !== 1 && $prev.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
+            Pagination.prevEl === Pagination.prevOriginEl && $prev.children('a').html(prevSvg);
             $prev.removeClass(PAGINATION_ITEM_CLASS_DISABLE);
           }
 
-          if ( (current === totalPage) && (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
-            (Pagination.nextEl === Pagination.nextOriginEl) && $this.children('a').html(nextSvgDisable);
+          if (current === totalPage && !$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
+            Pagination.nextEl === Pagination.nextOriginEl && $this.children('a').html(nextSvgDisable);
             $this.addClass(PAGINATION_ITEM_CLASS_DISABLE);
           }
 
@@ -538,43 +535,40 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
       $pagination.on('click', function () {
         var $this = $(this);
         if (!$this.hasClass(PAGINATION_ITEM_CLASS_ACTIVE)) {
-          $this.addClass(PAGINATION_ITEM_CLASS_ACTIVE)
-            .siblings(toSelector(PAGINATION_ITEM_CLASS_ACTIVE)).removeClass(PAGINATION_ITEM_CLASS_ACTIVE);
+          $this.addClass(PAGINATION_ITEM_CLASS_ACTIVE).siblings(toSelector(PAGINATION_ITEM_CLASS_ACTIVE)).removeClass(PAGINATION_ITEM_CLASS_ACTIVE);
 
           var current = parseInt($this.children('a').text());
 
           if ($prev.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
             if (current !== 1) {
               $prev.removeClass(PAGINATION_ITEM_CLASS_DISABLE);
-              (Pagination.prevEl === Pagination.prevOriginEl) && $prev.children('a').html(prevSvg);
+              Pagination.prevEl === Pagination.prevOriginEl && $prev.children('a').html(prevSvg);
             }
           } else {
             if (current === 1) {
               $prev.addClass(PAGINATION_ITEM_CLASS_DISABLE);
-              (Pagination.prevEl === Pagination.prevOriginEl) && $prev.children('a').html(prevSvgDisable);
+              Pagination.prevEl === Pagination.prevOriginEl && $prev.children('a').html(prevSvgDisable);
             }
           }
 
           if ($next.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
             if (current !== totalPage) {
               $next.removeClass(PAGINATION_ITEM_CLASS_DISABLE);
-              (Pagination.nextEl === Pagination.nextOriginEl) && $next.children('a').html(nextSvg);
+              Pagination.nextEl === Pagination.nextOriginEl && $next.children('a').html(nextSvg);
             }
           } else {
             if (current === totalPage) {
               $next.addClass(PAGINATION_ITEM_CLASS_DISABLE);
-              (Pagination.nextEl === Pagination.nextOriginEl) && $next.children('a').html(nextSvgDisable);
+              Pagination.nextEl === Pagination.nextOriginEl && $next.children('a').html(nextSvgDisable);
             }
           }
 
           isFunction(onChange) && onChange(current);
         }
       });
-
     }
 
   };
-
 }(window, jQuery)
 
 /**
@@ -592,14 +586,14 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
     FirstMessagePosTop: 16, //第一个message元素的top值
     GapOfMessage: 10 //多个message同时出现时，message之间的间隙
   };
-  
+
   /**
    *  @param options: {
    *    FirstMessagePosTop: Number,
    *    GapOfMessage: Number
    *  }
    */
-  var Message = function(type) {
+  var Message = function Message(type) {
 
     this.GapOfMessage = defaultOptions.GapOfMessage;
     this.FirstMessagePosTop = defaultOptions.FirstMessagePosTop;
@@ -613,27 +607,27 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
     var text = $.node('span', '', TEXTCLASS.appendClass('message_' + type + '_text_box'));
     var container = $.node('div', icon + text, CONTAINERCLASS.appendClass(RANDOM_CLASS).appendClass('message_' + type + '_container'));
     insertElementToBody($(container));
-    
+
     var MESSAGE = this;
     domAfterLoad(toSelector(RANDOM_CLASS), function () {
       MESSAGE.$el = $(toSelector(RANDOM_CLASS));
       MESSAGE.$text = MESSAGE.$el.find(toSelector(TEXTCLASS));
     });
-    
   };
 
   Message.prototype = {
 
-    show: function(content, duration, onClose) {
+    show: function show(content, duration, onClose) {
 
       var $el = this.$el;
       var $text = this.$text;
-      
+
       $el[0].style = "";
 
       var time;
-      if (isFunction(duration)) { // 当第二个参数为函数时，将函数赋值给onClose, 显示时间使用默认
-        onClose = duration; 
+      if (isFunction(duration)) {
+        // 当第二个参数为函数时，将函数赋值给onClose, 显示时间使用默认
+        onClose = duration;
         time = 3;
       } else {
         duration = parseFloat(duration);
@@ -652,18 +646,16 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
 
         var index = messageList.indexOf(message);
         $el.css({
-          'top': FirstMessagePosTop + index*elHeight + index*GapOfMessage + 'px' // 计算当前实例top值
+          'top': FirstMessagePosTop + index * elHeight + index * GapOfMessage + 'px' // 计算当前实例top值
         });
 
         setTimeout(function () {
           message.hide(onClose);
         }, time * 1000);
-
       }, 0);
-
     },
 
-    hide: function (onClose) {
+    hide: function hide(onClose) {
 
       var $el = this.$el;
       var $text = this.$text;
@@ -671,13 +663,12 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
       var index = messageList.indexOf(this);
       messageList.splice(index, 1);
 
-      ($el[0].style.top !== '') && ($el[0].style.top = '');
+      $el[0].style.top !== '' && ($el[0].style.top = '');
       $el.removeClass('comedown');
       isFunction(onClose) && onClose();
       setTimeout(function () {
         $text.text('');
       }, 1000);
-
     }
 
   };
@@ -694,7 +685,7 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
     var hiddenWarning = warningList.filter(function (instance) {
       return !instance.$el.hasClass('comedown');
     });
-    
+
     //有隐藏的提示框就直接用该实例，否则创建新实例
     if (hiddenWarning.length > 0) {
       messageList.push(hiddenWarning[0]);
@@ -705,7 +696,6 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
       warning.show(content, duration, onClose);
       warningList.push(warning);
     }
-
   };
 
   var successList = [];
@@ -724,12 +714,11 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
       success.show(content, duration, onClose);
       successList.push(success);
     }
-
   };
 
   var errorList = [];
   message.error = function (content, duration, onClose) {
-    
+
     var hiddenError = errorList.filter(function (instance) {
       return !instance.$el.hasClass('comedown');
     });
@@ -743,7 +732,6 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
       error.show(content, duration, onClose);
       errorList.push(error);
     }
-
   };
 
   var infoList = [];
@@ -762,18 +750,16 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
       info.show(content, duration, onClose);
       infoList.push(info);
     }
-
   };
 
   win.message = message;
-
 }(window, jQuery)
 
 /**
  * Gallery
  */
-;!function (win, $, Swiper) {  
-  
+;!function (win, $, Swiper) {
+
   // tools
   function isImgEl(el) {
     return tagOf(el) === 'img';
@@ -787,7 +773,7 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
   var GALLERY_WRAPPER_CLASS = 'gallery-wrapper';
   var GALLERY_CONTAINER_CLASS = 'gallery-contaier';
   var GALLERY_CONTAINER_CLASS_HIDDEN = 'gallery-contaier-invisible';
-  
+
   /**
    *  @param options: {
    *    navgation: true | false, // 是否需要导航箭头
@@ -814,10 +800,10 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
 
     Object.assign(defaultOptions, options);
 
-    if ( (defaultOptions.width === '100%') && defaultOptions.navgation ) defaultOptions.navgation = false; // 宽度100%时不使用导航箭头
+    if (defaultOptions.width === '100%' && defaultOptions.navgation) defaultOptions.navgation = false; // 宽度100%时不使用导航箭头
 
     if (defaultOptions.useStyle) {
-      appendStyle({"html, body":{"height":"100%"},".gallery-contaier":{"width":"100%","height":"100%","position":"fixed","left":0,"top":0,},".gallery-contaier.gallery-contaier-invisible":{"display":"none"},".gallery-contaier .gallery-wrapper":{"position":"absolute","left":"50%","top":"50%","transform":"translate(-50%, -50%)","z-index":1},".gallery-contaier .gallery-wrapper .gallery-swiper-container":{"width":"100%","height":"100%","margin":"0 auto"},".gallery-contaier .gallery-swiper-container .swiper-slide":{"position":"relative"},".gallery-contaier .gallery-swiper-container .swiper-slide img":{"width":"100%","position":"absolute","left":"50%","top":"50%","transform":"translate(-50%, -50%)"},".swiper-pagination-bullet-active":{"background-color":"#fff"},".swiper-button-next":{"right":0},".swiper-button-prev":{"left":0}});
+      appendStyle({ "html, body": { "height": "100%" }, ".gallery-contaier": { "width": "100%", "height": "100%", "position": "fixed", "left": 0, "top": 0 }, ".gallery-contaier.gallery-contaier-invisible": { "display": "none" }, ".gallery-contaier .gallery-wrapper": { "position": "absolute", "left": "50%", "top": "50%", "transform": "translate(-50%, -50%)", "z-index": 1 }, ".gallery-contaier .gallery-wrapper .gallery-swiper-container": { "width": "100%", "height": "100%", "margin": "0 auto" }, ".gallery-contaier .gallery-swiper-container .swiper-slide": { "position": "relative" }, ".gallery-contaier .gallery-swiper-container .swiper-slide img": { "width": "100%", "position": "absolute", "left": "50%", "top": "50%", "transform": "translate(-50%, -50%)" }, ".swiper-pagination-bullet-active": { "background-color": "#fff" }, ".swiper-button-next": { "right": 0 }, ".swiper-button-prev": { "left": 0 } });
     }
 
     // $source = $(selector);
@@ -849,26 +835,26 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
     this.swiperOptionsHandler(swiperOptions, pagination, navgation);
 
     var GALLERY = this;
-    domAfterLoad(toSelector(RANDOM_CLASS), function () { // 判断元素是否挂载完成
+    domAfterLoad(toSelector(RANDOM_CLASS), function () {
+      // 判断元素是否挂载完成
       // gallery实例容器
       GALLERY.$container = $(toSelector(RANDOM_CLASS));
 
       // 初始化样式
-      var width = defaultOptions.width, height = defaultOptions.height;
+      var width = defaultOptions.width,
+          height = defaultOptions.height;
       var bgColor = defaultOptions.bgColor;
       GALLERY.setStyle(maxZIndex, width, height, bgColor, navgation);
 
       GALLERY.bindEvent(swiperOptions);
-
     });
-
   }
 
   win.Gallery = Gallery;
 
   Gallery.prototype = {
 
-    createSrcList: function () {
+    createSrcList: function createSrcList() {
 
       var eleList = Array.from(this.$source);
 
@@ -876,55 +862,54 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
       eleList = eleList.filter(function (item) {
         var isImg = isImgEl(item);
         var $img = !isImg ? $(item).find('img') : null;
-        return (isImg && item.src) || ($img && $img.length > 0 && $img[0].src);
+        return isImg && item.src || $img && $img.length > 0 && $img[0].src;
       });
 
       //生成img元素的src列表
-      var srcList  = eleList.map(function (item) {
+      var srcList = eleList.map(function (item) {
         return item.src || $(item).find('img')[0].src;
       });
-  
+
       return srcList;
     },
 
-    createDom: function (srcList, pagination, navgation) {
+    createDom: function createDom(srcList, pagination, navgation) {
 
       var RANDOM_CLASS = this.randomClassName;
-      
+
       var slideList = srcList.map(function (src) {
         return $.node('div', '<img src="' + src + '" />', 'swiper-slide');
       });
-  
+
       var swiperWrapper = $.node('div', slideList, 'swiper-wrapper');
-  
+
       if (pagination) {
         swiperWrapper += $.node('div', '', GALLERY_PAGINATION_CLASS.appendClass('swiper-pagination'));
       }
-  
+
       var swiperContainer = $.node('div', swiperWrapper, GALLERY_SWIPER_CONTAINER_CLASS.appendClass('swiper-container'));
-  
+
       if (navgation) {
         swiperContainer += $.node('div', '', GALLERY_BUTTON_PREV_CLASS.appendClass('swiper-button-prev')) + $.node('div', '', GALLERY_BUTTON_NEXT_CLASS.appendClass('swiper-button-next'));
       }
-  
+
       var galleryWrappper = $.node('div', swiperContainer, GALLERY_WRAPPER_CLASS);
-  
+
       var galleryContainer = $.node('section', galleryWrappper, GALLERY_CONTAINER_CLASS.appendClass(GALLERY_CONTAINER_CLASS_HIDDEN).appendClass(RANDOM_CLASS));
-  
+
       // 将gallery容器添加到body
       var $gallery = $(galleryContainer);
       insertElementToBody($gallery);
-  
     },
 
-    swiperOptionsHandler: function (swiperOptions, pagination, navgation) {
+    swiperOptionsHandler: function swiperOptionsHandler(swiperOptions, pagination, navgation) {
 
       var RANDOM_CLASS = this.randomClassName;
-  
+
       if (swiperOptions.pagination) delete swiperOptions.pagination;
       if (swiperOptions.nextButton) delete swiperOptions.nextButton;
       if (swiperOptions.prevButton) delete swiperOptions.prevButton;
-  
+
       if (pagination) swiperOptions.pagination = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_PAGINATION_CLASS));
       if (navgation) {
         swiperOptions.nextButton = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_BUTTON_NEXT_CLASS));
@@ -932,53 +917,51 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
       }
       swiperOptions.observer = true;
       swiperOptions.observeParents = true;
-  
     },
 
-    setStyle: function (maxZIndex, width, height, bgColor, navgation) {
+    setStyle: function setStyle(maxZIndex, width, height, bgColor, navgation) {
 
       var $container = this.$container;
       // 设置gallery元素的z-index为当前页面z-index最大值+1
       $container.css({
         'z-index': maxZIndex === null ? 'auto' : maxZIndex + 1
       });
-  
+
       // 设置swiper容器宽高
       var containerWidth = $container.width();
       var percentReg = /%$/;
-      var widthValue = percentReg.test(width) ? containerWidth*(parseFloat(width)/100) : parseFloat(width);
-      
+      var widthValue = percentReg.test(width) ? containerWidth * (parseFloat(width) / 100) : parseFloat(width);
+
       if (widthValue > containerWidth) {
         width = '100%';
         widthValue = containerWidth;
       }
       var diff = containerWidth - widthValue;
-      var wider = diff > 0 ? (diff > 100 ? 100 : wider) : 0;
-      
+      var wider = diff > 0 ? diff > 100 ? 100 : wider : 0;
+
       width = isNumber(width) ? width + 'px' : width;
-      height =  isNumber(height) ? height + 'px' : height;
-  
+      height = isNumber(height) ? height + 'px' : height;
+
       var $galleryWrapper = $container.find(toSelector(GALLERY_WRAPPER_CLASS));
       $galleryWrapper.css({
-        'width': navgation ? (percentReg.test(width) ? (widthValue + wider) + 'px' : (parseFloat(width) + wider) + 'px') : width,
+        'width': navgation ? percentReg.test(width) ? widthValue + wider + 'px' : parseFloat(width) + wider + 'px' : width,
         'height': height
       });
       $galleryWrapper.find(toSelector(GALLERY_SWIPER_CONTAINER_CLASS)).css({
         'width': width,
         'height': height
       });
-  
+
       // 设置gallery容器宽高，默认透明背景
       $container.css({
         'background-color': bgColor
       });
-  
     },
 
-    bindEvent: function (swiperOptions) {
+    bindEvent: function bindEvent(swiperOptions) {
       var $container = this.$container;
       var RANDOM_CLASS = this.randomClassName;
-  
+
       // 点击初始化gallery swiper
       var GALLERY = this;
       GALLERY.$swiper = null;
@@ -986,30 +969,28 @@ const nextSvgDisable = '<svg t="1556267327201" class="icon" style="" viewBox="0 
       $source.on('click', function () {
         var target = this;
         var index = Array.from($source).indexOf(target);
-  
+
         if (!GALLERY.$swiper) {
-          (index > 0) && (swiperOptions.initialSlide = index);
+          index > 0 && (swiperOptions.initialSlide = index);
           GALLERY.$swiper = new Swiper(toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_SWIPER_CONTAINER_CLASS)), swiperOptions);
         } else {
           GALLERY.$swiper.slideTo(index, 0, false);
         }
-  
+
         $container.removeClass(GALLERY_CONTAINER_CLASS_HIDDEN);
       });
-  
+
       // 隐藏gallery容器
-      var close = function () {
+      var close = function close() {
         $container.addClass(GALLERY_CONTAINER_CLASS_HIDDEN);
-      }
+      };
       $container.on('click', close);
-  
-      var stopPropagation = function (e) {
+
+      var stopPropagation = function stopPropagation(e) {
         e.stopPropagation();
-      }
+      };
       $container.find(toSelector(GALLERY_WRAPPER_CLASS)).on('click', stopPropagation);
-  
     }
 
   };
-
-}(window, jQuery, window.Swiper ? window.Swiper : {})
+}(window, jQuery, Swiper);
