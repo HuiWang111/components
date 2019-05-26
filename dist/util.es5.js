@@ -2,6 +2,8 @@
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 !function (win, $) {
 
   var emptyArray = [];
@@ -189,62 +191,68 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   Object.assign(Component.prototype, {
     constructor: Component,
     init: function init() {
-      this.render();
-      this.setStyle();
-      this.mount();
+      var doms = this.render();
+      this.componentWillMount();
+      this.mount(doms);
     },
-    render: function render() {},
-    setStyle: function setStyle() {},
+    render: function render() {
+      return [];
+    },
+    style: function style() {},
 
     /**
      * @description 将组件元素挂载到dom
-     * @param { Array } array 需要被挂载的元素列表
+     * @param { Array } doms 需要挂载的dom列表
      * [{
-     *    html: String, //需要挂载的dom字符串
-     *    selector: String, //需要挂载最外层容器的选择器
-     *    container: Node | String, //挂载目标容器
-     *    condition: true | false //挂载条件
+     *   html: String, // 需要被挂载的dom字符串
+     *   container: DOMElement, // 挂载的目标容器
+     *   condition: Boolen, // 挂载的条件
      * }]
      */
-    mount: function mount(array) {
+    mount: function mount(doms) {
       var _this = this;
 
-      if (!array) return;
-      if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
+      if (!doms || !isLength(doms.length) || doms.length < 1) return;
 
-      this.componentWillMount();
+      doms.forEach(function (dom) {
+        var condition = dom.condition,
+            container = dom.container,
+            html = dom.html;
+        // condition默认为true
 
-      for (var i = 0, len = array.length; i < len; i++) {
-        var _array$i = array[i],
-            container = _array$i.container,
-            html = _array$i.html,
-            condition = _array$i.condition;
-
-
-        if (!(container === 'body' || isDom(container))) {
-          throw new Error(container + ' is not a DOMElement');
-        }
-
+        typeof condition === 'undefined' && (condition = true);
+        !(container instanceof jQuery) && (container = $(container));
         if (condition) {
-          if (container === 'body') {
-            insertElementToBody($(html));
-          } else {
-            $(container).html(html);
-          }
+          container.html(html);
         }
+      });
+
+      var last = lastOf(doms);
+      var classIndex = last.html.indexOf('class');
+      var selector = '';
+      if (classIndex > -1) {
+        selector = getSelector(last.html);
+      } else {
+        selector = getSelector(last.html, 'id');
       }
 
-      /* 判断挂载完成后执行绑定事件 */
-      var last = lastOf(array);
-      domAfterLoad(last.selector, function () {
+      domAfterLoad(selector, function () {
         _this.componentDidMount();
+        _this.style();
         _this.bindEvents();
+        _this.destroy();
       });
     },
     componentWillMount: function componentWillMount() {},
     componentDidMount: function componentDidMount() {},
-    bindEvents: function bindEvents() {}
+    bindEvents: function bindEvents() {},
+
+    /**
+     * @description 删除一些无用的实例属性
+     */
+    destroy: function destroy() {}
   });
+
   win.Component = Component;
 
   // utils function
@@ -309,6 +317,42 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   }
 
   /**
+   * @description 从dom字符串中获取className或id
+   */
+  function getSelector(string) {
+    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'class';
+
+    var selector = '';
+
+    if (type !== 'class' && type !== 'id') return selector;
+    if (!isString(string)) throw new Error(string + ' is not a string');
+    if (string.length === 0) return selector;
+
+    if (type === 'class') {
+      var _classIndex = string.indexOf('class');
+      if (_classIndex < 0) return selector;
+
+      var start = string.indexOf('"', _classIndex + 5);
+      var end = string.indexOf('"', start + 1);
+      var className = string.substring(start + 1, end);
+      var klasses = className.split(' ');
+      klasses.forEach(function (klass) {
+        selector += toSelector(klass);
+      });
+    } else {
+      var idIndex = string.indexOf('id');
+      if (idIndex < 0) return selector;
+
+      var _start = string.indexOf('"', classIndex + 2);
+      var _end = string.indexOf('"', _start + 1);
+      var ID = string.substring(_start + 1, _end);
+      selector = toSelector(ID, 'id');
+    }
+
+    return selector;
+  }
+
+  /**
    * @description 将样式内容添加到<style>标签
    * @param { Object } object
    */
@@ -329,7 +373,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       style = style === '' ? key + ' { ' + styl + ' }' : style + '\n' + (key + ' { ' + styl + ' }');
     }
 
-    var oldStyleTag = document.querySelector('style');
+    var oldStyleTag = document.querySelector('head').querySelector('style');
     if (oldStyleTag) {
       var oldStyle = oldStyleTag.innerHTML;
       var newStyle = oldStyle === '' ? style : oldStyle + '\n' + style;
@@ -430,6 +474,81 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   }
 
   /**
+   * @description 获取某个月份的数据
+   * @param { Number | String } year 年份
+   * @param { Number | String } month 月份
+   */
+  function getMonthData(year, month) {
+    year = toNumber(year);
+    month = toNumber(month);
+
+    var today = new Date();
+    if (year === false || month === false) {
+      year === false && (year = today.getFullYear());
+      month === false && (month = today.getMonth() + 1);
+    }
+
+    if (year < 1970 || year > today.getFullYear()) return;
+    if (month < 1 || month > 12) return;
+
+    var days = [];
+
+    /* 该月第一天 */
+    var firstDay = new Date(year, month - 1, 1);
+    var weekOfFirstDay = firstDay.getDay();
+    // if (weekOfFirstDay === 0) weekOfFirstDay = 7;
+
+    /* 该月最后一天 */
+    var lastDay = new Date(year, month, 0);
+    var dateOfLastDay = lastDay.getDate();
+
+    /* 上个月的最后一天 */
+    var lastDayOfLastMonth = new Date(year, month - 1, 0);
+    var lastDateOfLastMonth = lastDayOfLastMonth.getDate(); // 上个月最后一天的日期
+    /* 本月日历上包含的上个月的日期个数(日历上显示的灰色部分) */
+    var previousMonthDaysCount = weekOfFirstDay;
+
+    var nextMonthDaysCount = 42 - (previousMonthDaysCount + dateOfLastDay);
+    /* 如果显示的下月日期数量大于6个，显示总数设为35，否则设为42 */
+    var total = nextMonthDaysCount > 6 ? 35 : 42;
+
+    for (var i = 0; i < total; i++) {
+      var date = i + 1 - previousMonthDaysCount;
+      var showDate = date,
+          thisYear = year,
+          thisMonth = month;
+      if (date < 1) {
+        showDate = lastDateOfLastMonth + date;
+        thisMonth--;
+      } else if (date > dateOfLastDay) {
+        showDate = date - dateOfLastDay;
+        thisMonth++;
+      }
+
+      if (thisMonth === 0) {
+        thisMonth = 12;
+        thisYear--;
+      } else if (thisMonth === 13) {
+        thisMonth = 1;
+        thisYear++;
+      }
+
+      /* 上一个月或下一个月的数据时isForbid为true */
+      var isForbid = date < 1 || date > dateOfLastDay ? true : false;
+
+      days.push({
+        date: date,
+        year: thisYear,
+        month: thisMonth,
+        showDate: showDate,
+        dateStr: dateFormater(new Date(thisYear, thisMonth - 1, showDate).getTime(), 'yyyy-mm-dd'),
+        forbid: isForbid ? 1 : 0
+      });
+    }
+    return days;
+  }
+
+  /**
    * @description 创建一个规定长度的随机字符串，默认长度随机
    * @param { Number } length
    * @returns 随机字符串
@@ -441,15 +560,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       for (var i = 65; i < 91; i++) {
         letters.push(String.fromCharCode(i));
       }
-      for (var _i = 97; _i < 123; _i++) {
-        letters.push(String.fromCharCode(_i));
+      for (var j = 97; j < 123; j++) {
+        letters.push(String.fromCharCode(j));
       }
 
       var result = letters[Math.floor(Math.random() * letters.length)];
       if (isNumeric(size)) {
         size = parseInt(size);
         if (size > 1) {
-          for (var _i2 = 1; _i2 < size; _i2++) {
+          for (var _i = 1; _i < size; _i++) {
             result += letters[Math.floor(Math.random() * letters.length)];
           }
         }
@@ -480,12 +599,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
    * @param { Function } loadedCallback 挂载完成回调
    * @param { Number } maxTimes 最大尝试检测次数，默认500
    */
-  function domAfterLoad(selector, loadedCallback) {
-    var _arguments = arguments;
+  var domAfterLoad = function fn(selector, loadedCallback) {
     var maxTimes = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 500;
     var times = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
 
     if (!isNumber(maxTimes)) return;
+    if (!isString(selector)) {
+      throw new Error('`' + selector + '` is not a string');
+    }
+    if (selector.length < 1) return;
 
     var timer = null;
     var dom = document.querySelectorAll(selector);
@@ -495,16 +617,16 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     } else {
       if (times >= maxTimes) {
         //超过最大尝试检测次数
-        isFunction(loadedCallback) && console.warn('`' + selector + '`未加载到dom，回调未执行');
+        isFunction(loadedCallback) && console.warn('`' + selector + '`未挂载到dom，回调未执行');
         return;
       }
       times++;
 
       timer = setTimeout(function () {
-        _arguments.callee(selector, loadedCallback, maxTimes, times);
+        fn(selector, loadedCallback, maxTimes, times);
       }, 0);
     }
-  }
+  };
 
   /**
    * @description 通过value值在对象中查找key
@@ -574,7 +696,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
    * @param { Node | NodeList | jQuery } el
    */
   function tagOf(el) {
-    if (typeof el === 'undefined') {
+    if (!isLength(el.length)) {
       return el.tagName.toLowerCase();
     }
     return el[0].tagName.toLowerCase();
@@ -587,14 +709,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   function uniq(array) {
     if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
 
-    var result = [];
-    array.forEach(function (item) {
-      if (!result.includes(item)) {
-        result.push(item);
-      }
-    });
-
-    return result;
+    return array.reduce(function (arr, item) {
+      return arr.includes(item) ? arr : [].concat(_toConsumableArray(arr), [item]);
+    }, []);
   }
 
   /**
@@ -603,8 +720,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
    * @param { Array } list
    */
   function remove(array, list) {
-    if (!Array.isArray(array)) throw new Error(array + ' is not a function');
-    if (!Array.isArray(list)) throw new Error(list + ' is not a function');
+    if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
+    if (!Array.isArray(list)) throw new Error(list + ' is not a Array');
 
     var result = [];
     uniq(array).forEach(function (item) {
@@ -618,8 +735,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
    * @description 两数组的交集
    */
   function ins(array, list) {
-    if (!Array.isArray(array)) throw new Error(array + ' is not a function');
-    if (!Array.isArray(list)) throw new Error(list + ' is not a function');
+    if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
+    if (!Array.isArray(list)) throw new Error(list + ' is not a Array');
 
     var result = [];
     array.forEach(function (item) {
@@ -627,6 +744,32 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     });
 
     return uniq(result);
+  }
+
+  function sum(array) {
+    var sum = 0;
+    if (!array || !isLength(array.length)) return sum;
+
+    return array.reduce(function (sum, current) {
+      return sum + current;
+    });
+  }
+
+  function sumBy(array) {
+    if (!array || !isLength(array.length)) return sum;
+
+    var iteratee = arguments[1];
+
+    if (isString(iteratee)) {
+      return array.reduce(function (sum, item) {
+        return sum + (iteratee in item ? item[iteratee] : 0);
+      }, 0);
+    } else if (isFunction(iteratee)) {
+      return array.reduce(function (sum, item, index, self) {
+        return sum + iteratee(item, index, self);
+      }, 0);
+    }
+    return 0;
   }
 
   /**
@@ -750,6 +893,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     insertElementToBody: insertElementToBody,
     domAfterLoad: domAfterLoad,
     tagOf: tagOf,
+    getSelector: getSelector,
 
     // 数组方法
     uniq: uniq,
@@ -757,6 +901,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     ins: ins,
     difference: difference,
     makeArray: makeArray,
+    sum: sum,
+    sumBy: sumBy,
 
     // 对象方法
     deleteKeys: deleteKeys,
@@ -765,6 +911,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
     // 其他方法
     dateFormater: dateFormater,
+    getMonthData: getMonthData,
     buildRandomString: buildRandomString,
     rSet: rSet
 
@@ -775,14 +922,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   /**
    * @description 合并类名，自动以空格分割
    */
-  String.prototype.appendClass = function (className) {
-    var string = this;
-
+  function appendClass(string, className) {
     if (className.length !== 0) {
       string += string.length === 0 ? className : ' ' + className;
     }
 
     return string;
+  }
+  String.prototype.appendClass = function (className) {
+    return appendClass(this, className);
   };
 
   /* ========jQuery======== */
@@ -852,6 +1000,41 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     }
 
     return -1;
+  };
+
+  $.prototype.indexOf = function (jq) {
+    if (!(jq instanceof jQuery)) jq = $(jq);
+
+    var index = -1;
+    var $el = this;
+    for (var i = 0, len = $el.length; i < len; i++) {
+      if ($el[i] === jq[0]) {
+        index = i;
+        break;
+      }
+    }
+
+    return index;
+  };
+
+  $.prototype.reduce = function (callback, initialValue) {
+    if (!isFunction(callback)) throw new Error('`' + callback + '` is not a function');
+    if (this.length === 0 && typeof initialValue === 'undefined') {
+      throw new Error('TypeError: Reduce of empty jQuery with no initial value');
+    }
+
+    var $el = this;
+    var i = -1;
+    var result = initialValue;
+    if (typeof result === 'undefined') {
+      result = $el[0];
+      i = 0;
+    }
+    var len = $el.length;
+    while (++i < len) {
+      result = callback(result, $el[i], i, $el);
+    }
+    return result;
   };
 
   $.extend({

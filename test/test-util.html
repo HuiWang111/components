@@ -34,9 +34,30 @@
         deleteKeys = Util.deleteKeys,
         dateFormater = Util.dateFormater,
         buildRandomString = Util.buildRandomString,
+        sum = Util.sum,
+        sumBy = Util.sumBy,
+        getMonthData = Util.getMonthData,
         rSet = Util.rSet;
 
+    var arr = [{
+      a: 1,
+      b: 2,
+      c: 3
+    }, {
+      a: 4,
+      b: 5,
+      c: 6
+    }, {
+      a: 7,
+      b: 8,
+      c: 9
+    }];
 
+    var arr2 = [1,3,4,5,6];
+    var sum1 = sumBy(arr, 'a');
+    var sum2 = sum(arr2); console.log(sum2);
+
+    var monthDays = getMonthData(/* 2019, 4 */);console.log(monthDays);
 
   </script>
 </body>
