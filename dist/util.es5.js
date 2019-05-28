@@ -4,7 +4,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-!function (win, $) {
+;!function (win, $) {
 
   var emptyArray = [];
   if (!emptyArray.map) {
@@ -40,19 +40,19 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       if (typeof len !== 'number') return [];
 
       var object = {};
-      for (var key in arrayLike) {
+      forInOwn(arrayLike, function (__, key) {
         object[parseFloat(key)] = arrayLike[key];
-      }
+      });
 
       var array = [];
-      for (var i in object) {
+      forInOwn(object, function (value, i, self) {
         if (isNaN(i)) {
           array.push(undefined);
         } else {
-          var item = isFunction(callback) ? callback(object[i], i, object) : object[i];
+          var item = isFunction(callback) ? callback(value, i, self) : value;
           array.push(item);
         }
-      }
+      });
 
       return array;
     };
@@ -70,6 +70,28 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         }
 
         return result;
+      },
+      startsWith: function startsWith(search, pos) {
+        search = search == null ? '' : search.toString ? search.toString() : '';
+
+        var len = search.length;
+        if (this.length < len) return false;
+
+        pos = isNumber(pos) ? pos < 0 ? 0 : +pos : 0;
+        pos = isNaN(pos) ? 0 : pos;
+        var str = this.substring(position, position + len);
+        return str === search;
+      },
+      endsWith: function endsWith(search, length) {
+        search = search == null ? '' : search.toString ? search.toString() : '';
+
+        var len = this.length;
+        if (len < search.length) return false;
+
+        length = isNumber(length) ? len : +length;
+        length = isNaN(length) || length > len ? len : length;
+        var str = this.substring(length - search.length, length);
+        return str === search;
       }
     });
 
@@ -260,7 +282,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     return typeof target === 'string';
   }
   function isObject(target) {
-    return (typeof target === 'undefined' ? 'undefined' : _typeof(target)) === 'object' && !(target instanceof Array);
+    return (typeof target === 'undefined' ? 'undefined' : _typeof(target)) === 'object';
   }
   function isEmptyObject(target) {
     for (var _ in target) {
@@ -363,16 +385,14 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
     var style = "",
         key = void 0;
-    for (key in object) {
-      var obj = object[key],
-          k = void 0,
-          styl = "";
-      for (k in obj) {
-        styl += k + ': ' + obj[k] + ';';
-      }
-      style = style === '' ? key + ' { ' + styl + ' }' : style + '\n' + (key + ' { ' + styl + ' }');
-    }
-
+    forInOwn(object, function (obj, key) {
+      var styl = "";
+      forInOwn(obj, function (value, k) {
+        styl += k + ': ' + value + ';';
+      });
+      style = style === '' ? key + ' { ' + styl + ' }' : style + '\n' + key + ' { ' + styl + ' }';
+    });
+    console.log(style);
     var oldStyleTag = document.querySelector('head').querySelector('style');
     if (oldStyleTag) {
       var oldStyle = oldStyleTag.innerHTML;
@@ -635,7 +655,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @param { String } excludes 排除不查找的键值，以逗号分割多个键值
    * @returns target对应的key
    */
-  function keyOf(object, target, excludes) {
+  function keyOf(object, target, excludes, isOwn) {
     if (!isObject(object)) throw new Error(object + ' is not a object');
 
     var isNil = excludes == null;
@@ -644,14 +664,14 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     !isNil && (excludes = excludes.split(','));
     for (var key in object) {
       if (isNil) {
-        if (Object.is(object[key], target)) return key;
+        if (Object.is(object[key], target)) return isOwn ? object.hasOwnProperty(key) ? key : undefined : key;
       } else {
         if (!excludes.includes(key)) {
-          if (Object.is(object[key], target)) return key;
+          if (Object.is(object[key], target)) return isOwn ? object.hasOwnProperty(key) ? key : undefined : key;
         }
       }
     }
-    return;
+    return undefined;
   }
 
   /**
@@ -680,13 +700,33 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       excludeList = null;
     }
 
-    for (var key in object) {
+    forInOwn(object, function (_, key, self) {
       if (keyList == null && excludeList == null) {
-        delete object[key];
+        delete self[key];
       } else if (keyList != null && excludeList == null) {
-        keyList.includes(key) && delete object[key];
+        keyList.includes(key) && delete self[key];
       } else if (keyList == null && excludeList != null) {
-        !excludeList.includes(key) && delete object[key];
+        !excludeList.includes(key) && delete self[key];
+      }
+    });
+  }
+
+  /**
+   * @description for-in循环
+   */
+  function forIn(object, callback) {
+    if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+
+    for (var key in object) {
+      callback(object[key], key, object);
+    }
+  }
+  function forInOwn(object, callback) {
+    if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+
+    for (var key in object) {
+      if (object.hasOwnProperty(key)) {
+        callback(object[key], key, object);
       }
     }
   }
@@ -837,7 +877,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       var key = keyOf(this, item, 'size,nextKey');
       return typeof key !== 'undefined';
     },
-
     forEach: function forEach(callback) {
       if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
@@ -845,7 +884,17 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         callback(this[key], key, this);
       }
     },
+    filter: function filter(callback) {
+      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
+      var result = new rSet();
+      for (var key in this) {
+        var state = callback(this[key], key, this);
+        if (state === true) result.add(this[key]);
+      }
+
+      return result;
+    },
     add: function add(item) {
       if (!this.has(item)) {
         this[this.nextKey++] = item;
@@ -853,7 +902,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       }
       return this;
     },
-
     delete: function _delete(item) {
       var key = keyOf(this, item);
       if (typeof key !== 'undefined') {
@@ -863,6 +911,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       }
       return !1;
     },
+
 
     clear: function clear() {
       deleteKeys(this);
@@ -908,6 +957,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     deleteKeys: deleteKeys,
     keyOf: keyOf,
     lastOf: lastOf,
+    forIn: forIn,
+    forInOwn: forInOwn,
 
     // 其他方法
     dateFormater: dateFormater,
@@ -1061,17 +1112,17 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         if (isString(attr)) {
           attributes = ' ' + attr;
         } else if (isObject(attr)) {
-          for (var key in attr) {
-            if (key.trim() === 'style' && isObject(attr[key]) && attr[key] !== null) {
+          forInOwn(attr, function (obj, key) {
+            if (key.trim() === 'style' && isObject(obj) && obj !== null) {
               attributes += key + '=';
-              for (var k in attr[key]) {
-                attributes += '"' + k + ': ' + attr[key][k] + ';"';
-              }
+              forInOwn(obj, function (value, k) {
+                attributes += '"' + k + ': ' + value + ';"';
+              });
             } else {
-              var thisAttr = key + '="' + attr[key] + '"';
+              var thisAttr = key + '="' + obj + '"';
               attributes += ' ' + thisAttr;
             }
-          }
+          });
         }
       }
 

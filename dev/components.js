@@ -1,4 +1,4 @@
-!function (window, jQuery, Swiper, Component) {
+;!function (window, jQuery, Swiper, Component) {
 
   /* utils */
   const {
@@ -563,15 +563,15 @@
   /**
    * Message
    */
-  ;!function (win, $, Component) {
+  ;!function (win, $) {
   
     // className
-    var TEXTCLASS = 'message_text_box';
-    var CONTAINERCLASS = 'message_contaier';
-    var ICONCLASS = 'message_icon';
+    const TEXTCLASS = 'message_text_box';
+    const CONTAINERCLASS = 'message_contaier';
+    const ICONCLASS = 'message_icon';
   
     // default
-    var defaultOptions = {
+    const defaultOptions = {
       FirstMessagePosTop: 16, //第一个message元素的top值
       GapOfMessage: 10 //多个message同时出现时，message之间的间隙
     };
@@ -583,38 +583,32 @@
      *  }
      */
     var Message = function(type) {
-  
       this.GapOfMessage = defaultOptions.GapOfMessage;
       this.FirstMessagePosTop = defaultOptions.FirstMessagePosTop;
   
       this.type = type;
   
       //为每个Message实例的容器创建一个随机className
-      var RANDOM_CLASS = buildRandomString();
+      const RANDOM_CLASS = buildRandomString();
   
-      var icon = $.node('i', '', ICONCLASS.appendClass('message_' + type + '_icon'));
-      var text = $.node('span', '', TEXTCLASS.appendClass('message_' + type + '_text_box'));
-      var container = $.node('div', icon + text, CONTAINERCLASS.appendClass(RANDOM_CLASS).appendClass('message_' + type + '_container'));
+      const icon = $.node('i', '', ICONCLASS.appendClass('message_' + type + '_icon'));
+      const text = $.node('span', '', TEXTCLASS.appendClass('message_' + type + '_text_box'));
+      const container = $.node('div', icon + text, CONTAINERCLASS.appendClass(RANDOM_CLASS).appendClass('message_' + type + '_container'));
       insertElementToBody($(container));
       
-      var MESSAGE = this;
-      domAfterLoad(toSelector(RANDOM_CLASS), function () {
-        MESSAGE.$el = $(toSelector(RANDOM_CLASS));
-        MESSAGE.$text = MESSAGE.$el.find(toSelector(TEXTCLASS));
+      domAfterLoad(toSelector(RANDOM_CLASS),  () => {
+        this.$el = $(toSelector(RANDOM_CLASS));
+        this.$text = this.$el.find(toSelector(TEXTCLASS));
       });
-      
     };
-  
-    Message.prototype = {
-  
-      show: function(content, duration, onClose) {
-  
-        var $el = this.$el;
-        var $text = this.$text;
+
+    Object.assign(Message.prototype, {
+      show (content, duration, onClose) {
+        const { $el, $text, FirstMessagePosTop, GapOfMessage } = this;
         
         $el[0].style = "";
   
-        var time;
+        let time;
         if (isFunction(duration)) { // 当第二个参数为函数时，将函数赋值给onClose, 显示时间使用默认
           onClose = duration; 
           time = 3;
@@ -623,134 +617,118 @@
           time = isNaN(duration) ? 3 : duration; // 默认显示3秒后隐藏
         }
   
-        var elHeight = $el.outerHeight();
-  
-        var message = this;
-        var FirstMessagePosTop = this.FirstMessagePosTop;
-        var GapOfMessage = this.GapOfMessage;
-        setTimeout(function () {
-  
+        const elHeight = $el.outerHeight();
+        
+        setTimeout(() => {
           $text.text(content);
           $el.addClass('comedown');
   
-          var index = messageList.indexOf(message);
+          const index = messageList.indexOf(this);
           $el.css({
             'top': FirstMessagePosTop + index*elHeight + index*GapOfMessage + 'px' // 计算当前实例top值
           });
   
-          setTimeout(function () {
-            message.hide(onClose);
+          setTimeout(() => {
+            this.hide(onClose);
           }, time * 1000);
-  
         }, 0);
-  
       },
   
-      hide: function (onClose) {
+      hide (onClose) {
+        const { $el, $text } = this;
   
-        var $el = this.$el;
-        var $text = this.$text;
-  
-        var index = messageList.indexOf(this);
-        messageList.splice(index, 1);
+        // const index = messageList.indexOf(this);
+        // messageList.splice(index, 1);
+        messageList.delete(this);
   
         ($el[0].style.top !== '') && ($el[0].style.top = '');
         $el.removeClass('comedown');
         isFunction(onClose) && onClose();
-        setTimeout(function () {
+        setTimeout(() => {
           $text.text('');
         }, 1000);
-  
       }
+    });
   
-    };
-  
-    var message = {};
+    const message = {};
     message.setting = function (options) {
       Object.assign(defaultOptions, options);
     };
   
-    var messageList = [];
-    var warningList = [];
+    const messageList = new rSet();
+    const warningList = new rSet();
     message.warning = function (content, duration, onClose) {
       //获取页面中隐藏的warning提示框
-      var hiddenWarning = warningList.filter(function (instance) {
+      const hiddenWarning = warningList.filter(function (instance) {
         return !instance.$el.hasClass('comedown');
       });
       
       //有隐藏的提示框就直接用该实例，否则创建新实例
       if (hiddenWarning.length > 0) {
-        messageList.push(hiddenWarning[0]);
+        messageList.add(hiddenWarning[0]);
         hiddenWarning[0].show(content, duration, onClose);
       } else {
-        var warning = new Message('warning');
-        messageList.push(warning);
+        const warning = new Message('warning');
+        messageList.add(warning);
         warning.show(content, duration, onClose);
-        warningList.push(warning);
+        warningList.add(warning);
       }
-  
     };
   
-    var successList = [];
+    const successList = new rSet();
     message.success = function (content, duration, onClose) {
-  
-      var hiddenSuccess = successList.filter(function (instance) {
+      const hiddenSuccess = successList.filter(function (instance) {
         return !instance.$el.hasClass('comedown');
       });
   
       if (hiddenSuccess.length > 0) {
-        messageList.push(hiddenSuccess[0]);
+        messageList.add(hiddenSuccess[0]);
         hiddenSuccess[0].show(content, duration, onClose);
       } else {
-        var success = new Message('success');
-        messageList.push(success);
+        const success = new Message('success');
+        messageList.add(success);
         success.show(content, duration, onClose);
-        successList.push(success);
+        successList.add(success);
       }
-  
     };
   
-    var errorList = [];
+    const errorList = new rSet();
     message.error = function (content, duration, onClose) {
-      
-      var hiddenError = errorList.filter(function (instance) {
+      const hiddenError = errorList.filter(function (instance) {
         return !instance.$el.hasClass('comedown');
       });
   
       if (hiddenError.length > 0) {
-        messageList.push(hiddenError[0]);
+        messageList.add(hiddenError[0]);
         hiddenError[0].show(content, duration, onClose);
       } else {
-        var error = new Message('error');
-        messageList.push(error);
+        const error = new Message('error');
+        messageList.add(error);
         error.show(content, duration, onClose);
-        errorList.push(error);
+        errorList.add(error);
       }
-  
     };
   
-    var infoList = [];
+    const infoList = new rSet();
     message.info = function (content, duration, onClose) {
-  
-      var hiddenInfo = infoList.filter(function (instance) {
+      const hiddenInfo = infoList.filter(function (instance) {
         return !instance.$el.hasClass('comedown');
       });
   
       if (hiddenInfo.length > 0) {
-        messageList.push(hiddenInfo[0]);
+        messageList.add(hiddenInfo[0]);
         hiddenInfo[0].show(content, duration, onClose);
       } else {
-        var info = new Message('info');
-        messageList.push(info);
+        const info = new Message('info');
+        messageList.add(info);
         info.show(content, duration, onClose);
-        infoList.push(info);
+        infoList.add(info);
       }
-  
     };
   
     win.message = message;
   
-  }(window, jQuery, Component)
+  }(window, jQuery)
   
   /**
    * Gallery
@@ -763,13 +741,13 @@
     }
   
     // className
-    var GALLERY_BUTTON_NEXT_CLASS = 'gallery-swiper-button-next';
-    var GALLERY_BUTTON_PREV_CLASS = 'gallery-swiper-button-prev';
-    var GALLERY_PAGINATION_CLASS = 'gallery-swiper-pagination';
-    var GALLERY_SWIPER_CONTAINER_CLASS = 'gallery-swiper-container';
-    var GALLERY_WRAPPER_CLASS = 'gallery-wrapper';
-    var GALLERY_CONTAINER_CLASS = 'gallery-contaier';
-    var GALLERY_CONTAINER_CLASS_HIDDEN = 'gallery-contaier-invisible';
+    const GALLERY_BUTTON_NEXT_CLASS = 'gallery-swiper-button-next';
+    const GALLERY_BUTTON_PREV_CLASS = 'gallery-swiper-button-prev';
+    const GALLERY_PAGINATION_CLASS = 'gallery-swiper-pagination';
+    const GALLERY_SWIPER_CONTAINER_CLASS = 'gallery-swiper-container';
+    const GALLERY_WRAPPER_CLASS = 'gallery-wrapper';
+    const GALLERY_CONTAINER_CLASS = 'gallery-contaier';
+    const GALLERY_CONTAINER_CLASS_HIDDEN = 'gallery-contaier-invisible';
     
     /**
      *  @param options: {
@@ -778,37 +756,32 @@
      *    width: String | Number, // 百分比或者px, 移动端宽高通常使用默认的100%
      *    height: String | Number,
      *    bgColor: String,
-     *    useStyle: true | false,
      *    swiperOptions: {}
      *  }
      */
     function Gallery(selector, options) {
   
       // default
-      var defaultOptions = {
+      const defaultOptions = {
         navgation: false,
         pagination: true,
         width: '100%',
         height: '100%',
         bgColor: 'transparent',
-        useStyle: false,
         swiperOptions: {}
       };
   
-      Object.assign(defaultOptions, options);
-  
-      if ( (defaultOptions.width === '100%') && defaultOptions.navgation ) defaultOptions.navgation = false; // 宽度100%时不使用导航箭头
-  
-      if (defaultOptions.useStyle) {
-        appendStyle({"html, body":{"height":"100%"},".gallery-contaier":{"width":"100%","height":"100%","position":"fixed","left":0,"top":0,},".gallery-contaier.gallery-contaier-invisible":{"display":"none"},".gallery-contaier .gallery-wrapper":{"position":"absolute","left":"50%","top":"50%","transform":"translate(-50%, -50%)","z-index":1},".gallery-contaier .gallery-wrapper .gallery-swiper-container":{"width":"100%","height":"100%","margin":"0 auto"},".gallery-contaier .gallery-swiper-container .swiper-slide":{"position":"relative"},".gallery-contaier .gallery-swiper-container .swiper-slide img":{"width":"100%","position":"absolute","left":"50%","top":"50%","transform":"translate(-50%, -50%)"},".swiper-pagination-bullet-active":{"background-color":"#fff"},".swiper-button-next":{"right":0},".swiper-button-prev":{"left":0}});
+      const opts = Object.assign({}, defaultOptions, options);
+      if ( (opts.width === '100%') && opts.navgation ) {
+        opts.navgation = false; // 宽度100%时不使用导航箭头
       }
-  
-      // $source = $(selector);
+
+      this.options = opts;
       this.$source = $(selector);
   
       // 为每个实例容器创建一个随机className
-      var RANDOM_CLASS = buildRandomString();
-      this.randomClassName = RANDOM_CLASS;
+      const RANDOM_CLASS = buildRandomString();
+      this.RANDOM_CLASS = RANDOM_CLASS;
   
       // 获取当前页面最大的z-index值
       var $hasZIndex = $('*').filter(function (_, item) {

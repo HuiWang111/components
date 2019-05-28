@@ -1,4 +1,4 @@
-!function(win, $) {
+;!function(win, $) {
   
   const emptyArray = [];
   if (!emptyArray.map) {
@@ -33,19 +33,19 @@
       if (typeof len !== 'number') return [];
 
       const object = {}
-      for (const key in arrayLike) {
+      forInOwn(arrayLike, (__, key) => {
         object[parseFloat(key)] = arrayLike[key];
-      }
-
+      });
+      
       const array = [];
-      for (const i in object) {
+      forInOwn(object, (value, i, self) => {
         if (isNaN(i)) {
           array.push(undefined);
         } else {
-          const item = isFunction(callback) ? callback(object[i], i, object) : object[i];
+          const item = isFunction(callback) ? callback(value, i, self) : value;
           array.push(item);
         }
-      }
+      });
 
       return array;
     };
@@ -63,6 +63,30 @@
         }
         
         return result;
+      },
+
+      startsWith (search, pos) {
+        search = search == null ? '' : (search.toString ? search.toString() : '');
+  
+        const len = search.length;
+        if (this.length < len) return false;
+        
+        pos = isNumber(pos) ? (pos < 0 ? 0 : +pos) : 0;
+        pos = isNaN(pos) ? 0 : pos;
+        const str = this.substring(position, position + len);
+        return str === search;
+      },
+
+      endsWith (search, length) {
+        search = search == null ? '' : (search.toString ? search.toString() : '');
+  
+        const len = this.length;
+        if (len < search.length) return false;
+        
+        length = isNumber(length) ? len : +length;
+        length = isNaN(length) || length > len ? len : length;
+        const str = this.substring(length - search.length, length);
+        return str === search;
       }
     });
 
@@ -252,7 +276,7 @@
     return typeof target === 'string';
   }
   function isObject(target) {
-    return (typeof target === 'object') && !(target instanceof Array);
+    return typeof target === 'object';
   }
   function isEmptyObject(target) {
     for (const _ in target) return !1;
@@ -361,18 +385,18 @@
     }
     
     let style = "", key;
-    for (key in object) {
-      let obj = object[key], k, styl = "";
-      for (k in obj) {
-        styl += (k + ': ' + obj[k] + ';');
-      }
-      style = style === '' ? (key + ' { ' + styl + ' }') : (style + '\n' + (key + ' { ' + styl + ' }'));
-    }
-
+    forInOwn(object, (obj, key) => {
+      let styl = "";
+      forInOwn(obj, (value, k) => {
+        styl += (k + ': ' + value + ';');
+      });
+      style = style === '' ? `${key} { ${styl} }` : `${style}\n${key} { ${styl} }`;
+    });
+    console.log(style);
     const oldStyleTag = document.querySelector('head').querySelector('style');
     if (oldStyleTag) {
       const oldStyle = oldStyleTag.innerHTML;
-      const newStyle = oldStyle === '' ? style : oldStyle + '\n' + style;
+      const newStyle = oldStyle === '' ? style : `${oldStyle}\n${style}`;
       oldStyleTag.innerHTML = newStyle;
     } else {
       const styleTag = document.createElement('style');
@@ -619,7 +643,7 @@
    * @param { String } excludes 排除不查找的键值，以逗号分割多个键值
    * @returns target对应的key
    */
-  function keyOf(object, target, excludes) {
+  function keyOf(object, target, excludes, isOwn) {
     if (!isObject(object)) throw new Error(object + ' is not a object');
     
     const isNil = excludes == null;
@@ -628,14 +652,14 @@
     !isNil && (excludes = excludes.split(','));
     for(const key in object) {
       if (isNil) {
-        if (Object.is(object[key], target)) return key;
+        if (Object.is(object[key], target)) return isOwn ? (object.hasOwnProperty(key) ? key : undefined) : key;
       } else {
         if (!excludes.includes(key)) {
-          if (Object.is(object[key], target)) return key;
+          if (Object.is(object[key], target)) return isOwn ? (object.hasOwnProperty(key) ? key : undefined) : key;
         }
       }
     }
-    return;
+    return undefined;
   }
   
   /**
@@ -663,13 +687,33 @@
       excludeList = null;
     }
 
-    for (const key in object) {
+    forInOwn(object, (_, key, self) => {
       if (keyList == null && excludeList == null) {
-        delete object[key];
+        delete self[key];
       } else if (keyList != null && excludeList == null) {
-        keyList.includes(key) && delete object[key];
+        keyList.includes(key) && delete self[key];
       } else if (keyList == null && excludeList != null) {
-        !excludeList.includes(key) && delete object[key];
+        !excludeList.includes(key) && delete self[key];
+      }
+    });
+  }
+
+  /**
+   * @description for-in循环
+   */
+  function forIn(object, callback) {
+    if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+
+    for (const key in object) {
+      callback(object[key], key, object);
+    }
+  }
+  function forInOwn(object, callback) {
+    if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+
+    for(const key in object) {
+      if (object.hasOwnProperty(key)) {
+        callback(object[key], key, object);
       }
     }
   }
@@ -816,12 +860,12 @@
   rSet.prototype = {
     constructor: rSet,
 
-    has: function(item) {
+    has (item) {
       const key  = keyOf(this, item, 'size,nextKey');
       return (typeof key !== 'undefined');
     },
 
-    forEach: function(callback) {
+    forEach (callback) {
       if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
       for (const key in this) {
@@ -829,7 +873,19 @@
       }
     },
 
-    add: function(item) {
+    filter (callback) {
+      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+
+      const result  = new rSet();
+      for (const key in this) {
+        const state = callback(this[key], key, this);
+        if (state === true) result.add(this[key]);
+      }
+
+      return result;
+    },
+
+    add (item) {
       if (!this.has(item)) {
         this[this.nextKey++] = item;
         this.size++;
@@ -837,7 +893,7 @@
       return this;
     },
 
-    delete: function(item) {
+    delete (item) {
       const key = keyOf(this, item);
       if (typeof key !== 'undefined') {
         delete this[key];
@@ -891,6 +947,8 @@
     deleteKeys,
     keyOf,
     lastOf,
+    forIn,
+    forInOwn,
     
     // 其他方法
     dateFormater,
@@ -1046,17 +1104,17 @@
         if (isString(attr)) {
           attributes = ' ' + attr;
         } else if (isObject(attr)) {
-          for (const key in attr) {
-            if ( (key.trim() === 'style') && isObject(attr[key]) && (attr[key] !== null) ) {
+          forInOwn(attr, (obj, key) => {
+            if ( (key.trim() === 'style') && isObject(obj) && (obj !== null) ) {
               attributes += key + '=';
-              for (const k in attr[key]) {
-                attributes += '"' + k + ': ' + attr[key][k] + ';"';
-              }
+              forInOwn(obj, (value, k) => {
+                attributes += `"${k}: ${value};"`
+              });
             } else {
-              const thisAttr = key + '="' + attr[key] + '"';
+              const thisAttr = `${key}="${obj}"`;
               attributes += ' ' + thisAttr;
             }
-          } 
+          });
         }
       }
       

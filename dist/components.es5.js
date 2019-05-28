@@ -1,6 +1,6 @@
 'use strict';
 
-!function (window, jQuery, Swiper, Component) {
+;!function (window, jQuery, Swiper, Component) {
 
   /* utils */
   var _Util = Util,
@@ -586,7 +586,7 @@
   /**
    * Message
    */
-  ;!function (win, $, Component) {
+  ;!function (win, $) {
 
     // className
     var TEXTCLASS = 'message_text_box';
@@ -606,6 +606,7 @@
      *  }
      */
     var Message = function Message(type) {
+      var _this2 = this;
 
       this.GapOfMessage = defaultOptions.GapOfMessage;
       this.FirstMessagePosTop = defaultOptions.FirstMessagePosTop;
@@ -620,23 +621,25 @@
       var container = $.node('div', icon + text, CONTAINERCLASS.appendClass(RANDOM_CLASS).appendClass('message_' + type + '_container'));
       insertElementToBody($(container));
 
-      var MESSAGE = this;
       domAfterLoad(toSelector(RANDOM_CLASS), function () {
-        MESSAGE.$el = $(toSelector(RANDOM_CLASS));
-        MESSAGE.$text = MESSAGE.$el.find(toSelector(TEXTCLASS));
+        _this2.$el = $(toSelector(RANDOM_CLASS));
+        _this2.$text = _this2.$el.find(toSelector(TEXTCLASS));
       });
     };
 
-    Message.prototype = {
-
+    Object.assign(Message.prototype, {
       show: function show(content, duration, onClose) {
+        var _this3 = this;
 
-        var $el = this.$el;
-        var $text = this.$text;
+        var $el = this.$el,
+            $text = this.$text,
+            FirstMessagePosTop = this.FirstMessagePosTop,
+            GapOfMessage = this.GapOfMessage;
+
 
         $el[0].style = "";
 
-        var time;
+        var time = void 0;
         if (isFunction(duration)) {
           // 当第二个参数为函数时，将函数赋值给onClose, 显示时间使用默认
           onClose = duration;
@@ -648,32 +651,28 @@
 
         var elHeight = $el.outerHeight();
 
-        var message = this;
-        var FirstMessagePosTop = this.FirstMessagePosTop;
-        var GapOfMessage = this.GapOfMessage;
         setTimeout(function () {
-
           $text.text(content);
           $el.addClass('comedown');
 
-          var index = messageList.indexOf(message);
+          var index = messageList.indexOf(_this3);
           $el.css({
             'top': FirstMessagePosTop + index * elHeight + index * GapOfMessage + 'px' // 计算当前实例top值
           });
 
           setTimeout(function () {
-            message.hide(onClose);
+            _this3.hide(onClose);
           }, time * 1000);
         }, 0);
       },
-
       hide: function hide(onClose) {
+        var $el = this.$el,
+            $text = this.$text;
 
-        var $el = this.$el;
-        var $text = this.$text;
+        // const index = messageList.indexOf(this);
+        // messageList.splice(index, 1);
 
-        var index = messageList.indexOf(this);
-        messageList.splice(index, 1);
+        messageList.delete(this);
 
         $el[0].style.top !== '' && ($el[0].style.top = '');
         $el.removeClass('comedown');
@@ -682,16 +681,15 @@
           $text.text('');
         }, 1000);
       }
-
-    };
+    });
 
     var message = {};
     message.setting = function (options) {
       Object.assign(defaultOptions, options);
     };
 
-    var messageList = [];
-    var warningList = [];
+    var messageList = new rSet();
+    var warningList = new rSet();
     message.warning = function (content, duration, onClose) {
       //获取页面中隐藏的warning提示框
       var hiddenWarning = warningList.filter(function (instance) {
@@ -700,72 +698,69 @@
 
       //有隐藏的提示框就直接用该实例，否则创建新实例
       if (hiddenWarning.length > 0) {
-        messageList.push(hiddenWarning[0]);
+        messageList.add(hiddenWarning[0]);
         hiddenWarning[0].show(content, duration, onClose);
       } else {
         var warning = new Message('warning');
-        messageList.push(warning);
+        messageList.add(warning);
         warning.show(content, duration, onClose);
-        warningList.push(warning);
+        warningList.add(warning);
       }
     };
 
-    var successList = [];
+    var successList = new rSet();
     message.success = function (content, duration, onClose) {
-
       var hiddenSuccess = successList.filter(function (instance) {
         return !instance.$el.hasClass('comedown');
       });
 
       if (hiddenSuccess.length > 0) {
-        messageList.push(hiddenSuccess[0]);
+        messageList.add(hiddenSuccess[0]);
         hiddenSuccess[0].show(content, duration, onClose);
       } else {
         var success = new Message('success');
-        messageList.push(success);
+        messageList.add(success);
         success.show(content, duration, onClose);
-        successList.push(success);
+        successList.add(success);
       }
     };
 
-    var errorList = [];
+    var errorList = new rSet();
     message.error = function (content, duration, onClose) {
-
       var hiddenError = errorList.filter(function (instance) {
         return !instance.$el.hasClass('comedown');
       });
 
       if (hiddenError.length > 0) {
-        messageList.push(hiddenError[0]);
+        messageList.add(hiddenError[0]);
         hiddenError[0].show(content, duration, onClose);
       } else {
         var error = new Message('error');
-        messageList.push(error);
+        messageList.add(error);
         error.show(content, duration, onClose);
-        errorList.push(error);
+        errorList.add(error);
       }
     };
 
-    var infoList = [];
+    var infoList = new rSet();
     message.info = function (content, duration, onClose) {
-
       var hiddenInfo = infoList.filter(function (instance) {
         return !instance.$el.hasClass('comedown');
       });
 
       if (hiddenInfo.length > 0) {
-        messageList.push(hiddenInfo[0]);
+        messageList.add(hiddenInfo[0]);
         hiddenInfo[0].show(content, duration, onClose);
       } else {
         var info = new Message('info');
-        messageList.push(info);
+        messageList.add(info);
         info.show(content, duration, onClose);
-        infoList.push(info);
+        infoList.add(info);
       }
     };
 
     win.message = message;
-  }(window, jQuery, Component)
+  }(window, jQuery)
 
   /**
    * Gallery
@@ -793,7 +788,6 @@
      *    width: String | Number, // 百分比或者px, 移动端宽高通常使用默认的100%
      *    height: String | Number,
      *    bgColor: String,
-     *    useStyle: true | false,
      *    swiperOptions: {}
      *  }
      */
@@ -806,24 +800,20 @@
         width: '100%',
         height: '100%',
         bgColor: 'transparent',
-        useStyle: false,
         swiperOptions: {}
       };
 
-      Object.assign(defaultOptions, options);
-
-      if (defaultOptions.width === '100%' && defaultOptions.navgation) defaultOptions.navgation = false; // 宽度100%时不使用导航箭头
-
-      if (defaultOptions.useStyle) {
-        appendStyle({ "html, body": { "height": "100%" }, ".gallery-contaier": { "width": "100%", "height": "100%", "position": "fixed", "left": 0, "top": 0 }, ".gallery-contaier.gallery-contaier-invisible": { "display": "none" }, ".gallery-contaier .gallery-wrapper": { "position": "absolute", "left": "50%", "top": "50%", "transform": "translate(-50%, -50%)", "z-index": 1 }, ".gallery-contaier .gallery-wrapper .gallery-swiper-container": { "width": "100%", "height": "100%", "margin": "0 auto" }, ".gallery-contaier .gallery-swiper-container .swiper-slide": { "position": "relative" }, ".gallery-contaier .gallery-swiper-container .swiper-slide img": { "width": "100%", "position": "absolute", "left": "50%", "top": "50%", "transform": "translate(-50%, -50%)" }, ".swiper-pagination-bullet-active": { "background-color": "#fff" }, ".swiper-button-next": { "right": 0 }, ".swiper-button-prev": { "left": 0 } });
+      var opts = Object.assign({}, defaultOptions, options);
+      if (opts.width === '100%' && opts.navgation) {
+        opts.navgation = false; // 宽度100%时不使用导航箭头
       }
 
-      // $source = $(selector);
+      this.options = opts;
       this.$source = $(selector);
 
       // 为每个实例容器创建一个随机className
       var RANDOM_CLASS = buildRandomString();
-      this.randomClassName = RANDOM_CLASS;
+      this.RANDOM_CLASS = RANDOM_CLASS;
 
       // 获取当前页面最大的z-index值
       var $hasZIndex = $('*').filter(function (_, item) {
