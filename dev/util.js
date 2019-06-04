@@ -227,20 +227,27 @@
      * @param { Array } doms 需要挂载的dom列表
      * [{
      *   html: String, // 需要被挂载的dom字符串
-     *   container: DOMElement, // 挂载的目标容器
+     *   container: DOMElement | 'body', // 挂载的目标容器
      *   condition: Boolen, // 挂载的条件
      * }]
      */
     mount (doms) {
-      if (!doms || !isLength(doms.length) || doms.length < 1) return; 
+      if (!doms || !isLength(doms.length) || doms.length < 1) return;
       
       doms.forEach((dom) => {
+        if (dom.html == null) throw new Error('缺少需挂载的dom字符串');
+        if (dom.container == null) throw new Error('缺少挂载目标容器');
+
         let { condition, container, html } = dom;
         // condition默认为true
         typeof condition === 'undefined' && (condition = true);
-        !(container instanceof jQuery) && (container = $(container));
         if (condition) {
-          container.html(html);
+          if (container === 'body') {
+            insertElementToBody($(html));
+          } else {
+            !(container instanceof jQuery) && (container = $(container));
+            container.html(html);
+          }
         }
       });
 
