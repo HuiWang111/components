@@ -210,28 +210,18 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   function Component() {
     this.init();
   }
-  Object.assign(Component.prototype, {
-    constructor: Component,
-    init: function init() {
-      var doms = this.render();
-      this.componentWillMount();
-      this.mount(doms);
-    },
-    render: function render() {
-      return [];
-    },
-    style: function style() {},
 
-    /**
-     * @description 将组件元素挂载到dom
-     * @param { Array } doms 需要挂载的dom列表
-     * [{
-     *   html: String, // 需要被挂载的dom字符串
-     *   container: DOMElement, // 挂载的目标容器
-     *   condition: Boolen, // 挂载的条件
-     * }]
-     */
-    mount: function mount(doms) {
+  /**
+   * @description 将组件元素挂载到dom
+   * @param { Array } doms 需要挂载的dom列表
+   * [{
+   *   html: String, // 需要被挂载的dom字符串
+   *   container: DOMElement | 'body', // 挂载的目标容器
+   *   condition: Boolen, // 挂载的条件，默认挂载
+   * }]
+   */
+  Object.defineProperty(Component.prototype, 'mount', {
+    value: function value(doms) {
       var _this = this;
 
       if (!doms || !isLength(doms.length) || doms.length < 1) return;
@@ -240,12 +230,19 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         var condition = dom.condition,
             container = dom.container,
             html = dom.html;
-        // condition默认为true
 
+        if (dom.html == null) throw new Error('缺少需挂载的dom字符串');
+        if (dom.container == null) throw new Error('缺少挂载目标容器');
+
+        // condition默认为true
         typeof condition === 'undefined' && (condition = true);
-        !(container instanceof jQuery) && (container = $(container));
         if (condition) {
-          container.html(html);
+          if (container === 'body') {
+            insertElementToBody($(html));
+          } else {
+            !(container instanceof jQuery) && (container = $(container));
+            container.html(html);
+          }
         }
       });
 
@@ -265,6 +262,28 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         _this.destroy();
       });
     },
+    writable: false,
+    configurable: false,
+    enumerable: true
+  });
+
+  Object.defineProperty(Component.prototype, 'init', {
+    value: function value() {
+      var doms = this.render();
+      this.componentWillMount();
+      this.mount(doms);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: true
+  });
+
+  Object.assign(Component.prototype, {
+    constructor: Component,
+    render: function render() {
+      return [];
+    },
+    style: function style() {},
     componentWillMount: function componentWillMount() {},
     componentDidMount: function componentDidMount() {},
     bindEvents: function bindEvents() {},
@@ -383,8 +402,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       return;
     }
 
-    var style = "",
-        key = void 0;
+    var style = "";
     forInOwn(object, function (obj, key) {
       var styl = "";
       forInOwn(obj, function (value, k) {
@@ -392,7 +410,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       });
       style = style === '' ? key + ' { ' + styl + ' }' : style + '\n' + key + ' { ' + styl + ' }';
     });
-    console.log(style);
     var oldStyleTag = document.querySelector('head').querySelector('style');
     if (oldStyleTag) {
       var oldStyle = oldStyleTag.innerHTML;
@@ -755,7 +772,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   /**
-   * @description  去除第一个数组中与后一个数组相同的元素
+   * @description  移除除第一个数组中与后一个数组重复的元素
    * @param { Array } array
    * @param { Array } list
    */
@@ -786,19 +803,32 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     return uniq(result);
   }
 
+  /**
+   * @description 两数组的差集  
+   */
+  function difference(array, list) {
+
+    var insection = ins(array, list);
+    var arr1 = remove(array, insection);
+    var arr2 = remove(list, insection);
+
+    return arr1.concat(arr2);
+  }
+
   function sum(array) {
     var sum = 0;
-    if (!array || !isLength(array.length)) return sum;
+    var len = array == null ? 0 : array.length;
+    if (!array || !isLength(len) || len === 1) return sum;
 
     return array.reduce(function (sum, current) {
       return sum + current;
     });
   }
 
-  function sumBy(array) {
-    if (!array || !isLength(array.length)) return sum;
-
-    var iteratee = arguments[1];
+  function sumBy(array, iteratee) {
+    var sum = 0;
+    var len = array == null ? 0 : array.length;
+    if (!array || !isLength(len) || len === 0) return sum;
 
     if (isString(iteratee)) {
       return array.reduce(function (sum, item) {
@@ -812,16 +842,80 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     return 0;
   }
 
-  /**
-   * @description 两数组的差集  
-   */
-  function difference(array, list) {
+  function max(array) {
+    var len = array == null ? 0 : array.length;
+    if (!array || !isLength(len) || len === 0) return;
 
-    var insection = ins(array, list);
-    var arr1 = remove(array, insection);
-    var arr2 = remove(list, insection);
+    return array.reduce(function (max, current) {
+      return max >= current ? max : current;
+    });
+  }
 
-    return arr1.concat(arr2);
+  function maxBy(array, iteratee) {
+    var len = array == null ? 0 : array.length;
+    if (!array || !isLength(len) || len === 0) return;
+
+    var initialValue = void 0;
+    if (isString(iteratee)) {
+      initialValue = array[0][iteratee];
+
+      return array.reduce(function (max, current) {
+        var currentValue = current[iteratee];
+        return max >= currentValue ? max : currentValue;
+      }, initialValue);
+    } else if (isFunction(iteratee)) {
+      initialValue = iteratee(array[0], 0, array);
+
+      return array.reduce(function (max, current, index, self) {
+        var currentValue = iteratee(current, index, self);
+        return max >= currentValue ? max : currentValue;
+      }, initialValue);
+    }
+  }
+
+  function min(array) {
+    var len = array == null ? 0 : array.length;
+    if (!array || !isLength(len) || len === 0) return;
+
+    return array.reduce(function (min, current) {
+      return min <= current ? min : current;
+    });
+  }
+
+  function minBy(array, iteratee) {
+    var len = array == null ? 0 : array.length;
+    if (!array || !isLength(len) || len === 0) return;
+
+    var initialValue = void 0;
+    if (isString(iteratee)) {
+      initialValue = array[0][iteratee];
+
+      return array.reduce(function (min, current) {
+        var currentValue = current[iteratee];
+        return min <= currentValue ? min : currentValue;
+      }, initialValue);
+    } else if (isFunction(iteratee)) {
+      initialValue = iteratee(array[0], 0, array);
+
+      return array.reduce(function (min, current, index, self) {
+        var currentValue = iteratee(current, index, self);
+        return min <= currentValue ? min : currentValue;
+      }, initialValue);
+    }
+  }
+
+  function mean(array) {
+    var len = array == null ? 0 : array.length;
+    if (!array || !isLength(len) || len === 0) return;
+
+    return sum(array) / len;
+  }
+
+  function meanBy(array, iteratee) {
+    var len = array == null ? 0 : array.length;
+    if (!array || !isLength(len) || len === 0) return;
+
+    return sumBy(array, iteratee) / len;
   }
 
   /**
@@ -880,18 +974,20 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     forEach: function forEach(callback) {
       if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
-      for (var key in this) {
-        callback(this[key], key, this);
-      }
+      forInOwn(this, function (value, key, self) {
+        callback(value, key, self);
+      });
     },
     filter: function filter(callback) {
+      var _this2 = this;
+
       if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
       var result = new rSet();
-      for (var key in this) {
-        var state = callback(this[key], key, this);
-        if (state === true) result.add(this[key]);
-      }
+      forInOwn(this, function (value, key, sef) {
+        var state = callback(_this2[key], key, _this2);
+        if (state === true) result.add(_this2[key]);
+      });
 
       return result;
     },
@@ -952,6 +1048,12 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     makeArray: makeArray,
     sum: sum,
     sumBy: sumBy,
+    max: max,
+    maxBy: maxBy,
+    min: min,
+    minBy: minBy,
+    mean: mean,
+    meanBy: meanBy,
 
     // 对象方法
     deleteKeys: deleteKeys,
@@ -968,6 +1070,54 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
   };
   win.Util = Util; //export Util
+
+  ;!function (win) {
+
+    function mouseWheelListener(callback) {
+      addMouseWheelHandler(function (e) {
+        e = e || window.event;
+        var value = e.wheelDelta || -e.deltaY || -e.detail;
+        var delta = Math.max(-1, Math.min(1, value));
+        var direction = delta < 0 ? 'down' : 'up';
+        isFunction(callback) && callback(direction);
+      });
+    }
+
+    win.mouseWheelListener = mouseWheelListener;
+
+    var g_supportsPassive = false;
+    try {
+      var opts = Object.defineProperty({}, 'passive', {
+        get: function get() {
+          g_supportsPassive = true;
+        }
+      });
+      window.addEventListener("testPassive", null, opts);
+      window.removeEventListener("testPassive", null, opts);
+    } catch (e) {}
+
+    function addMouseWheelHandler(callback) {
+      var prefix = '';
+      var _addEventListener = void 0;
+
+      if (window.addEventListener) {
+        _addEventListener = "addEventListener";
+      } else {
+        _addEventListener = "attachEvent";
+        prefix = 'on';
+      }
+
+      var support = 'onwheel' in document.createElement('div') ? 'wheel' : document.onmousewheel !== undefined ? 'mousewheel' : 'DOMMouseScroll';
+
+      var passiveEvent = g_supportsPassive ? { passive: false } : false;
+
+      if (support == 'DOMMouseScroll') {
+        document[_addEventListener](prefix + 'MozMousePixelScroll', callback, passiveEvent);
+      } else {
+        document[_addEventListener](prefix + support, callback, passiveEvent);
+      }
+    }
+  }(win);
 
   /* ========String======== */
   /**

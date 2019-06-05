@@ -211,34 +211,25 @@
   function Component() {
     this.init();
   }
-  Object.assign(Component.prototype, {
-    constructor: Component,
-    init () {
-      const doms = this.render();
-      this.componentWillMount();
-      this.mount(doms);
-    },
-    render () {
-      return [];
-    },
-    style () {},
-    /**
-     * @description 将组件元素挂载到dom
-     * @param { Array } doms 需要挂载的dom列表
-     * [{
-     *   html: String, // 需要被挂载的dom字符串
-     *   container: DOMElement | 'body', // 挂载的目标容器
-     *   condition: Boolen, // 挂载的条件
-     * }]
-     */
-    mount (doms) {
+
+  /**
+   * @description 将组件元素挂载到dom
+   * @param { Array } doms 需要挂载的dom列表
+   * [{
+   *   html: String, // 需要被挂载的dom字符串
+   *   container: DOMElement | 'body', // 挂载的目标容器
+   *   condition: Boolen, // 挂载的条件，默认挂载
+   * }]
+   */
+  Object.defineProperty(Component.prototype, 'mount', {
+    value: function (doms) {
       if (!doms || !isLength(doms.length) || doms.length < 1) return;
-      
+    
       doms.forEach((dom) => {
+        let { condition, container, html } = dom;
         if (dom.html == null) throw new Error('缺少需挂载的dom字符串');
         if (dom.container == null) throw new Error('缺少挂载目标容器');
 
-        let { condition, container, html } = dom;
         // condition默认为true
         typeof condition === 'undefined' && (condition = true);
         if (condition) {
@@ -267,6 +258,28 @@
         this.destroy();
       });
     },
+    writable: false,
+    configurable: false,
+    enumerable: true
+  });
+
+  Object.defineProperty(Component.prototype, 'init', {
+    value: function () {
+      const doms = this.render();
+      this.componentWillMount();
+      this.mount(doms);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: true
+  });
+  
+  Object.assign(Component.prototype, {
+    constructor: Component,
+    render () {
+      return [];
+    },
+    style () {},
     componentWillMount () {},
     componentDidMount () {},
     bindEvents () {},
@@ -391,7 +404,7 @@
       return;
     }
     
-    let style = "", key;
+    let style = "";
     forInOwn(object, (obj, key) => {
       let styl = "";
       forInOwn(obj, (value, k) => {
@@ -399,7 +412,6 @@
       });
       style = style === '' ? `${key} { ${styl} }` : `${style}\n${key} { ${styl} }`;
     });
-    console.log(style);
     const oldStyleTag = document.querySelector('head').querySelector('style');
     if (oldStyleTag) {
       const oldStyle = oldStyleTag.innerHTML;
@@ -749,7 +761,7 @@
   }
 
   /**
-   * @description  去除第一个数组中与后一个数组相同的元素
+   * @description  移除除第一个数组中与后一个数组重复的元素
    * @param { Array } array
    * @param { Array } list
    */
@@ -780,19 +792,32 @@
     return uniq(result);
   }
 
+  /**
+   * @description 两数组的差集  
+   */  
+  function difference(array, list) {
+
+    const insection = ins(array, list);
+    const arr1 = remove(array, insection);
+    const arr2 = remove(list, insection);
+    
+    return arr1.concat(arr2);
+  }
+
   function sum(array) {
     let sum = 0;
-    if (!array || !isLength(array.length)) return sum;
+    const len = array == null ? 0 : array.length;
+    if (!array || !isLength(len) || len === 1) return sum;
 
     return array.reduce((sum, current) => {
       return sum + current;
     });
   }
 
-  function sumBy(array) {
-    if (!array || !isLength(array.length)) return sum;
-
-    const iteratee = arguments[1];
+  function sumBy(array, iteratee) {
+    let sum = 0;
+    const len = array == null ? 0 : array.length;
+    if (!array || !isLength(len) || len === 0) return sum;
 
     if (isString(iteratee)) {
       return array.reduce((sum, item) => {
@@ -806,16 +831,80 @@
     return 0;
   }
 
-  /**
-   * @description 两数组的差集  
-   */  
-  function difference(array, list) {
+  function max(array) {
+    const len = array == null ? 0 : array.length;
+    if (!array || !isLength(len) || len === 0) return;
 
-    const insection = ins(array, list);
-    const arr1 = remove(array, insection);
-    const arr2 = remove(list, insection);
+    return array.reduce((max, current) => {
+      return max >= current ? max : current;
+    });
+  }
+
+  function maxBy(array, iteratee) {
+    const len = array == null ? 0 : array.length;
+    if (!array || !isLength(len) || len === 0) return;
     
-    return arr1.concat(arr2);
+    let initialValue;
+    if (isString(iteratee)) {
+      initialValue = array[0][iteratee];
+
+      return array.reduce((max, current) => {
+        const currentValue = current[iteratee];
+        return max >= currentValue ? max : currentValue;
+      }, initialValue);
+    } else if (isFunction(iteratee)) {
+      initialValue = iteratee(array[0], 0, array);
+
+      return array.reduce((max, current, index, self) => {
+        const currentValue = iteratee(current, index, self);
+        return max >= currentValue ? max : currentValue;
+      }, initialValue);
+    }
+  }
+
+  function min(array) {
+    const len = array == null ? 0 : array.length;
+    if (!array || !isLength(len) || len ===0) return;
+
+    return array.reduce((min, current) => {
+      return min <= current ? min : current;
+    });
+  }
+
+  function minBy(array, iteratee) {
+    const len = array == null ? 0 : array.length;
+    if (!array || !isLength(len) || len === 0) return;
+
+    let initialValue;
+    if (isString(iteratee)) {
+      initialValue = array[0][iteratee];
+
+      return array.reduce((min, current) => {
+        const currentValue = current[iteratee];
+        return min <= currentValue ? min : currentValue;
+      }, initialValue);
+    } else if (isFunction(iteratee)) {
+      initialValue = iteratee(array[0], 0, array);
+
+      return array.reduce((min, current, index, self) => {
+        const currentValue = iteratee(current, index, self);
+        return min <= currentValue ? min : currentValue;
+      }, initialValue);
+    }
+  }
+  
+  function mean(array) {
+    const len = array == null ? 0 : array.length;
+    if (!array || !isLength(len) || len === 0) return;
+
+    return sum(array) / len;
+  }
+
+  function meanBy(array, iteratee) {
+    const len = array == null ? 0 : array.length;
+    if (!array || !isLength(len) || len === 0) return;
+
+    return sumBy(array, iteratee) / len;
   }
 
   /**
@@ -875,19 +964,19 @@
     forEach (callback) {
       if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
-      for (const key in this) {
-        callback(this[key], key, this);
-      }
+      forInOwn(this, (value, key, self) => {
+        callback(value, key, self);
+      });
     },
 
     filter (callback) {
       if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
       const result  = new rSet();
-      for (const key in this) {
+      forInOwn(this, (value, key, sef) => {
         const state = callback(this[key], key, this);
         if (state === true) result.add(this[key]);
-      }
+      });
 
       return result;
     },
@@ -949,6 +1038,12 @@
     makeArray,
     sum,
     sumBy,
+    max,
+    maxBy,
+    min,
+    minBy,
+    mean,
+    meanBy,
 
     // 对象方法
     deleteKeys,
@@ -965,6 +1060,56 @@
 
   }
   win.Util = Util; //export Util
+
+  ;!function (win) {
+
+    function mouseWheelListener(callback) {
+      addMouseWheelHandler(function (e) {
+        e = e || window.event;
+        const value = e.wheelDelta || -e.deltaY || -e.detail;
+        const delta = Math.max(-1, Math.min(1, value));
+        const direction = delta < 0 ? 'down' : 'up';
+        isFunction(callback) && callback(direction);
+      });
+    }
+
+    win.mouseWheelListener = mouseWheelListener;
+
+    let g_supportsPassive = false;
+    try {
+      const opts = Object.defineProperty({}, 'passive', {
+        get: function () {
+          g_supportsPassive = true;
+        }
+      });
+      window.addEventListener("testPassive", null, opts);
+      window.removeEventListener("testPassive", null, opts);
+    } catch (e) {}
+
+    function addMouseWheelHandler (callback) {
+      let prefix = '';
+      let _addEventListener;
+    
+      if (window.addEventListener) {
+        _addEventListener = "addEventListener";
+      } else {
+        _addEventListener = "attachEvent";
+        prefix = 'on';
+      }
+      
+      const support = 'onwheel' in document.createElement('div') ? 'wheel' : (
+        document.onmousewheel !== undefined ? 'mousewheel' : 'DOMMouseScroll'
+      );
+        
+      const passiveEvent = g_supportsPassive ? { passive: false } : false;
+      
+      if (support == 'DOMMouseScroll') {
+        document[_addEventListener](prefix + 'MozMousePixelScroll', callback, passiveEvent);
+      } else {
+        document[_addEventListener](prefix + support, callback, passiveEvent);
+      }
+    }
+  }(win)
 
   /* ========String======== */
   /**

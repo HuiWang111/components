@@ -36,6 +36,12 @@
         buildRandomString = Util.buildRandomString,
         sum = Util.sum,
         sumBy = Util.sumBy,
+        max = Util.max,
+        maxBy = Util.maxBy,
+        min = Util.min,
+        minBy = Util.minBy,
+        mean = Util.mean,
+        meanBy = Util.meanBy,
         getMonthData = Util.getMonthData,
         forIn = Util.forIn,
         forInOwn = Util.forInOwn,
@@ -61,7 +67,9 @@
 
     var monthDays = getMonthData(/* 2019, 4 */);console.log(monthDays);
 
-    
+    mouseWheelListener(function (direction) {
+      console.log(direction);
+    });
 
   </script>
 </body>

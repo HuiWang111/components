@@ -1,31 +1,31 @@
 'use strict';
 
-;!function (window, jQuery, Swiper, Component) {
+;!function (window, jQuery, Swiper, Component, Util) {
 
   /* utils */
-  var _Util = Util,
-      isString = _Util.isString,
-      isObject = _Util.isObject,
-      isEmptyObject = _Util.isEmptyObject,
-      isFunction = _Util.isFunction,
-      isNumber = _Util.isNumber,
-      isNumeric = _Util.isNumeric,
-      isDom = _Util.isDom,
-      toSelector = _Util.toSelector,
-      appendStyle = _Util.appendStyle,
-      insertElementToBody = _Util.insertElementToBody,
-      domAfterLoad = _Util.domAfterLoad,
-      tagOf = _Util.tagOf,
-      remove = _Util.remove,
-      difference = _Util.difference,
-      uniq = _Util.uniq,
-      ins = _Util.ins,
-      makeArray = _Util.makeArray,
-      keyOf = _Util.keyOf,
-      deleteKeys = _Util.deleteKeys,
-      dateFormater = _Util.dateFormater,
-      buildRandomString = _Util.buildRandomString,
-      rSet = _Util.rSet;
+  var isString = Util.isString,
+      isObject = Util.isObject,
+      isEmptyObject = Util.isEmptyObject,
+      isFunction = Util.isFunction,
+      isNumber = Util.isNumber,
+      isNumeric = Util.isNumeric,
+      isDom = Util.isDom,
+      toSelector = Util.toSelector,
+      appendStyle = Util.appendStyle,
+      insertElementToBody = Util.insertElementToBody,
+      domAfterLoad = Util.domAfterLoad,
+      tagOf = Util.tagOf,
+      remove = Util.remove,
+      difference = Util.difference,
+      uniq = Util.uniq,
+      ins = Util.ins,
+      makeArray = Util.makeArray,
+      keyOf = Util.keyOf,
+      deleteKeys = Util.deleteKeys,
+      dateFormater = Util.dateFormater,
+      buildRandomString = Util.buildRandomString,
+      toNumber = Util.toNumber,
+      rSet = Util.rSet;
 
   /* icons */
 
@@ -815,115 +815,69 @@
       var RANDOM_CLASS = buildRandomString();
       this.RANDOM_CLASS = RANDOM_CLASS;
 
-      // 获取当前页面最大的z-index值
-      var $hasZIndex = $('*').filter(function (_, item) {
-        return isNumeric($(item).css('z-index')) && parseInt($(item).css('z-index')) > 0;
-      });
-      var maxZIndex = $hasZIndex.length === 0 ? null : Array.from($hasZIndex).reduce(function (prev, item) {
-        var zIndex = parseFloat($(item).css('z-index'));
-        return zIndex > prev ? zIndex : prev;
-      }, -1000000);
+      this.super();
+    };
 
-      // srcList
-      var srcList = this.createSrcList();
-
-      // 创建html元素，并合并到body下
-      var pagination = defaultOptions.pagination;
-      var navgation = defaultOptions.navgation;
-      this.createDom(srcList, pagination, navgation);
-
-      // 处理swiper配置
-      swiperOptions = defaultOptions.swiperOptions;
-      this.swiperOptionsHandler(swiperOptions, pagination, navgation);
-
-      var GALLERY = this;
-      domAfterLoad(toSelector(RANDOM_CLASS), function () {
-        // 判断元素是否挂载完成
-        // gallery实例容器
-        GALLERY.$container = $(toSelector(RANDOM_CLASS));
-
-        // 初始化样式
-        var width = defaultOptions.width,
-            height = defaultOptions.height;
-        var bgColor = defaultOptions.bgColor;
-        GALLERY.setStyle(maxZIndex, width, height, bgColor, navgation);
-
-        GALLERY.bindEvent(swiperOptions);
-      });
-    }
+    $.inherit(Component, Gallery);
 
     win.Gallery = Gallery;
 
-    Gallery.prototype = {
-
-      createSrcList: function createSrcList() {
-
-        var eleList = Array.from(this.$source);
-
-        //获取【自身为img元素或者子元素中包含img元素, 并且img元素包含src props】的元素
-        eleList = eleList.filter(function (item) {
-          var isImg = isImgEl(item);
-          var $img = !isImg ? $(item).find('img') : null;
-          return isImg && item.src || $img && $img.length > 0 && $img[0].src;
-        });
-
-        //生成img元素的src列表
-        var srcList = eleList.map(function (item) {
-          return item.src || $(item).find('img')[0].src;
-        });
-
-        return srcList;
+    Object.assign(Gallery.prototype, {
+      componentWillMount: function componentWillMount() {
+        // handle swiper options
+        this.swiperOptionsHandler();
       },
 
-      createDom: function createDom(srcList, pagination, navgation) {
 
-        var RANDOM_CLASS = this.randomClassName;
+      render: function render() {
+        var srcList = this.createSrcList();
+        var RANDOM_CLASS = this.RANDOM_CLASS,
+            _options2 = this.options,
+            pagination = _options2.pagination,
+            navgation = _options2.navgation;
+
 
         var slideList = srcList.map(function (src) {
           return $.node('div', '<img src="' + src + '" />', 'swiper-slide');
         });
 
         var swiperWrapper = $.node('div', slideList, 'swiper-wrapper');
-
         if (pagination) {
           swiperWrapper += $.node('div', '', GALLERY_PAGINATION_CLASS.appendClass('swiper-pagination'));
         }
 
         var swiperContainer = $.node('div', swiperWrapper, GALLERY_SWIPER_CONTAINER_CLASS.appendClass('swiper-container'));
-
         if (navgation) {
-          swiperContainer += $.node('div', '', GALLERY_BUTTON_PREV_CLASS.appendClass('swiper-button-prev')) + $.node('div', '', GALLERY_BUTTON_NEXT_CLASS.appendClass('swiper-button-next'));
+          var prevBtn = $.node('div', '', GALLERY_BUTTON_PREV_CLASS.appendClass('swiper-button-prev'));
+          var nextBtn = $.node('div', '', GALLERY_BUTTON_NEXT_CLASS.appendClass('swiper-button-next'));
+          swiperContainer += prevBtn + nextBtn;
         }
 
         var galleryWrappper = $.node('div', swiperContainer, GALLERY_WRAPPER_CLASS);
 
         var galleryContainer = $.node('section', galleryWrappper, GALLERY_CONTAINER_CLASS.appendClass(GALLERY_CONTAINER_CLASS_HIDDEN).appendClass(RANDOM_CLASS));
 
-        // 将gallery容器添加到body
-        var $gallery = $(galleryContainer);
-        insertElementToBody($gallery);
+        return [{
+          html: galleryContainer,
+          container: 'body'
+        }];
       },
 
-      swiperOptionsHandler: function swiperOptionsHandler(swiperOptions, pagination, navgation) {
-
-        var RANDOM_CLASS = this.randomClassName;
-
-        if (swiperOptions.pagination) delete swiperOptions.pagination;
-        if (swiperOptions.nextButton) delete swiperOptions.nextButton;
-        if (swiperOptions.prevButton) delete swiperOptions.prevButton;
-
-        if (pagination) swiperOptions.pagination = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_PAGINATION_CLASS));
-        if (navgation) {
-          swiperOptions.nextButton = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_BUTTON_NEXT_CLASS));
-          swiperOptions.prevButton = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_BUTTON_PREV_CLASS));
-        }
-        swiperOptions.observer = true;
-        swiperOptions.observeParents = true;
+      componentDidMount: function componentDidMount() {
+        this.$container = $(toSelector(this.RANDOM_CLASS));
       },
 
-      setStyle: function setStyle(maxZIndex, width, height, bgColor, navgation) {
+
+      style: function style() {
+        var maxZIndex = this.getMaxZIndex();
+        var _options3 = this.options,
+            width = _options3.width,
+            height = _options3.height,
+            bgColor = _options3.bgColor,
+            navgation = _options3.navgation;
 
         var $container = this.$container;
+
         // 设置gallery元素的z-index为当前页面z-index最大值+1
         $container.css({
           'z-index': maxZIndex === null ? 'auto' : maxZIndex + 1
@@ -960,17 +914,19 @@
         });
       },
 
-      bindEvent: function bindEvent(swiperOptions) {
-        var $container = this.$container;
-        var RANDOM_CLASS = this.randomClassName;
+      bindEvents: function bindEvents() {
+        var RANDOM_CLASS = this.RANDOM_CLASS,
+            $container = this.$container,
+            $source = this.$source,
+            swiperOptions = this.options.swiperOptions;
 
         // 点击初始化gallery swiper
+
         var GALLERY = this;
         GALLERY.$swiper = null;
-        var $source = this.$source;
         $source.on('click', function () {
           var target = this;
-          var index = Array.from($source).indexOf(target);
+          var index = $source.indexOf(target);
 
           if (!GALLERY.$swiper) {
             index > 0 && (swiperOptions.initialSlide = index);
@@ -992,8 +948,129 @@
           e.stopPropagation();
         };
         $container.find(toSelector(GALLERY_WRAPPER_CLASS)).on('click', stopPropagation);
-      }
+      },
 
-    };
-  }(window, jQuery, Swiper, Component);
-}(window, jQuery, window.Swiper ? window.Swiper : new Function(), window.Component ? window.Component : new Function());
+
+      createSrcList: function createSrcList() {
+        var eleList = Array.from(this.$source);
+
+        //获取【自身为img元素或者子元素中包含img元素, 并且img元素包含src props】的元素
+        eleList = eleList.filter(function (item) {
+          var isImg = isImgEl(item);
+          var $img = !isImg ? $(item).find('img') : null;
+          return isImg && item.src || $img && $img.length > 0 && $img[0].src;
+        });
+
+        //生成img元素的src列表
+        var srcList = eleList.map(function (item) {
+          return item.src || $(item).find('img')[0].src;
+        });
+
+        return srcList;
+      },
+
+      getMaxZIndex: function getMaxZIndex() {
+        // 获取当前页面最大的z-index值
+        var $hasZIndex = $('*').filter(function (_, item) {
+          var zIndex = toNumber($(item).css('z-index'));
+          return zIndex !== false && zIndex > 0;
+        });
+        var maxZIndex = $hasZIndex.length === 0 ? null : $hasZIndex.reduce(function (max, item) {
+          var zIndex = parseFloat($(item).css('z-index'));
+          return zIndex > max ? zIndex : max;
+        }, -1000000);
+
+        return maxZIndex;
+      },
+
+
+      swiperOptionsHandler: function swiperOptionsHandler() {
+        var RANDOM_CLASS = this.RANDOM_CLASS,
+            _options4 = this.options,
+            swiperOptions = _options4.swiperOptions,
+            pagination = _options4.pagination,
+            navgation = _options4.navgation;
+
+
+        if (swiperOptions.pagination) delete swiperOptions.pagination;
+        if (swiperOptions.nextButton) delete swiperOptions.nextButton;
+        if (swiperOptions.prevButton) delete swiperOptions.prevButton;
+
+        if (pagination) swiperOptions.pagination = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_PAGINATION_CLASS));
+        if (navgation) {
+          swiperOptions.nextButton = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_BUTTON_NEXT_CLASS));
+          swiperOptions.prevButton = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_BUTTON_PREV_CLASS));
+        }
+
+        swiperOptions.observer = true;
+        swiperOptions.observeParents = true;
+
+        this.options.swiperOptions = swiperOptions;
+      }
+    });
+  }(window, jQuery, Swiper, Component);!function (win, $, Component) {
+
+    var CARD_LIST_ITEM_INNER_CLASS = 'cardList-item-inner';
+    var CARD_LIST_ITEM_CLASS = 'cardList-item';
+
+    function CardList(selector, options) {
+      var defaultOptions = {
+        dataSource: [],
+        lineItemNumber: 3,
+        ratio: 0.57,
+        bordered: false,
+        renderItem: null
+      };
+
+      this.options = Object.assign({}, defaultOptions, options);
+      this.$container = $(selector);
+
+      this.super();
+    }
+
+    $.inherit(Component, CardList);
+
+    win.CardList = CardList;
+
+    Object.assign(CardList.prototype, {
+      render: function render() {
+        var _options5 = this.options,
+            dataSource = _options5.dataSource,
+            renderItem = _options5.renderItem,
+            lineItemNumber = _options5.lineItemNumber;
+        var $container = this.$container;
+
+
+        var itemPercent = Math.floor(100 / lineItemNumber);
+
+        var CardItems = dataSource.map(function (data) {
+          var itemDom = isFunction(renderItem) ? renderItem(data) : data;
+          var itemInner = $.node('div', itemDom, CARD_LIST_ITEM_INNER_CLASS);
+
+          return $.node('div', itemInner, CARD_LIST_ITEM_CLASS.appendClass('flex-percent-' + itemPercent));
+        });
+
+        return [{
+          html: CardItems.join(''),
+          container: $container
+        }];
+      },
+      style: function style() {
+        var $container = this.$container;
+        var _options6 = this.options,
+            ratio = _options6.ratio,
+            bordered = _options6.bordered;
+
+
+        $container.addClass('flex');
+
+        var $item = $container.find(toSelector(CARD_LIST_ITEM_INNER_CLASS));
+        $item.css({
+          height: 0,
+          paddingBottom: ratio * 100 + '%',
+          border: bordered ? '1px solid #eee' : 'none'
+        });
+      }
+    });
+  }(window, jQuery, Component);
+}(window, window.jQuery, window.Swiper, window.Component, window.Util);
