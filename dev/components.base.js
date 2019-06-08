@@ -371,7 +371,7 @@
       var mustBeNumber = ['total', 'pageSize', 'current'];
       for (var key in opts) {
         if (mustBeNumber.indexOf(key) > -1) {
-          if (!isNumber(defaultOptions[key])) throw new Error('`' + key + '` is not a number');
+          if (!isNumber(opts[key])) throw new Error('`' + key + '` is not a number');
         }
       }
   
@@ -637,9 +637,7 @@
   
       hide (onClose) {
         const { $el, $text } = this;
-  
-        // const index = messageList.indexOf(this);
-        // messageList.splice(index, 1);
+        
         messageList.delete(this);
   
         ($el[0].style.top !== '') && ($el[0].style.top = '');
@@ -665,7 +663,7 @@
       });
       
       //有隐藏的提示框就直接用该实例，否则创建新实例
-      if (hiddenWarning.length > 0) {
+      if (hiddenWarning.size > 0) {
         messageList.add(hiddenWarning[0]);
         hiddenWarning[0].show(content, duration, onClose);
       } else {
@@ -682,7 +680,7 @@
         return !instance.$el.hasClass('comedown');
       });
   
-      if (hiddenSuccess.length > 0) {
+      if (hiddenSuccess.size > 0) {
         messageList.add(hiddenSuccess[0]);
         hiddenSuccess[0].show(content, duration, onClose);
       } else {
@@ -699,7 +697,7 @@
         return !instance.$el.hasClass('comedown');
       });
   
-      if (hiddenError.length > 0) {
+      if (hiddenError.size > 0) {
         messageList.add(hiddenError[0]);
         hiddenError[0].show(content, duration, onClose);
       } else {
@@ -716,7 +714,7 @@
         return !instance.$el.hasClass('comedown');
       });
   
-      if (hiddenInfo.length > 0) {
+      if (hiddenInfo.size > 0) {
         messageList.add(hiddenInfo[0]);
         hiddenInfo[0].show(content, duration, onClose);
       } else {

@@ -1038,18 +1038,6 @@
       });
     },
 
-    filter (callback) {
-      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
-
-      const result  = new SetMock();
-      forInOwn(this, (value, key, self) => {
-        const state = callback(value, key, self);
-        if (state === true) result.add(value);
-      });
-
-      return result;
-    },
-
     add (item) {
       const addSet =  (target) => {
         if (!this.has(target)) {
@@ -1084,6 +1072,34 @@
       deleteKeys(this);
       this.size = 0;
       this.nextKey = 0;
+    },
+
+    /**
+     * 额外的，不同于ES6 Set集合的方法
+     */
+    filter (callback) {
+      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+
+      const result  = new SetMock();
+      forInOwn(this, (value, key, self) => {
+        const state = callback(value, key, self);
+        if (state === true) result.add(value);
+      });
+
+      return result;
+    },
+
+    toArray () {
+      const array = [];
+      forInOwn(this, (value) => {
+        array.push(value);
+      });
+
+      return array;
+    },
+
+    indexOf (item) {
+      return this.toArray().indexOf(item);
     }
   };
 
