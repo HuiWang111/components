@@ -64,7 +64,7 @@ gulp.task('less',function(){
     .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
     .pipe(less())
     .pipe(autoprefixer({
-      browsers: ['last 2 versions', 'Android >= 4.0']
+      browsers: ['last 10 versions', 'Android >= 3.0']
     }))
     .pipe(gulp.dest('dev'))
   );
