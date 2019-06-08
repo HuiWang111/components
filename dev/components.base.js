@@ -24,7 +24,7 @@
     dateFormater,
     buildRandomString,
     toNumber,
-    rSet
+    SetMock
   } = Util;
   
   /* icons */
@@ -656,8 +656,8 @@
       Object.assign(defaultOptions, options);
     };
   
-    const messageList = new rSet();
-    const warningList = new rSet();
+    const messageList = new SetMock();
+    const warningList = new SetMock();
     message.warning = function (content, duration, onClose) {
       //获取页面中隐藏的warning提示框
       const hiddenWarning = warningList.filter(function (instance) {
@@ -676,7 +676,7 @@
       }
     };
   
-    const successList = new rSet();
+    const successList = new SetMock();
     message.success = function (content, duration, onClose) {
       const hiddenSuccess = successList.filter(function (instance) {
         return !instance.$el.hasClass('comedown');
@@ -693,7 +693,7 @@
       }
     };
   
-    const errorList = new rSet();
+    const errorList = new SetMock();
     message.error = function (content, duration, onClose) {
       const hiddenError = errorList.filter(function (instance) {
         return !instance.$el.hasClass('comedown');
@@ -710,7 +710,7 @@
       }
     };
   
-    const infoList = new rSet();
+    const infoList = new SetMock();
     message.info = function (content, duration, onClose) {
       const hiddenInfo = infoList.filter(function (instance) {
         return !instance.$el.hasClass('comedown');

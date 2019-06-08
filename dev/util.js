@@ -1,3 +1,9 @@
+/**
+ * ES6可用方法：Object.is, Object.assign, Array.from, String.prototype.repeat, String.prototype.includes,
+ *  Array.prototype.find, Array.prototype.findIndex
+ * 
+ * ES7可用方法：Array.prototype.includes
+ */
 ;!function(win, $) {
   
   const emptyArray = [];
@@ -6,6 +12,9 @@
     return;
   }
 
+  /**
+   * @description ES6方法
+   */
   if (!emptyArray.fill) {
 
     Object.is = function (x, y) {
@@ -65,28 +74,54 @@
         return result;
       },
 
-      startsWith (search, pos) {
-        search = search == null ? '' : (search.toString ? search.toString() : '');
-  
+      startsWith (search, start) {
+        if (search instanceof RegExp) {
+          throw new TypeError('First argument to String.prototype.includes must not be a regular expression');
+        }
+
+        search = String(search);
+        start = isNumeric(start) ? parseInt(start) : 0;
+
         const len = search.length;
-        if (this.length < len) return false;
-        
-        pos = isNumber(pos) ? (pos < 0 ? 0 : +pos) : 0;
-        pos = isNaN(pos) ? 0 : pos;
-        const str = this.substring(position, position + len);
-        return str === search;
+        if (start + search.length > len) {
+          return false;
+        } else {
+          const str = this.substring(start, start + len);
+          return str === search;
+        }
       },
 
-      endsWith (search, length) {
-        search = search == null ? '' : (search.toString ? search.toString() : '');
-  
-        const len = this.length;
-        if (len < search.length) return false;
+      endsWith (search, pos) {
+        if (search instanceof RegExp) {
+          throw new TypeError('First argument to String.prototype.includes must not be a regular expression');
+        }
         
-        length = isNumber(length) ? len : +length;
-        length = isNaN(length) || length > len ? len : length;
-        const str = this.substring(length - search.length, length);
-        return str === search;
+        search = String(search);
+        const len = search.length;
+        const length = this.length;
+
+        const start = isNumeric(pos) ? parseInt(pos) - len : length - 1;
+        
+        
+        if (start + len > length) {
+          return false;
+        } else {
+          const str = this.substring(start, start + len);
+          return str === search;
+        }
+      },
+
+      includes (search, start) {
+        if (search instanceof RegExp) {
+          throw new TypeError('First argument to String.prototype.includes must not be a regular expression');
+        }
+
+        start = isNumber(start) ? start : 0;
+        if (start + search.length > this.length) {
+          return false;
+        } else {
+          return this.indexOf(search, indexOf) !== -1;
+        }
       }
     });
 
@@ -117,22 +152,6 @@
         }
   
         return -1;
-      },
-
-      includes (target, start) {
-        const array = this, len = array.length;
-        start = typeof start === 'number' ? start : 0;
-        start = start >= 0 ? start : (len + start);
-  
-        let result = false;
-        for (let i = start; i < len; i++) {
-          if (Object.is(target, array[i])) {
-            result = true;
-            break;
-          }
-        }
-  
-        return result;
       },
 
       fill (fill, start, end) {
@@ -202,7 +221,66 @@
         }
       }
     });
+  }
 
+  /**
+   * @description ES7方法
+   */
+  if (!emptyArray.includes) {
+    Object.assign(Array.prototype, {
+      includes (target, start) {
+        const array = this, len = array.length;
+        start = isNumeric(start) ? parseInt(start) : 0;
+        start = start >= 0 ? start : 0;
+  
+        let result = false;
+        for (let i = start; i < len; i++) {
+          if (Object.is(target, array[i])) {
+            result = true;
+            break;
+          }
+        }
+  
+        return result;
+      }
+    });
+  }
+
+  /**
+   * @description ES8方法
+   */
+  if (!Object.entries) {
+    Object.entries = function (object) {
+      if (object == null) {
+        throw new TypeError('Cannot convert undefined or null to object');
+      }
+
+      const entries = [];
+      const keys = Object.keys(object);
+      for (var key in object) {
+        if (keys.includes(key)) {
+          entries.push([ String(key), object[key] ]);
+        }
+      }
+
+      return entries;
+    }
+
+    Object.values = function (object) {
+      if (object == null) {
+        throw new TypeError('Cannot convert undefined or null to object');
+      }
+
+      const values = [];
+      const keys = Object.keys(object);
+      for (var key in object) {
+        if (keys.includes(key)) {
+          values.push(object[key]);
+        }
+      }
+
+      return values;
+    }
   }
 
   /**
@@ -219,6 +297,7 @@
    *   html: String, // 需要被挂载的dom字符串
    *   container: DOMElement | 'body', // 挂载的目标容器
    *   condition: Boolen, // 挂载的条件，默认挂载
+   *   type: 'html' // 挂载的jQuery方法, append | prepend | before | after | html 等, 默认html
    * }]
    */
   Object.defineProperty(Component.prototype, 'mount', {
@@ -226,7 +305,7 @@
       if (!doms || !isLength(doms.length) || doms.length < 1) return;
     
       doms.forEach((dom) => {
-        let { condition, container, html } = dom;
+        let { condition, container, html, type } = dom;
         if (dom.html == null) throw new Error('缺少需挂载的dom字符串');
         if (dom.container == null) throw new Error('缺少挂载目标容器');
 
@@ -236,8 +315,9 @@
           if (container === 'body') {
             insertElementToBody($(html));
           } else {
+            type = type || 'html';
             !(container instanceof jQuery) && (container = $(container));
-            container.html(html);
+            container[type](html);
           }
         }
       });
@@ -468,7 +548,7 @@
       date = new Date();
     } else {
       date = parseInt(date);
-      if (date.toString().length === 13) {
+      if (String(date).length === 13) {
         date = new Date(date);
       } else {
         date = new Date(date * 1000);
@@ -724,7 +804,8 @@
     if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
     for (const key in object) {
-      callback(object[key], key, object);
+      const isBreak = callback(object[key], key, object);
+      if (isBreak === false) break;
     }
   }
   function forInOwn(object, callback) {
@@ -732,7 +813,8 @@
 
     for(const key in object) {
       if (object.hasOwnProperty(key)) {
-        callback(object[key], key, object);
+        const isBreak = callback(object[key], key, object);
+        if (isBreak === false) break;
       }
     }
   }
@@ -918,74 +1000,73 @@
   }
 
   /**
-   * @description ES5 Set集合简易版
+   * @description ES5版Set集合
    */
-  function rSet() {
-    let set;
-    if (Array.isArray(arguments[0])) {
-      set = arguments[0];
-    } else {
-      set = Array.from(arguments);
-    }
-
-    set = uniq(set);
-
-    const len = set.length;
-    for(let i = 0; i < len; i++) {
-      let value = set[i];
-      this[i] = value;
-    }
+  function SetMock() {
 
     Object.defineProperties(this, {
       size: {
         configurable: false,
-        value: len,
+        value: 0,
         enumerable: false,
         writable: true
       },
 
       nextKey: {
         configurable: false,
-        value: len,
+        value: 0,
         enumerable: false,
         writable: true
       }
     });
+
   }
 
-  rSet.prototype = {
-    constructor: rSet,
+  SetMock.prototype = {
+    constructor: SetMock,
 
     has (item) {
       const key  = keyOf(this, item, 'size,nextKey');
       return (typeof key !== 'undefined');
     },
 
-    forEach (callback) {
+    forEach (callback, context) {
       if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
       forInOwn(this, (value, key, self) => {
-        callback(value, key, self);
+        isObject(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
       });
     },
 
     filter (callback) {
       if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
-      const result  = new rSet();
-      forInOwn(this, (value, key, sef) => {
-        const state = callback(this[key], key, this);
-        if (state === true) result.add(this[key]);
+      const result  = new SetMock();
+      forInOwn(this, (value, key, self) => {
+        const state = callback(value, key, self);
+        if (state === true) result.add(value);
       });
 
       return result;
     },
 
     add (item) {
-      if (!this.has(item)) {
-        this[this.nextKey++] = item;
-        this.size++;
+      const addSet =  (target) => {
+        if (!this.has(target)) {
+          this[this.nextKey++] = target;
+          this.size++;
+        }
       }
+
+      if (Array.isArray(item)) {
+        const set = uniq(item);
+        set.forEach((setItem) => {
+          addSet(setItem);
+        }); 
+      } else {
+        addSet(item);
+      }
+      
       return this;
     },
 
@@ -1004,7 +1085,85 @@
       this.size = 0;
       this.nextKey = 0;
     }
+  };
+
+  /**
+   * @description ES5版Map集合
+   */
+  function MapMock(entries) {
+
+    Object.defineProperty(this, 'size', {
+      configurable: false,
+      value: 0,
+      enumerable: false,
+      writable: true
+    });
+
+    if (entries != null) {
+      if (!Array.isArray(entries)) {
+        throw new Error(entries + ' is not a Array');
+      } else {
+        entries.forEach((entry) => {
+          if (!Array.isArray(entry)) {
+            throw new Error(entry + ' is not a Array');
+          } else {
+            const key = entry[0], value = entry[1];
+            this[key] = value;
+            this.size++;
+          }
+        });
+      }
+    }
+
   }
+
+  MapMock.prototype = {
+    constructor: MapMock,
+
+    set (key, value) {
+      this[key] = value;
+      this.size++;
+      return this;
+    },
+
+    get (key) {
+      return this[key];
+    },
+
+    has (key) {
+      let has = false;
+      forInOwn(this, (_, k) => {
+        if (Object.is(key, k)) {
+          has = true;
+          return false;
+        }
+      });
+
+      return has;
+    },
+
+    delete (key) {
+      if (this.has(key)) {
+        delete this[key];
+        this.size--;
+        return true;
+      }
+      return false;
+    },
+
+    clear () {
+      deleteKeys(this);
+      this.size = 0;
+    },
+
+    forEach (callback, context) {
+      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+
+      forInOwn(this, (value, key, self) => {
+        isObject(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
+      });
+    }
+  };
 
   const Util = {
 
@@ -1056,7 +1215,8 @@
     dateFormater,
     getMonthData,
     buildRandomString,
-    rSet,
+    SetMock,
+    MapMock
 
   }
   win.Util = Util; //export Util

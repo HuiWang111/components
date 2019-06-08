@@ -31,7 +31,7 @@ gulp.task('compressJS',function(){
  */
 gulp.task('outputES5',function(){
 
-  return gulp.src(['dev/util.js', 'dev/components.js'])
+  return gulp.src(['dev/util.js', 'dev/components.base.js'])
   .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
   .pipe(babel({
     presets: ['es2015']
