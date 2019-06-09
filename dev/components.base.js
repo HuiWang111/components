@@ -959,6 +959,17 @@
 
   ;!function (win, $, Component) {
 
+    /**
+     * @param options: {
+     *    dataSource: Array,
+     *    lineItemNumber: Number, // 每行Card的数量
+     *    ratio: Number, // 宽高比
+     *    border: Boolen, // 是否需要边框
+     *    style: Object, // 添加到Card容器的style标签内容
+     *    renderItem: Function(data) // Card内容的渲染回调，data为dataSource中的某一项
+     * }
+     */
+
     const CARD_LIST_ITEM_INNER_CLASS = 'cardList-item-inner';
     const CARD_LIST_ITEM_CLASS = 'cardList-item';
 
@@ -967,7 +978,8 @@
         dataSource: [],
         lineItemNumber: 3,
         ratio: 0.57,
-        bordered: false,
+        border: false,
+        style: null,
         renderItem: null
       }
 
@@ -1003,7 +1015,7 @@
 
       style () {
         const { $container } = this;
-        const { ratio, bordered } = this.options;
+        const { ratio, border } = this.options;
 
         $container.addClass('flex');
 
@@ -1011,7 +1023,7 @@
         $item.css({
           height: 0,
           paddingBottom: ratio*100 + '%',
-          border: bordered ? '1px solid #eee' : 'none'
+          border: border ? '1px solid #eee' : 'none'
         });
       }
     });

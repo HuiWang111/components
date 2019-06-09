@@ -45,31 +45,10 @@
         getMonthData = Util.getMonthData,
         forIn = Util.forIn,
         forInOwn = Util.forInOwn,
+        toCamelCase = Util.toCamelCase,
+        insert = Util.insert,
+        fromCamelCase = Util.fromCamelCase,
         SetMock = Util.SetMock;
-
-    var arr = [{
-      a: 1,
-      b: 2,
-      c: 3
-    }, {
-      a: 4,
-      b: 5,
-      c: 6
-    }, {
-      a: 7,
-      b: 8,
-      c: 9
-    }];
-
-    var arr2 = [1,3,4,5,6];
-    var sum1 = sumBy(arr, 'a');
-    var sum2 = sum(arr2); console.log(sum2);
-
-    var monthDays = getMonthData(/* 2019, 4 */);console.log(monthDays);
-
-    mouseWheelListener(function (direction) {
-      console.log(direction);
-    });
 
   </script>
 </body>

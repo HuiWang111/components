@@ -707,6 +707,49 @@
   }
 
   /**
+   * @description 下划线或中划线命名法转驼峰命名法
+   */
+  function toCamelCase(string) {
+    const match = ['-', '_'];
+    const index = [];
+    for (let i = 0, len = string.length; i < len; i++) {
+      if ( match.includes(string[i]) ) {
+        index.push(i + 1);
+      }
+    }
+    
+    string = string.split('').map((str, ii) => index.includes(ii) ? str.toUpperCase() : str).join('');
+    return string.replace(/[-_]/g, '');
+  }
+
+  /**
+   * @description 驼峰命名法转其他命名法
+   * @param { String } '-' | '_'
+   */
+  function fromCamelCase(string, type = '-') {
+    if (type !== '-' && type !== '_') return string;
+
+    const upperRe = /[A-Z]/g;
+    const indexSet = [];
+    const array = string.split('').map((str, i) => {
+      if (upperRe.test(str)) {
+        indexSet.push(i);
+        return str.toLowerCase();
+      }
+      return str;
+    });
+
+    const insertSet = indexSet.map((index) => {
+      return {
+        index,
+        item: type
+      }
+    });
+
+    return insert(array, insertSet).join('');
+  } 
+
+  /**
    * @description 检测元素挂载完成后执行回调
    * @param { String } selector
    * @param { Function } loadedCallback 挂载完成回调
@@ -830,6 +873,30 @@
       return el.tagName.toLowerCase();
     }
     return el[0].tagName.toLowerCase();
+  }
+
+  /**
+   * @description 向数组中插入一个(或多个)位置插入一个(或多个)元素
+   * @param { Array } array 需要插入元素的目标数组
+   * @param { Array } insertSet 需要插入的元素集合
+   * insertSet example: [{
+   *    index: Number,
+   *    item: *
+   * }]
+   */
+  function insert(array, insertSet) {
+    [array, insertSet].forEach((v) => {
+      if (!Array.isArray(v)) throw new Error(v + ' is not a Array');
+    });
+
+    let adder = 0;
+    insertSet.forEach(function (insert) {
+      const { index, item } = insert;
+      array.splice(index + adder, 0, item);
+      adder++;
+    });
+
+    return array;
   }
 
   /**
@@ -1221,6 +1288,7 @@
     minBy,
     mean,
     meanBy,
+    insert,
 
     // 对象方法
     deleteKeys,
@@ -1228,11 +1296,16 @@
     lastOf,
     forIn,
     forInOwn,
+
+    // String方法
+    toCamelCase,
+    buildRandomString,
+    fromCamelCase,
     
     // 其他方法
     dateFormater,
     getMonthData,
-    buildRandomString,
+    
     SetMock,
     MapMock
 
