@@ -7,6 +7,7 @@ const babel = require('gulp-babel');
 const rename = require('gulp-rename');
 const cleanCSS = require('gulp-clean-css');
 const autoprefixer = require('gulp-autoprefixer');
+const gutil = require('gulp-util');
 
 /**
  * @description 压缩dev下的js文件
@@ -18,7 +19,14 @@ gulp.task('compressJS',function(){
   .pipe(babel({
     presets: ['es2015']
   }))
-  .pipe(uglify())
+  .pipe(uglify({
+    mangle: {
+      reserved: ['Component']
+    }
+  }))
+  .on('error', function (err) {
+    gutil.log(gutil.colors.red('[Error]'), err.toString());
+  })
   .pipe(rename({
     suffix: '.min'
   }))

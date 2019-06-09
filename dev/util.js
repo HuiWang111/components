@@ -3,6 +3,8 @@
  *  Array.prototype.find, Array.prototype.findIndex
  * 
  * ES7可用方法：Array.prototype.includes
+ * 
+ * ES8可用方法：Object.entries, Object.values
  */
 ;!function(win, $) {
   
@@ -306,8 +308,8 @@
     
       doms.forEach((dom) => {
         let { condition, container, html, type } = dom;
-        if (dom.html == null) throw new Error('缺少需挂载的dom字符串');
-        if (dom.container == null) throw new Error('缺少挂载目标容器');
+        if (html == null) throw new Error('缺少需挂载的dom字符串');
+        if (container == null) throw new Error('缺少挂载目标容器');
 
         // condition默认为true
         typeof condition === 'undefined' && (condition = true);

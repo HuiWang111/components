@@ -4,6 +4,12 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
+/**
+ * ES6可用方法：Object.is, Object.assign, Array.from, String.prototype.repeat, String.prototype.includes,
+ *  Array.prototype.find, Array.prototype.findIndex
+ * 
+ * ES7可用方法：Array.prototype.includes
+ */
 ;!function (win, $) {
 
   var emptyArray = [];
@@ -12,6 +18,9 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     return;
   }
 
+  /**
+   * @description ES6方法
+   */
   if (!emptyArray.fill) {
 
     Object.is = function (x, y) {
@@ -71,27 +80,51 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
         return result;
       },
-      startsWith: function startsWith(search, pos) {
-        search = search == null ? '' : search.toString ? search.toString() : '';
+      startsWith: function startsWith(search, start) {
+        if (search instanceof RegExp) {
+          throw new TypeError('First argument to String.prototype.includes must not be a regular expression');
+        }
+
+        search = String(search);
+        start = isNumeric(start) ? parseInt(start) : 0;
 
         var len = search.length;
-        if (this.length < len) return false;
-
-        pos = isNumber(pos) ? pos < 0 ? 0 : +pos : 0;
-        pos = isNaN(pos) ? 0 : pos;
-        var str = this.substring(position, position + len);
-        return str === search;
+        if (start + search.length > len) {
+          return false;
+        } else {
+          var str = this.substring(start, start + len);
+          return str === search;
+        }
       },
-      endsWith: function endsWith(search, length) {
-        search = search == null ? '' : search.toString ? search.toString() : '';
+      endsWith: function endsWith(search, pos) {
+        if (search instanceof RegExp) {
+          throw new TypeError('First argument to String.prototype.includes must not be a regular expression');
+        }
 
-        var len = this.length;
-        if (len < search.length) return false;
+        search = String(search);
+        var len = search.length;
+        var length = this.length;
 
-        length = isNumber(length) ? len : +length;
-        length = isNaN(length) || length > len ? len : length;
-        var str = this.substring(length - search.length, length);
-        return str === search;
+        var start = isNumeric(pos) ? parseInt(pos) - len : length - 1;
+
+        if (start + len > length) {
+          return false;
+        } else {
+          var str = this.substring(start, start + len);
+          return str === search;
+        }
+      },
+      includes: function includes(search, start) {
+        if (search instanceof RegExp) {
+          throw new TypeError('First argument to String.prototype.includes must not be a regular expression');
+        }
+
+        start = isNumber(start) ? start : 0;
+        if (start + search.length > this.length) {
+          return false;
+        } else {
+          return this.indexOf(search, indexOf) !== -1;
+        }
       }
     });
 
@@ -117,22 +150,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         }
 
         return -1;
-      },
-      includes: function includes(target, start) {
-        var array = this,
-            len = array.length;
-        start = typeof start === 'number' ? start : 0;
-        start = start >= 0 ? start : len + start;
-
-        var result = false;
-        for (var i = start; i < len; i++) {
-          if (Object.is(target, array[i])) {
-            result = true;
-            break;
-          }
-        }
-
-        return result;
       },
       fill: function fill(_fill, start, end) {
         var isNumeric = function isNumeric(target) {
@@ -205,6 +222,67 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   /**
+   * @description ES7方法
+   */
+  if (!emptyArray.includes) {
+    Object.assign(Array.prototype, {
+      includes: function includes(target, start) {
+        var array = this,
+            len = array.length;
+        start = isNumeric(start) ? parseInt(start) : 0;
+        start = start >= 0 ? start : 0;
+
+        var result = false;
+        for (var i = start; i < len; i++) {
+          if (Object.is(target, array[i])) {
+            result = true;
+            break;
+          }
+        }
+
+        return result;
+      }
+    });
+  }
+
+  /**
+   * @description ES8方法
+   */
+  if (!Object.entries) {
+    Object.entries = function (object) {
+      if (object == null) {
+        throw new TypeError('Cannot convert undefined or null to object');
+      }
+
+      var entries = [];
+      var keys = Object.keys(object);
+      for (var key in object) {
+        if (keys.includes(key)) {
+          entries.push([String(key), object[key]]);
+        }
+      }
+
+      return entries;
+    };
+
+    Object.values = function (object) {
+      if (object == null) {
+        throw new TypeError('Cannot convert undefined or null to object');
+      }
+
+      var values = [];
+      var keys = Object.keys(object);
+      for (var key in object) {
+        if (keys.includes(key)) {
+          values.push(object[key]);
+        }
+      }
+
+      return values;
+    };
+  }
+
+  /**
    * @description 组件的通用父类
    */
   function Component() {
@@ -218,6 +296,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    *   html: String, // 需要被挂载的dom字符串
    *   container: DOMElement | 'body', // 挂载的目标容器
    *   condition: Boolen, // 挂载的条件，默认挂载
+   *   type: 'html' // 挂载的jQuery方法, append | prepend | before | after | html 等, 默认html
    * }]
    */
   Object.defineProperty(Component.prototype, 'mount', {
@@ -229,7 +308,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       doms.forEach(function (dom) {
         var condition = dom.condition,
             container = dom.container,
-            html = dom.html;
+            html = dom.html,
+            type = dom.type;
 
         if (dom.html == null) throw new Error('缺少需挂载的dom字符串');
         if (dom.container == null) throw new Error('缺少挂载目标容器');
@@ -240,8 +320,9 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           if (container === 'body') {
             insertElementToBody($(html));
           } else {
+            type = type || 'html';
             !(container instanceof jQuery) && (container = $(container));
-            container.html(html);
+            container[type](html);
           }
         }
       });
@@ -468,7 +549,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       date = new Date();
     } else {
       date = parseInt(date);
-      if (date.toString().length === 13) {
+      if (String(date).length === 13) {
         date = new Date(date);
       } else {
         date = new Date(date * 1000);
@@ -735,7 +816,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
     for (var key in object) {
-      callback(object[key], key, object);
+      var isBreak = callback(object[key], key, object);
+      if (isBreak === false) break;
     }
   }
   function forInOwn(object, callback) {
@@ -743,7 +825,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
     for (var key in object) {
       if (object.hasOwnProperty(key)) {
-        callback(object[key], key, object);
+        var isBreak = callback(object[key], key, object);
+        if (isBreak === false) break;
       }
     }
   }
@@ -929,73 +1012,60 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   /**
-   * @description ES5 Set集合简易版
+   * @description ES5版Set集合
    */
-  function rSet() {
-    var set = void 0;
-    if (Array.isArray(arguments[0])) {
-      set = arguments[0];
-    } else {
-      set = Array.from(arguments);
-    }
-
-    set = uniq(set);
-
-    var len = set.length;
-    for (var i = 0; i < len; i++) {
-      var value = set[i];
-      this[i] = value;
-    }
+  function SetMock() {
 
     Object.defineProperties(this, {
       size: {
         configurable: false,
-        value: len,
+        value: 0,
         enumerable: false,
         writable: true
       },
 
       nextKey: {
         configurable: false,
-        value: len,
+        value: 0,
         enumerable: false,
         writable: true
       }
     });
   }
 
-  rSet.prototype = {
-    constructor: rSet,
+  SetMock.prototype = {
+    constructor: SetMock,
 
     has: function has(item) {
       var key = keyOf(this, item, 'size,nextKey');
       return typeof key !== 'undefined';
     },
-    forEach: function forEach(callback) {
+    forEach: function forEach(callback, context) {
       if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
       forInOwn(this, function (value, key, self) {
-        callback(value, key, self);
+        isObject(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
       });
-    },
-    filter: function filter(callback) {
-      var _this2 = this;
-
-      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
-
-      var result = new rSet();
-      forInOwn(this, function (value, key, sef) {
-        var state = callback(_this2[key], key, _this2);
-        if (state === true) result.add(_this2[key]);
-      });
-
-      return result;
     },
     add: function add(item) {
-      if (!this.has(item)) {
-        this[this.nextKey++] = item;
-        this.size++;
+      var _this2 = this;
+
+      var addSet = function addSet(target) {
+        if (!_this2.has(target)) {
+          _this2[_this2.nextKey++] = target;
+          _this2.size++;
+        }
+      };
+
+      if (Array.isArray(item)) {
+        var set = uniq(item);
+        set.forEach(function (setItem) {
+          addSet(setItem);
+        });
+      } else {
+        addSet(item);
       }
+
       return this;
     },
     delete: function _delete(item) {
@@ -1013,6 +1083,106 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       deleteKeys(this);
       this.size = 0;
       this.nextKey = 0;
+    },
+
+    /**
+     * 额外的，不同于ES6 Set集合的方法
+     */
+    filter: function filter(callback) {
+      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+
+      var result = new SetMock();
+      forInOwn(this, function (value, key, self) {
+        var state = callback(value, key, self);
+        if (state === true) result.add(value);
+      });
+
+      return result;
+    },
+    toArray: function toArray() {
+      var array = [];
+      forInOwn(this, function (value) {
+        array.push(value);
+      });
+
+      return array;
+    },
+    indexOf: function indexOf(item) {
+      return this.toArray().indexOf(item);
+    }
+  };
+
+  /**
+   * @description ES5版Map集合
+   */
+  function MapMock(entries) {
+    var _this3 = this;
+
+    Object.defineProperty(this, 'size', {
+      configurable: false,
+      value: 0,
+      enumerable: false,
+      writable: true
+    });
+
+    if (entries != null) {
+      if (!Array.isArray(entries)) {
+        throw new Error(entries + ' is not a Array');
+      } else {
+        entries.forEach(function (entry) {
+          if (!Array.isArray(entry)) {
+            throw new Error(entry + ' is not a Array');
+          } else {
+            var key = entry[0],
+                value = entry[1];
+            _this3[key] = value;
+            _this3.size++;
+          }
+        });
+      }
+    }
+  }
+
+  MapMock.prototype = {
+    constructor: MapMock,
+
+    set: function set(key, value) {
+      this[key] = value;
+      this.size++;
+      return this;
+    },
+    get: function get(key) {
+      return this[key];
+    },
+    has: function has(key) {
+      var has = false;
+      forInOwn(this, function (_, k) {
+        if (Object.is(key, k)) {
+          has = true;
+          return false;
+        }
+      });
+
+      return has;
+    },
+    delete: function _delete(key) {
+      if (this.has(key)) {
+        delete this[key];
+        this.size--;
+        return true;
+      }
+      return false;
+    },
+    clear: function clear() {
+      deleteKeys(this);
+      this.size = 0;
+    },
+    forEach: function forEach(callback, context) {
+      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+
+      forInOwn(this, function (value, key, self) {
+        isObject(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
+      });
     }
   };
 
@@ -1066,7 +1236,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     dateFormater: dateFormater,
     getMonthData: getMonthData,
     buildRandomString: buildRandomString,
-    rSet: rSet
+    SetMock: SetMock,
+    MapMock: MapMock
 
   };
   win.Util = Util; //export Util
