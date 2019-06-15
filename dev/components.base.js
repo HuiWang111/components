@@ -15,7 +15,6 @@
     domAfterLoad,
     tagOf,
     remove,
-    difference,
     uniq,
     ins,
     makeArray,
@@ -24,7 +23,8 @@
     dateFormater,
     buildRandomString,
     toNumber,
-    SetMock
+    SetMock,
+    appendClass
   } = Util;
   
   /* icons */
@@ -38,11 +38,177 @@
   
   /* 全局缓存区 */
   const GlobalCache = {};
+
+  /* ========Private Components======== */
+  const Private = {};
+  !function (Private, $) {
+
+    /**
+     * @description close icon
+     * @param options: {
+     *    size: String | Number,
+     *    bgColor: String,
+     *    color: String,
+     *    className: String,
+     *    onClick: Function
+     * }
+     */
+    const CLOSEBTN_CONTAINER_CLASS = 'close_icon_container';
+    
+    function CloseIcon(options) {
+      const defaultOptions = {
+        size: 14,
+        bgColor: 'transparent',
+        color: '#ccc',
+        className: '',
+        onClick: null
+      }
+
+      this.options = Object.assign({}, defaultOptions, options);
+      this.onClick = this.options.onClick;
+      this.html = this.render();
+    }
+
+    Private.CloseIcon = CloseIcon;
+
+    Object.assign(CloseIcon.prototype, {
+      render () {
+        const { size, bgColor, color, className } = this.options;
+        const sizeNumber = parseFloat(size);
+        // 等腰直角三角形求底公式
+        const lineSize = `${Math.sqrt(sizeNumber*sizeNumber + sizeNumber*sizeNumber).toFixed(2)}px`;
+
+        this.style(className, lineSize, color);
+
+        const container = $.node('div', '', appendClass(className, CLOSEBTN_CONTAINER_CLASS), {
+          style: {
+            backgroundColor: bgColor,
+            width: isNumber(size) ? `${size}px` : size,
+            height: isNumber(size) ? `${size}px` : size
+          }
+        });
+
+        return container;
+      },
+
+      style (className, lineSize, color) {
+        const selector = toSelector(className) + toSelector(CLOSEBTN_CONTAINER_CLASS);
+        appendStyle({
+          [`${selector}:before,${selector}:after`]: {
+            width: lineSize,
+            backgroundColor: color
+          }
+        });
+      }
+    });
+
+    /**
+     * @description 提示性icon
+     * @param options = {
+     *    style: Object,
+     *    className: String
+     * }
+     */
+    const TIP_ICON_CLASS = 'tip_icon';
+    const WARNING_ICON_CLASS = 'warn_icon',
+          SUCCESS_ICON_CLASS = 'success_icon',
+          INFO_ICON_CLASS = 'info_icon',
+          ERROR_ICON_CLASS = 'error_icon';
+
+    function TipIcon(type, options) {
+      const iconTypes = ['warn', 'success', 'info', 'error'];
+      if (!iconTypes.includes(type)) {
+        throw new Error(`${type} is not a correct icon type`);
+      }
+
+      const defaultOptions = {
+        size: 16,
+        className: ''
+      }
+
+      this.options = Object.assign({}, defaultOptions, options);
+      this.type = type;
+      this.html = this.render();
+    }
+
+    Private.TipIcon = TipIcon;
+
+    Object.assign(TipIcon.prototype, {
+      render () {
+        const { size, className } = this.options;
+
+        this.style(size);
+
+        let klass;
+        switch (this.type) {
+          case 'warn': klass = WARNING_ICON_CLASS; break;
+          case 'success': klass = SUCCESS_ICON_CLASS; break;
+          case 'info': klass = INFO_ICON_CLASS; break;
+          default: klass = ERROR_ICON_CLASS;
+        }
+        const icon = $.node('i', '', appendClass(className, TIP_ICON_CLASS, klass), {
+          style: {
+            width: isNumber(size) ? `${size}px` : size,
+            height: isNumber(size) ? `${size}px` : size
+          }
+        });
+
+        return icon;
+      },
+
+      style (size) {
+        const selector = toSelector(TIP_ICON_CLASS);
+        const warnSelector = selector + toSelector(WARNING_ICON_CLASS);
+        const succSelector = selector + toSelector(SUCCESS_ICON_CLASS);
+        const errSelector = selector + toSelector(ERROR_ICON_CLASS);
+        const infoSelector = selector + toSelector(INFO_ICON_CLASS);
+        size = parseFloat(size);
+
+        appendStyle({
+          [`${warnSelector}:before`]: {
+            width: size*0.125 + 'px',
+            height: size*0.4 + 'px',
+            top: size*0.17 + 'px'
+          },
+          [`${warnSelector}:after`]: {
+            width: size*0.125 + 'px',
+            height: size*0.125 + 'px',
+            bottom: size*0.2 + 'px'
+          },
+          [`${succSelector}:before`]: {
+            width: size*0.3 + 'px',
+            height: size*0.125 + 'px'
+          },
+          [`${succSelector}:after`]: {
+            width: size*0.5 + 'px',
+            height: size*0.125 + 'px'
+          },
+          [`${errSelector}:before, ${errSelector}:after`]: {
+            width: size*0.5 + 'px',
+            height: size*0.125 + 'px'
+          },
+          [`${infoSelector}:before`]: {
+            width: size*0.125 + 'px',
+            height: size*0.125 + 'px',
+            top: size*0.2 + 'px'
+          },
+          [`${infoSelector}:after`]: {
+            width: size*0.125 + 'px',
+            height: size*0.4 + 'px',
+            bottom: size*0.17 + 'px'
+          }
+        });
+      }
+    });
+
+  }(Private, $)
+
+  window.Private = Private;
   
   /* ========Components======== */
   
   /* Tab组件 */
-  !function (win, $, Component) {
+  ;!function (win, $, Component) {
   
     //className
     const TAB_ITEM_CLASS = 'tabs-tab-item';
@@ -84,7 +250,7 @@
   
       this.options = Object.assign({}, defaultOptions, options);
       this.$container = $(selector);
-      if (this.$container.length < 1) throw new Error('not found `' + selector + '` Element');
+      if (this.$container.length < 1) throw new Error(`not found ${selector} Element`);
       this.super();
     };
   
@@ -105,7 +271,7 @@
         this.$paneContainer = $paneContainer;
   
         tabsText.forEach(function (tabText, index) {
-          const klass = index === 0 ? TAB_ITEM_CLASS.appendClass(TAB_ITEM_CLASS_ACTIVE) : TAB_ITEM_CLASS;
+          const klass = index === 0 ? appendClass(TAB_ITEM_CLASS, TAB_ITEM_CLASS_ACTIVE) : TAB_ITEM_CLASS;
           
           //tab
           let tab = $.node('div', tabText, klass);
@@ -113,20 +279,20 @@
           
           //pane
           if (isIncludePane) {
-            const paneClass = index === 0 ? PANE_ITEM_CLASS.appendClass(PANE_ITEM_CLASS_ACTIVE) : PANE_ITEM_CLASS;
+            const paneClass = index === 0 ? appendClass(PANE_ITEM_CLASS, PANE_ITEM_CLASS_ACTIVE) : PANE_ITEM_CLASS;
             const paneInner = isFunction(renderPaneItem) ? renderPaneItem(tabText, index) : '';
             const pane = $.node('div', paneInner, paneClass);
             panes += pane;
           }
         });
         
-        const underline = $.node('div', '', UNDERLINE_CLASS, { style: {'background-color': themeColor} });
+        const underline = $.node('div', '', UNDERLINE_CLASS, { style: {backgroundColor: themeColor} });
     
         const tabsInner = $.node('div', tabs + underline, TAB_ITEM_INNER_CLASS);
         const tabsWrap = $.node('div', tabsInner, TAB_ITEM_WRAP_CLASS);
     
-        const prev = $.node('div', prevSvgDisable, TAB_PREVIOUS_ARROW_CLASS.appendClass(TAB_ARROW_CLASS).appendClass(TAB_ARROW_CLASS_DISABLE).appendClass(TAB_ARROW_CLASS_INVISIBLE));
-        const next = $.node('div', nextSvg, TAB_NEXT_ARROW_CLASS.appendClass(TAB_ARROW_CLASS).appendClass(TAB_ARROW_CLASS_INVISIBLE));
+        const prev = $.node('div', prevSvgDisable, appendClass(TAB_PREVIOUS_ARROW_CLASS, TAB_ARROW_CLASS, TAB_ARROW_CLASS_DISABLE, TAB_ARROW_CLASS_INVISIBLE));
+        const next = $.node('div', nextSvg, appendClass(TAB_NEXT_ARROW_CLASS, TAB_ARROW_CLASS, TAB_ARROW_CLASS_INVISIBLE));
         
         return [{
           html: prev + tabsWrap + next,
@@ -146,22 +312,22 @@
   
         $container.addClass('flex');
         $container.css({
-          'overflow': 'hidden'
+          overflow: 'hidden'
         });
   
         appendStyle({
           '.tabs-tab-item-active': {
-            'color': themeColor
+            color: themeColor
           },
           '.tabs-tab-item:hover': {
-            'color': themeColor
+            color: themeColor
           }
         });
   
         /* panes style */
         if (isIncludePane) {
           $paneContainer.css({
-            'overflow': 'hidden'
+            overflow: 'hidden'
           });
           this.$paneContainer = $paneContainer;
   
@@ -371,13 +537,13 @@
       var mustBeNumber = ['total', 'pageSize', 'current'];
       for (var key in opts) {
         if (mustBeNumber.indexOf(key) > -1) {
-          if (!isNumber(opts[key])) throw new Error('`' + key + '` is not a number');
+          if (!isNumber(opts[key])) throw new Error(`${key} is not a number`);
         }
       }
   
       this.options = opts;
       this.$container = $(selector);
-      if (tagOf(this.$container) !== 'ul') throw new Error('`' + selector + '` is not a <ul> element');
+      if (tagOf(this.$container) !== 'ul') throw new Error(`${selector} is not a <ul> Element`);
   
       this.super();
     };
@@ -398,14 +564,14 @@
         let i, ulInner = '';
         for (i = 1; i <= totalPage; i++) {
           let klass = i === current ? (
-            PAGINATION_ITEM_CLASS.appendClass(PAGINATION_ITEM_CLASS_ACTIVE)
+            appendClass(PAGINATION_ITEM_CLASS, PAGINATION_ITEM_CLASS_ACTIVE)
           ) : PAGINATION_ITEM_CLASS;
-          klass = border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
+          klass = border ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
   
           const originalElement = $.node('a', i);
           const element = isFunction(itemRender) ? itemRender(i, 'pagination', originalElement) : originalElement;
   
-          klass = klass.appendClass(PAGINATION_ITEM_CLASS + '-' + i);
+          klass = appendClass(klass, PAGINATION_ITEM_CLASS + '-' + i);
           const pagination = $.node('li', element, klass);
   
           ulInner += pagination;
@@ -414,7 +580,7 @@
         //previous
         const previous = () => {
           let klass = current === 1 ? PAGINATION_ITEM_CLASS_DISABLE : '';
-          klass = border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
+          klass = border ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
   
           const svg = current === 1 ? prevSvgDisable : prevSvg;
           const originalElement = $.node('a', svg);
@@ -424,14 +590,14 @@
           this.prevEl = element;
           this.prevOriginEl = originalElement;
   
-          return $.node('li', element, klass.appendClass(PAGINATION_ITEM_CLASS_PREV));
+          return $.node('li', element, appendClass(klass, PAGINATION_ITEM_CLASS_PREV));
         }
         var prevItem = previous();
   
         //next
         const next = () => {
           let klass = current === totalPage ? PAGINATION_ITEM_CLASS_DISABLE : '';
-          klass = border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
+          klass = border ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
   
           const svg = current === totalPage ? nextSvgDisable : nextSvg;
           const originalElement = $.node('a', svg);
@@ -442,7 +608,7 @@
           this.nextEl = element;
           this.nextOriginEl = originalElement;
   
-          return $.node('li', element, klass.appendClass(PAGINATION_ITEM_CLASS_NEXT));
+          return $.node('li', element, appendClass(klass, PAGINATION_ITEM_CLASS_NEXT));
         }
         var nextItem = next();
   
@@ -456,13 +622,13 @@
         const { themeColor } = this.options;
         appendStyle({
           '.pagination-item.pagination-item-active > a': {
-            'color': themeColor
+            color: themeColor
           },
           '.pagination-item.pagination-item-active.pagination-item-border': {
-            'border-color': themeColor
+            borderColor: themeColor
           },
           '.pagination-item:hover > a': {
-            'color': themeColor
+            color: themeColor
           }
         });
       },
@@ -591,10 +757,13 @@
   
       //为每个Message实例的容器创建一个随机className
       const RANDOM_CLASS = buildRandomString();
-  
-      const icon = $.node('i', '', ICONCLASS.appendClass('message_' + type + '_icon'));
-      const text = $.node('span', '', TEXTCLASS.appendClass('message_' + type + '_text_box'));
-      const container = $.node('div', icon + text, CONTAINERCLASS.appendClass(RANDOM_CLASS).appendClass('message_' + type + '_container'));
+      
+      const classPrefix = `message_${type}_`;
+      const icon = new Private.TipIcon(type === 'warning' ? 'warn' : type, {
+        className: ICONCLASS
+      });
+      const text = $.node('span', '', appendClass(TEXTCLASS, `${classPrefix}text_box`));
+      const container = $.node('div', icon.html + text, appendClass(CONTAINERCLASS, RANDOM_CLASS, `${classPrefix}container`));
       insertElementToBody($(container));
       
       domAfterLoad(toSelector(RANDOM_CLASS),  () => {
@@ -626,7 +795,7 @@
   
           const index = messageList.indexOf(this);
           $el.css({
-            'top': FirstMessagePosTop + index*elHeight + index*GapOfMessage + 'px' // 计算当前实例top值
+            top: `${FirstMessagePosTop + index*elHeight + index*GapOfMessage}px` // 计算当前实例top值
           });
   
           setTimeout(() => {
@@ -801,24 +970,24 @@
         const { RANDOM_CLASS, options: { pagination, navgation } } = this;
         
         const slideList = srcList.map(function (src) {
-          return $.node('div', '<img src="' + src + '" />', 'swiper-slide');
+          return $.node('div', `<img src=${src} />`, 'swiper-slide', );
         });
     
         let swiperWrapper = $.node('div', slideList, 'swiper-wrapper');
         if (pagination) {
-          swiperWrapper += $.node('div', '', GALLERY_PAGINATION_CLASS.appendClass('swiper-pagination'));
+          swiperWrapper += $.node('div', '', appendClass(GALLERY_PAGINATION_CLASS, 'swiper-pagination'));
         }
     
-        let swiperContainer = $.node('div', swiperWrapper, GALLERY_SWIPER_CONTAINER_CLASS.appendClass('swiper-container'));
+        let swiperContainer = $.node('div', swiperWrapper, appendClass(GALLERY_SWIPER_CONTAINER_CLASS, 'swiper-container'));
         if (navgation) {
-          const prevBtn = $.node('div', '', GALLERY_BUTTON_PREV_CLASS.appendClass('swiper-button-prev'));
-          const nextBtn = $.node('div', '', GALLERY_BUTTON_NEXT_CLASS.appendClass('swiper-button-next'));
+          const prevBtn = $.node('div', '', appendClass(GALLERY_BUTTON_PREV_CLASS, 'swiper-button-prev'));
+          const nextBtn = $.node('div', '', appendClass(GALLERY_BUTTON_NEXT_CLASS, 'swiper-button-next'));
           swiperContainer += (prevBtn + nextBtn);
         }
     
         const galleryWrappper = $.node('div', swiperContainer, GALLERY_WRAPPER_CLASS);
     
-        const galleryContainer = $.node('section', galleryWrappper, GALLERY_CONTAINER_CLASS.appendClass(GALLERY_CONTAINER_CLASS_HIDDEN).appendClass(RANDOM_CLASS));
+        const galleryContainer = $.node('section', galleryWrappper, appendClass(GALLERY_CONTAINER_CLASS, GALLERY_CONTAINER_CLASS_HIDDEN, RANDOM_CLASS));
         
         return [{
           html: galleryContainer,
@@ -852,12 +1021,12 @@
         const diff = containerWidth - widthValue;
         const wider = diff > 0 ? (diff > 100 ? 100 : wider) : 0;
         
-        width = isNumber(width) ? width + 'px' : width;
-        height =  isNumber(height) ? height + 'px' : height;
+        width = isNumber(width) ? `${width}px` : width;
+        height =  isNumber(height) ? `${height}px` : height;
     
         const $galleryWrapper = $container.find(toSelector(GALLERY_WRAPPER_CLASS));
         $galleryWrapper.css({
-          'width': navgation ? (percentReg.test(width) ? (widthValue + wider) + 'px' : (parseFloat(width) + wider) + 'px') : width,
+          'width': navgation ? (percentReg.test(width) ? `${widthValue + wider}px` : `${parseFloat(width) + wider}px`) : width,
           'height': height
         });
         $galleryWrapper.find(toSelector(GALLERY_SWIPER_CONTAINER_CLASS)).css({
@@ -867,7 +1036,7 @@
     
         // 设置gallery容器宽高，默认透明背景
         $container.css({
-          'background-color': bgColor
+          backgroundColor: bgColor
         });
       },
 
@@ -883,7 +1052,7 @@
     
           if (!GALLERY.$swiper) {
             (index > 0) && (swiperOptions.initialSlide = index);
-            GALLERY.$swiper = new Swiper(toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_SWIPER_CONTAINER_CLASS)), swiperOptions);
+            GALLERY.$swiper = new Swiper(appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_SWIPER_CONTAINER_CLASS)), swiperOptions);
           } else {
             GALLERY.$swiper.slideTo(index, 0, false);
           }
@@ -942,10 +1111,10 @@
         if (swiperOptions.nextButton) delete swiperOptions.nextButton;
         if (swiperOptions.prevButton) delete swiperOptions.prevButton;
     
-        if (pagination) swiperOptions.pagination = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_PAGINATION_CLASS));
+        if (pagination) swiperOptions.pagination = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_PAGINATION_CLASS));
         if (navgation) {
-          swiperOptions.nextButton = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_BUTTON_NEXT_CLASS));
-          swiperOptions.prevButton = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_BUTTON_PREV_CLASS));
+          swiperOptions.nextButton = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_BUTTON_NEXT_CLASS));
+          swiperOptions.prevButton = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_BUTTON_PREV_CLASS));
         }
 
         swiperOptions.observer = true;
@@ -1004,7 +1173,7 @@
           const itemDom = isFunction(renderItem) ? renderItem(data) : data;
           const itemInner = $.node('div', itemDom, CARD_LIST_ITEM_INNER_CLASS);
 
-          return $.node('div', itemInner, CARD_LIST_ITEM_CLASS.appendClass(`flex-percent-${itemPercent}`));
+          return $.node('div', itemInner, appendClass(CARD_LIST_ITEM_CLASS, `flex-percent-${itemPercent}`));
         });
 
         return [{
@@ -1022,11 +1191,19 @@
         const $item = $container.find(toSelector(CARD_LIST_ITEM_INNER_CLASS));
         $item.css({
           height: 0,
-          paddingBottom: ratio*100 + '%',
+          paddingBottom: `${ratio * 100}%`,
           border: border ? '1px solid #eee' : 'none'
         });
       }
     });
+
+  }(window, jQuery, Component)
+
+  ;!function (win, $, Component) {
+
+    function Alert() {
+
+    }
 
   }(window, jQuery, Component)
 

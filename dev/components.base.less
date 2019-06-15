@@ -25,6 +25,131 @@ html, body {
 .flex-percent();
 
 /*
+ * Private component
+ */
+
+/** close icon **/
+.close_icon_container {
+  position: relative;
+  cursor: pointer;
+
+  &:before,
+  &:after {
+    display: block;
+    content: ' ';
+    height: 2px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+  }
+
+  &:before {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+  &:after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+}
+
+/** tip icon **/
+.tip_icon {
+  display: inline-block;
+  border-radius: 50%;
+  position: relative;
+
+  &.warn_icon {
+    background-color: #faad14;
+
+    &:before {
+      display: block;
+      content: ' ';
+      background-color: #fff;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    &:after {
+      display: block;
+      content: ' ';
+      background-color: #fff;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+
+  &.success_icon {
+    background-color: #52c41a;
+
+    &:before {
+      display: block;
+      content: ' ';
+      background-color: #fff;
+      position: absolute;
+      left: 20.5%;
+      top: 50%;
+      transform: rotate(45deg);
+    }
+
+    &:after {
+      display: block;
+      content: ' ';
+      background-color: #fff;
+      position: absolute;
+      left: 32%;
+      top: 45%;
+      transform: rotate(-45deg);
+    }
+  }
+
+  &.error_icon {
+    background-color: #f5222d;
+
+    &:before, &:after {
+      display: block;
+      content: ' ';
+      background-color: #fff;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform-origin: center;
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    &:after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+  }
+
+  &.info_icon {
+    background-color: #1890ff;
+
+    &:before {
+      display: block;
+      content: ' ';
+      background-color: #fff;
+      position: absolute;
+      left: 50%;
+      top: 3px;
+      transform: translateX(-50%);
+    }
+
+    &:after {
+      display: block;
+      content: ' ';
+      width: 2px;
+      height: 6px;
+      background-color: #fff;
+      position: absolute;
+      left: 50%;
+      bottom: 4px;
+      transform: translateX(-50%);
+    }
+  }
+}
+
+/*
  * Tabs
  */
 .tabs-tab-wrapper {
@@ -158,130 +283,7 @@ html, body {
   }
 
   & > .message_icon {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
     margin-right: 8px;
-    position: relative;
-  }
-
-  /* warning */
-  & > .message_warning_icon {
-    background-color: #faad14;
-
-    &:before {
-      display: block;
-      content: ' ';
-      width: 2px;
-      height: 6px;
-      background-color: #fff;
-      position: absolute;
-      left: 50%;
-      top: 3px;
-      transform: translateX(-50%);
-    }
-
-    &:after {
-      display: block;
-      content: ' ';
-      width: 2px;
-      height: 2px;
-      background-color: #fff;
-      position: absolute;
-      left: 50%;
-      bottom: 4px;
-      transform: translateX(-50%);
-    }
-  }
-
-  /* success */
-  & > .message_success_icon {
-    background-color: #52c41a;
-
-    &:before {
-      display: block;
-      content: ' ';
-      width: 3px;
-      height: 2px;
-      background-color: #fff;
-      position: absolute;
-      left: 25%;
-      top: 50%;
-      transform: rotate(45deg);
-    }
-
-    &:after {
-      display: block;
-      content: ' ';
-      width: 6px;
-      height: 2px;
-      background-color: #fff;
-      position: absolute;
-      left: 40%;
-      top: 45%;
-      transform: rotate(-45deg);
-    }
-  }
-
-  /* error */
-  & > .message_error_icon {
-    background-color: #f5222d;
-
-    &:before {
-      display: block;
-      content: ' ';
-      width: 8px;
-      height: 2px;
-      background-color: #fff;
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform-origin: center;
-      transform: translate(-50%, -50%) rotate(45deg);
-    }
-
-    &:after {
-      display: block;
-      content: ' ';
-      width: 8px;
-      height: 2px;
-      background-color: #fff;
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform-origin: center;
-      transform: translate(-50%, -50%) rotate(-45deg);
-    }
-  }
-
-  /* info */
-  & > .message_info_icon {
-    background-color: #1890ff;
-
-    &:before {
-      display: block;
-      content: ' ';
-      width: 2px;
-      height: 2px;
-      background-color: #fff;
-      position: absolute;
-      left: 50%;
-      top: 3px;
-      transform: translateX(-50%);
-    }
-
-    &:after {
-      display: block;
-      content: ' ';
-      width: 2px;
-      height: 6px;
-      background-color: #fff;
-      position: absolute;
-      left: 50%;
-      bottom: 4px;
-      transform: translateX(-50%);
-    }
   }
 }
 

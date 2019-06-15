@@ -9,6 +9,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
  *  Array.prototype.find, Array.prototype.findIndex
  * 
  * ES7可用方法：Array.prototype.includes
+ * 
+ * ES8可用方法：Object.entries, Object.values
  */
 ;!function (win, $) {
 
@@ -21,7 +23,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   /**
    * @description ES6方法
    */
-  if (!emptyArray.fill) {
+  if (!emptyArray.find) {
 
     Object.is = function (x, y) {
       if (x === y) {
@@ -296,7 +298,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    *   html: String, // 需要被挂载的dom字符串
    *   container: DOMElement | 'body', // 挂载的目标容器
    *   condition: Boolen, // 挂载的条件，默认挂载
-   *   type: 'html' // 挂载的jQuery方法, append | prepend | before | after | html 等, 默认html
+   *   type: 'html' // 挂载dom的jQuery方法, append | prepend | before | after | html 等, 默认html
    * }]
    */
   Object.defineProperty(Component.prototype, 'mount', {
@@ -311,8 +313,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
             html = dom.html,
             type = dom.type;
 
-        if (dom.html == null) throw new Error('缺少需挂载的dom字符串');
-        if (dom.container == null) throw new Error('缺少挂载目标容器');
+        if (html == null) throw new Error('缺少需挂载的dom字符串');
+        if (container == null) throw new Error('缺少挂载目标容器');
 
         // condition默认为true
         typeof condition === 'undefined' && (condition = true);
@@ -377,7 +379,24 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
   win.Component = Component;
 
-  // utils function
+  /**
+   * @private 私有方法，不添加到Util全局对象
+   */
+  function baseUnion() {
+    var args = arguments;
+    var array = [];
+    for (var i = 0, len = args.length; i < len; i++) {
+      if (Array.isArray(args[i])) {
+        array.push.apply(array, _toConsumableArray(args[i]));
+      }
+    }
+
+    return array;
+  }
+
+  /**
+   * @public Util全局对象中的方法
+   */
   function isString(target) {
     return typeof target === 'string';
   }
@@ -404,13 +423,25 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   function isFunction(target) {
     return typeof target === 'function';
   }
+
+  /**
+   * @example
+   * toNumber('5') // 5
+   * toNumber('abc') // false
+   */
   function toNumber(target) {
     var number = parseFloat(target);
     return isNaN(number) ? false : number;
   }
+  /**
+   * @description 是否为整数
+   */
   function isInteger(target) {
     return isNumber(target) && target % 1 === 0;
   }
+  /**
+   * @description 是否为符合规范的length属性值
+   */
   function isLength(target) {
     return isInteger(target) && target > -1;
   }
@@ -423,23 +454,30 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   /**
-   * @description 将普通类名变为选择器 'className' => '.className', 'id' => '#id'
+   * @description 将普通类名变为选择器
    * @param { String } string
    * @param { String } type 'class' || 'id'
+   * @example
+   * toSelector('className') // '.className'
+   * toSelector('id', 'id') // '#id'
    */
   function toSelector(string) {
     var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'class';
 
-    if (!isString(string) || string === '') return;
+    if (!isString(string) || string === '') return '';
     if (type !== 'class' && type !== 'id') return string;
     return (type === 'class' ? '.' : '#') + string;
   }
+
   function makeArray(arrayLike) {
     return emptyArray.slice.call(arrayLike);
   }
 
   /**
-   * @description 从dom字符串中获取className或id
+   * @description 从dom字符串中获取最外层元素的className或id
+   * @example
+   * getSelector('<div class="wrapper wrap" id="main"><span class="inner"></span></div>') // .wrapper.wrap
+   * getSelector('<div class="wrapper wrap" id="main"><span class="inner"></span></div>', 'id') // #main
    */
   function getSelector(string) {
     var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'class';
@@ -477,8 +515,21 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   /**
    * @description 将样式内容添加到<style>标签
    * @param { Object } object
+   * @param { String } 'blank' | 'self' 
+   * 'blank' 新建style标签
+   * 'self' 合并到已有的style标签
+   * 
+   * @example
+   * appendStyle({
+   *  '.pagination-item.pagination-item-active > a': {
+   *      color: 'red',
+   *      borderColor: '#eee'
+   *   }
+   * });
    */
   function appendStyle(object) {
+    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'self';
+
     if (!isObject(object) || isEmptyObject(object) || object === null) {
       return;
     }
@@ -487,12 +538,13 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     forInOwn(object, function (obj, key) {
       var styl = "";
       forInOwn(obj, function (value, k) {
-        styl += k + ': ' + value + ';';
+        styl += '\n  ' + fromCamelCase(k) + ': ' + value + ';';
       });
-      style = style === '' ? key + ' { ' + styl + ' }' : style + '\n' + key + ' { ' + styl + ' }';
+      styl += '\n';
+      style = style === '' ? key + ' {' + styl + '}' : style + '\n' + key + ' {' + styl + '}';
     });
     var oldStyleTag = document.querySelector('head').querySelector('style');
-    if (oldStyleTag) {
+    if (oldStyleTag && type === 'self') {
       var oldStyle = oldStyleTag.innerHTML;
       var newStyle = oldStyle === '' ? style : oldStyle + '\n' + style;
       oldStyleTag.innerHTML = newStyle;
@@ -502,6 +554,19 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       styleTag.innerHTML = style;
       document.querySelector('head').appendChild(styleTag);
     }
+  }
+
+  /**
+   * @description 合并类名，自动以空格分割
+   * @example
+   * appendClass('test1', 'test2', 'test3'); //'test1 test2 test3'
+   */
+  function appendClass(string, className) {
+    return Array.from(arguments).reduce(function (result, current, index) {
+      var willAppend = isString(current) ? current : '';
+      var division = index === 0 ? '' : ' ';
+      return result += division + willAppend;
+    }, '');
   }
 
   /**
@@ -592,7 +657,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   /**
-   * @description 获取某个月份的数据
+   * @description 获取某个月份的日历数据
    * @param { Number | String } year 年份
    * @param { Number | String } month 月份
    */
@@ -614,7 +679,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     /* 该月第一天 */
     var firstDay = new Date(year, month - 1, 1);
     var weekOfFirstDay = firstDay.getDay();
-    // if (weekOfFirstDay === 0) weekOfFirstDay = 7;
 
     /* 该月最后一天 */
     var lastDay = new Date(year, month, 0);
@@ -712,8 +776,58 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   /**
+   * @description 下划线或中划线命名法转驼峰命名法
+   * @example
+   * toCamelCase('my-name') // 'myName'
+   */
+  function toCamelCase(string) {
+    var match = ['-', '_'];
+    var index = [];
+    for (var i = 0, len = string.length; i < len; i++) {
+      if (match.includes(string[i])) {
+        index.push(i + 1);
+      }
+    }
+
+    string = string.split('').map(function (str, ii) {
+      return index.includes(ii) ? str.toUpperCase() : str;
+    }).join('');
+    return string.replace(/[-_]/g, '');
+  }
+
+  /**
+   * @description 驼峰命名法转其他命名法
+   * @param { String } '-' | '_'
+   * @example
+   * fromCamelCase('myName') // 'my-name'
+   * fromCamelCase('myName', '_') // 'my_name'
+   */
+  function fromCamelCase(string) {
+    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '-';
+
+    var upperRe = /[A-Z]/g;
+    var indexSet = [];
+    var array = string.split('').map(function (str, i) {
+      if (upperRe.test(str)) {
+        indexSet.push(i);
+        return str.toLowerCase();
+      }
+      return str;
+    });
+
+    var insertSet = indexSet.map(function (index) {
+      return {
+        index: index,
+        item: type
+      };
+    });
+
+    return insert(array, insertSet).join('');
+  }
+
+  /**
    * @description 检测元素挂载完成后执行回调
-   * @param { String } selector
+   * @param { String } selector 需要检测是否挂载的元素
    * @param { Function } loadedCallback 挂载完成回调
    * @param { Number } maxTimes 最大尝试检测次数，默认500
    */
@@ -751,6 +865,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @param { Object } object
    * @param { * } target
    * @param { String } excludes 排除不查找的键值，以逗号分割多个键值
+   * @param { Boolen } isOwn 是否使用hasOwnProperty排除原型属性
    * @returns target对应的key
    */
   function keyOf(object, target, excludes, isOwn) {
@@ -836,10 +951,36 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @param { Node | NodeList | jQuery } el
    */
   function tagOf(el) {
+    if (!el) return;
+
     if (!isLength(el.length)) {
-      return el.tagName.toLowerCase();
+      return el.tagName && el.tagName.toLowerCase();
     }
-    return el[0].tagName.toLowerCase();
+    return el[0].tagName && el[0].tagName.toLowerCase();
+  }
+
+  /**
+   * @description 向数组中插入一个(或多个)位置插入一个(或多个)元素
+   * @param { Array } array 需要插入元素的目标数组
+   * @param { Array } insertSet 需要插入的元素集合
+   * @example
+   * insert([1,3,5], [{ index: 1, item: 'x' }, { index: 2, item: 'y' }]) // [1, 'x', 3, 'y', 5]
+   */
+  function insert(array, insertSet) {
+    [array, insertSet].forEach(function (v) {
+      if (!Array.isArray(v)) throw new Error(v + ' is not a Array');
+    });
+
+    var adder = 0;
+    insertSet.forEach(function (insert) {
+      var index = insert.index,
+          item = insert.item;
+
+      array.splice(index + adder, 0, item);
+      adder++;
+    });
+
+    return array;
   }
 
   /**
@@ -854,18 +995,75 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     }, []);
   }
 
-  /**
-   * @description  移除除第一个数组中与后一个数组重复的元素
-   * @param { Array } array
-   * @param { Array } list
-   */
-  function remove(array, list) {
+  function uniqBy(array, prop) {
     if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
-    if (!Array.isArray(list)) throw new Error(list + ' is not a Array');
+
+    return array.reduce(function (arr, item) {
+      return includesBy(arr, item, prop) ? arr : [].concat(_toConsumableArray(arr), [item]);
+    }, []);
+  }
+
+  /**
+   * @description 多个数据的并集
+   */
+  function union() {
+    return uniq(baseUnion(arguments));
+  }
+
+  function unionBy() {
+    var args = arguments;
+    var array = [];
+    var prop = void 0;
+    for (var i = 0, len = args.length; i < len; i++) {
+      if (Array.isArray(args[i])) {
+        array.push.apply(array, _toConsumableArray(args[i]));
+      } else if (isString(args[i])) {
+        prop = args[i];
+        break;
+      }
+    }
+
+    return uniqBy(array, prop);
+  }
+
+  /**
+   * @example
+   * includesBy([{x: 1}, {x: 2}], [{x: 1}], 'x'); //true
+   */
+  function includesBy(array, target, prop) {
+    var result = false;
+    for (var i = 0, len = array.length; i < len; i++) {
+      if (Object.is(array[i][prop], target[prop])) {
+        result = true;
+        break;
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * @description  数组移除元素方法
+   * @param { Array } array
+   * @param { * } list
+   * @example
+   * remove([1,2,3,4,5,6], [2,3]); // [1,4,5,6]
+   */
+  function remove(array, iteratee) {
+    if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
 
     var result = [];
-    uniq(array).forEach(function (item) {
-      !list.includes(item) && result.push(item);
+    uniq(array).forEach(function (item, index, self) {
+      switch (true) {
+        case Array.isArray(iteratee):
+          !iteratee.includes(item) && result.push(item);
+          break;
+        case isFunction(iteratee):
+          iteratee(item, index, self) === false && result.push(item);
+          break;
+        default:
+          iteratee !== item && result.push(item);
+      }
     });
 
     return result;
@@ -884,18 +1082,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     });
 
     return uniq(result);
-  }
-
-  /**
-   * @description 两数组的差集  
-   */
-  function difference(array, list) {
-
-    var insection = ins(array, list);
-    var arr1 = remove(array, insection);
-    var arr2 = remove(list, insection);
-
-    return arr1.concat(arr2);
   }
 
   function sum(array) {
@@ -1209,12 +1395,12 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     domAfterLoad: domAfterLoad,
     tagOf: tagOf,
     getSelector: getSelector,
+    appendClass: appendClass,
 
     // 数组方法
     uniq: uniq,
     remove: remove,
     ins: ins,
-    difference: difference,
     makeArray: makeArray,
     sum: sum,
     sumBy: sumBy,
@@ -1224,6 +1410,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     minBy: minBy,
     mean: mean,
     meanBy: meanBy,
+    insert: insert,
+    includesBy: includesBy,
+    union: union,
+    unionBy: unionBy,
 
     // 对象方法
     deleteKeys: deleteKeys,
@@ -1232,10 +1422,15 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     forIn: forIn,
     forInOwn: forInOwn,
 
+    // String方法
+    toCamelCase: toCamelCase,
+    buildRandomString: buildRandomString,
+    fromCamelCase: fromCamelCase,
+
     // 其他方法
     dateFormater: dateFormater,
     getMonthData: getMonthData,
-    buildRandomString: buildRandomString,
+
     SetMock: SetMock,
     MapMock: MapMock
 
@@ -1250,7 +1445,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         var value = e.wheelDelta || -e.deltaY || -e.detail;
         var delta = Math.max(-1, Math.min(1, value));
         var direction = delta < 0 ? 'down' : 'up';
-        isFunction(callback) && callback(direction);
+        isFunction(callback) && callback(direction, value, delta);
       });
     }
 
@@ -1289,21 +1484,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       }
     }
   }(win);
-
-  /* ========String======== */
-  /**
-   * @description 合并类名，自动以空格分割
-   */
-  function appendClass(string, className) {
-    if (className.length !== 0) {
-      string += string.length === 0 ? className : ' ' + className;
-    }
-
-    return string;
-  }
-  String.prototype.appendClass = function (className) {
-    return appendClass(this, className);
-  };
 
   /* ========jQuery======== */
   /**
@@ -1417,12 +1597,22 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
      * @param {String} item 元素子集
      * @param {String} klass className
      * @param {String | Object} attributes
+     * @example
+     * var node = $.node('div', 1234, 'test', {
+     *    dataValue: 1,
+     *    style: {
+     *      backgroundColor: red,
+     *      color: '#fff'
+     *    }
+     * });
+     * 
+     * // "<div class="test" data-value="1" style="background-color: red;color: #fff;">1234</div>"
      */
-    node: function node(wrapper, item, klass, attr) {
-      if (item == null) return '';
+    node: function node(wrapper, children, klass, attr) {
+      if (children == null) return '';
 
-      // If the item is an array, do a join
-      item = Array.isArray(item) ? item.join('') : item;
+      // If the children is an array, do a join
+      children = Array.isArray(children) ? children.join('') : children;
 
       // Check for the class
       klass = klass ? ' class="' + klass + '"' : '';
@@ -1435,19 +1625,20 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         } else if (isObject(attr)) {
           forInOwn(attr, function (obj, key) {
             if (key.trim() === 'style' && isObject(obj) && obj !== null) {
-              attributes += key + '=';
+              attributes += ' ' + key + '="';
               forInOwn(obj, function (value, k) {
-                attributes += '"' + k + ': ' + value + ';"';
+                attributes += fromCamelCase(k) + ': ' + value + ';';
               });
+              attributes += '"';
             } else {
-              var thisAttr = key + '="' + obj + '"';
+              var thisAttr = fromCamelCase(key) + '="' + obj + '"';
               attributes += ' ' + thisAttr;
             }
           });
         }
       }
 
-      return '<' + wrapper + klass + attributes + '>' + item + '</' + wrapper + '>';
+      return '<' + wrapper + klass + attributes + '>' + children + '</' + wrapper + '>';
     },
 
     /**

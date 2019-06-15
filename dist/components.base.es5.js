@@ -1,5 +1,7 @@
 'use strict';
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 ;!function (window, jQuery, Swiper, Component, Util) {
 
   /* utils */
@@ -16,7 +18,6 @@
       domAfterLoad = Util.domAfterLoad,
       tagOf = Util.tagOf,
       remove = Util.remove,
-      difference = Util.difference,
       uniq = Util.uniq,
       ins = Util.ins,
       makeArray = Util.makeArray,
@@ -25,7 +26,8 @@
       dateFormater = Util.dateFormater,
       buildRandomString = Util.buildRandomString,
       toNumber = Util.toNumber,
-      SetMock = Util.SetMock;
+      SetMock = Util.SetMock,
+      appendClass = Util.appendClass;
 
   /* icons */
 
@@ -40,10 +42,177 @@
   /* 全局缓存区 */
   var GlobalCache = {};
 
+  /* ========Private Components======== */
+  var Private = {};
+  !function (Private, $) {
+
+    /**
+     * @description close icon
+     * @param options: {
+     *    size: String | Number,
+     *    bgColor: String,
+     *    color: String,
+     *    className: String,
+     *    onClick: Function
+     * }
+     */
+    var CLOSEBTN_CONTAINER_CLASS = 'close_icon_container';
+
+    function CloseIcon(options) {
+      var defaultOptions = {
+        size: 14,
+        bgColor: 'transparent',
+        color: '#ccc',
+        className: '',
+        onClick: null
+      };
+
+      this.options = Object.assign({}, defaultOptions, options);
+      this.onClick = this.options.onClick;
+      this.html = this.render();
+    }
+
+    Private.CloseIcon = CloseIcon;
+
+    Object.assign(CloseIcon.prototype, {
+      render: function render() {
+        var _options = this.options,
+            size = _options.size,
+            bgColor = _options.bgColor,
+            color = _options.color,
+            className = _options.className;
+
+        var sizeNumber = parseFloat(size);
+        // 等腰直角三角形求底公式
+        var lineSize = Math.sqrt(sizeNumber * sizeNumber + sizeNumber * sizeNumber).toFixed(2) + 'px';
+
+        this.style(className, lineSize, color);
+
+        var container = $.node('div', '', appendClass(className, CLOSEBTN_CONTAINER_CLASS), {
+          style: {
+            backgroundColor: bgColor,
+            width: isNumber(size) ? size + 'px' : size,
+            height: isNumber(size) ? size + 'px' : size
+          }
+        });
+
+        return container;
+      },
+      style: function style(className, lineSize, color) {
+        var selector = toSelector(className) + toSelector(CLOSEBTN_CONTAINER_CLASS);
+        appendStyle(_defineProperty({}, selector + ':before,' + selector + ':after', {
+          width: lineSize,
+          backgroundColor: color
+        }));
+      }
+    });
+
+    /**
+     * @description 提示性icon
+     * @param options = {
+     *    style: Object,
+     *    className: String
+     * }
+     */
+    var TIP_ICON_CLASS = 'tip_icon';
+    var WARNING_ICON_CLASS = 'warn_icon',
+        SUCCESS_ICON_CLASS = 'success_icon',
+        INFO_ICON_CLASS = 'info_icon',
+        ERROR_ICON_CLASS = 'error_icon';
+
+    function TipIcon(type, options) {
+      var iconTypes = ['warn', 'success', 'info', 'error'];
+      if (!iconTypes.includes(type)) {
+        throw new Error(type + ' is not a correct icon type');
+      }
+
+      var defaultOptions = {
+        size: 16,
+        className: ''
+      };
+
+      this.options = Object.assign({}, defaultOptions, options);
+      this.type = type;
+      this.html = this.render();
+    }
+
+    Private.TipIcon = TipIcon;
+
+    Object.assign(TipIcon.prototype, {
+      render: function render() {
+        var _options2 = this.options,
+            size = _options2.size,
+            className = _options2.className;
+
+
+        this.style(size);
+
+        var klass = void 0;
+        switch (this.type) {
+          case 'warn':
+            klass = WARNING_ICON_CLASS;break;
+          case 'success':
+            klass = SUCCESS_ICON_CLASS;break;
+          case 'info':
+            klass = INFO_ICON_CLASS;break;
+          default:
+            klass = ERROR_ICON_CLASS;
+        }
+        var icon = $.node('i', '', appendClass(className, TIP_ICON_CLASS, klass), {
+          style: {
+            width: isNumber(size) ? size + 'px' : size,
+            height: isNumber(size) ? size + 'px' : size
+          }
+        });
+
+        return icon;
+      },
+      style: function style(size) {
+        var _appendStyle2;
+
+        var selector = toSelector(TIP_ICON_CLASS);
+        var warnSelector = selector + toSelector(WARNING_ICON_CLASS);
+        var succSelector = selector + toSelector(SUCCESS_ICON_CLASS);
+        var errSelector = selector + toSelector(ERROR_ICON_CLASS);
+        var infoSelector = selector + toSelector(INFO_ICON_CLASS);
+        size = parseFloat(size);
+
+        appendStyle((_appendStyle2 = {}, _defineProperty(_appendStyle2, warnSelector + ':before', {
+          width: size * 0.125 + 'px',
+          height: size * 0.4 + 'px',
+          top: size * 0.17 + 'px'
+        }), _defineProperty(_appendStyle2, warnSelector + ':after', {
+          width: size * 0.125 + 'px',
+          height: size * 0.125 + 'px',
+          bottom: size * 0.2 + 'px'
+        }), _defineProperty(_appendStyle2, succSelector + ':before', {
+          width: size * 0.3 + 'px',
+          height: size * 0.125 + 'px'
+        }), _defineProperty(_appendStyle2, succSelector + ':after', {
+          width: size * 0.5 + 'px',
+          height: size * 0.125 + 'px'
+        }), _defineProperty(_appendStyle2, errSelector + ':before, ' + errSelector + ':after', {
+          width: size * 0.5 + 'px',
+          height: size * 0.125 + 'px'
+        }), _defineProperty(_appendStyle2, infoSelector + ':before', {
+          width: size * 0.125 + 'px',
+          height: size * 0.125 + 'px',
+          top: size * 0.2 + 'px'
+        }), _defineProperty(_appendStyle2, infoSelector + ':after', {
+          width: size * 0.125 + 'px',
+          height: size * 0.4 + 'px',
+          bottom: size * 0.17 + 'px'
+        }), _appendStyle2));
+      }
+    });
+  }(Private, $);
+
+  window.Private = Private;
+
   /* ========Components======== */
 
   /* Tab组件 */
-  !function (win, $, Component) {
+  ;!function (win, $, Component) {
 
     //className
     var TAB_ITEM_CLASS = 'tabs-tab-item';
@@ -85,7 +254,7 @@
 
       this.options = Object.assign({}, defaultOptions, options);
       this.$container = $(selector);
-      if (this.$container.length < 1) throw new Error('not found `' + selector + '` Element');
+      if (this.$container.length < 1) throw new Error('not found ' + selector + ' Element');
       this.super();
     };
 
@@ -95,11 +264,11 @@
 
     Object.assign(Tabs.prototype, {
       render: function render() {
-        var _options = this.options,
-            tabsText = _options.tabsText,
-            renderPaneItem = _options.renderPaneItem,
-            themeColor = _options.themeColor,
-            paneContainerSelector = _options.paneContainerSelector;
+        var _options3 = this.options,
+            tabsText = _options3.tabsText,
+            renderPaneItem = _options3.renderPaneItem,
+            themeColor = _options3.themeColor,
+            paneContainerSelector = _options3.paneContainerSelector;
 
 
         var tabs = '',
@@ -112,7 +281,7 @@
         this.$paneContainer = $paneContainer;
 
         tabsText.forEach(function (tabText, index) {
-          var klass = index === 0 ? TAB_ITEM_CLASS.appendClass(TAB_ITEM_CLASS_ACTIVE) : TAB_ITEM_CLASS;
+          var klass = index === 0 ? appendClass(TAB_ITEM_CLASS, TAB_ITEM_CLASS_ACTIVE) : TAB_ITEM_CLASS;
 
           //tab
           var tab = $.node('div', tabText, klass);
@@ -120,20 +289,20 @@
 
           //pane
           if (isIncludePane) {
-            var paneClass = index === 0 ? PANE_ITEM_CLASS.appendClass(PANE_ITEM_CLASS_ACTIVE) : PANE_ITEM_CLASS;
+            var paneClass = index === 0 ? appendClass(PANE_ITEM_CLASS, PANE_ITEM_CLASS_ACTIVE) : PANE_ITEM_CLASS;
             var paneInner = isFunction(renderPaneItem) ? renderPaneItem(tabText, index) : '';
             var pane = $.node('div', paneInner, paneClass);
             panes += pane;
           }
         });
 
-        var underline = $.node('div', '', UNDERLINE_CLASS, { style: { 'background-color': themeColor } });
+        var underline = $.node('div', '', UNDERLINE_CLASS, { style: { backgroundColor: themeColor } });
 
         var tabsInner = $.node('div', tabs + underline, TAB_ITEM_INNER_CLASS);
         var tabsWrap = $.node('div', tabsInner, TAB_ITEM_WRAP_CLASS);
 
-        var prev = $.node('div', prevSvgDisable, TAB_PREVIOUS_ARROW_CLASS.appendClass(TAB_ARROW_CLASS).appendClass(TAB_ARROW_CLASS_DISABLE).appendClass(TAB_ARROW_CLASS_INVISIBLE));
-        var next = $.node('div', nextSvg, TAB_NEXT_ARROW_CLASS.appendClass(TAB_ARROW_CLASS).appendClass(TAB_ARROW_CLASS_INVISIBLE));
+        var prev = $.node('div', prevSvgDisable, appendClass(TAB_PREVIOUS_ARROW_CLASS, TAB_ARROW_CLASS, TAB_ARROW_CLASS_DISABLE, TAB_ARROW_CLASS_INVISIBLE));
+        var next = $.node('div', nextSvg, appendClass(TAB_NEXT_ARROW_CLASS, TAB_ARROW_CLASS, TAB_ARROW_CLASS_INVISIBLE));
 
         return [{
           html: prev + tabsWrap + next,
@@ -155,22 +324,22 @@
 
         $container.addClass('flex');
         $container.css({
-          'overflow': 'hidden'
+          overflow: 'hidden'
         });
 
         appendStyle({
           '.tabs-tab-item-active': {
-            'color': themeColor
+            color: themeColor
           },
           '.tabs-tab-item:hover': {
-            'color': themeColor
+            color: themeColor
           }
         });
 
         /* panes style */
         if (isIncludePane) {
           $paneContainer.css({
-            'overflow': 'hidden'
+            overflow: 'hidden'
           });
           this.$paneContainer = $paneContainer;
 
@@ -387,13 +556,13 @@
       var mustBeNumber = ['total', 'pageSize', 'current'];
       for (var key in opts) {
         if (mustBeNumber.indexOf(key) > -1) {
-          if (!isNumber(opts[key])) throw new Error('`' + key + '` is not a number');
+          if (!isNumber(opts[key])) throw new Error(key + ' is not a number');
         }
       }
 
       this.options = opts;
       this.$container = $(selector);
-      if (tagOf(this.$container) !== 'ul') throw new Error('`' + selector + '` is not a <ul> element');
+      if (tagOf(this.$container) !== 'ul') throw new Error(selector + ' is not a <ul> Element');
 
       this.super();
     };
@@ -422,13 +591,13 @@
         var i = void 0,
             ulInner = '';
         for (i = 1; i <= totalPage; i++) {
-          var klass = i === current ? PAGINATION_ITEM_CLASS.appendClass(PAGINATION_ITEM_CLASS_ACTIVE) : PAGINATION_ITEM_CLASS;
-          klass = border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
+          var klass = i === current ? appendClass(PAGINATION_ITEM_CLASS, PAGINATION_ITEM_CLASS_ACTIVE) : PAGINATION_ITEM_CLASS;
+          klass = border ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
 
           var originalElement = $.node('a', i);
           var element = isFunction(itemRender) ? itemRender(i, 'pagination', originalElement) : originalElement;
 
-          klass = klass.appendClass(PAGINATION_ITEM_CLASS + '-' + i);
+          klass = appendClass(klass, PAGINATION_ITEM_CLASS + '-' + i);
           var pagination = $.node('li', element, klass);
 
           ulInner += pagination;
@@ -437,7 +606,7 @@
         //previous
         var previous = function previous() {
           var klass = current === 1 ? PAGINATION_ITEM_CLASS_DISABLE : '';
-          klass = border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
+          klass = border ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
 
           var svg = current === 1 ? prevSvgDisable : prevSvg;
           var originalElement = $.node('a', svg);
@@ -445,14 +614,14 @@
           _this.prevEl = element;
           _this.prevOriginEl = originalElement;
 
-          return $.node('li', element, klass.appendClass(PAGINATION_ITEM_CLASS_PREV));
+          return $.node('li', element, appendClass(klass, PAGINATION_ITEM_CLASS_PREV));
         };
         var prevItem = previous();
 
         //next
         var next = function next() {
           var klass = current === totalPage ? PAGINATION_ITEM_CLASS_DISABLE : '';
-          klass = border ? klass.appendClass(PAGINATION_ITEM_CLASS_BORDER) : klass;
+          klass = border ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
 
           var svg = current === totalPage ? nextSvgDisable : nextSvg;
           var originalElement = $.node('a', svg);
@@ -461,7 +630,7 @@
           _this.nextEl = element;
           _this.nextOriginEl = originalElement;
 
-          return $.node('li', element, klass.appendClass(PAGINATION_ITEM_CLASS_NEXT));
+          return $.node('li', element, appendClass(klass, PAGINATION_ITEM_CLASS_NEXT));
         };
         var nextItem = next();
 
@@ -475,13 +644,13 @@
 
         appendStyle({
           '.pagination-item.pagination-item-active > a': {
-            'color': themeColor
+            color: themeColor
           },
           '.pagination-item.pagination-item-active.pagination-item-border': {
-            'border-color': themeColor
+            borderColor: themeColor
           },
           '.pagination-item:hover > a': {
-            'color': themeColor
+            color: themeColor
           }
         });
       },
@@ -616,9 +785,12 @@
       //为每个Message实例的容器创建一个随机className
       var RANDOM_CLASS = buildRandomString();
 
-      var icon = $.node('i', '', ICONCLASS.appendClass('message_' + type + '_icon'));
-      var text = $.node('span', '', TEXTCLASS.appendClass('message_' + type + '_text_box'));
-      var container = $.node('div', icon + text, CONTAINERCLASS.appendClass(RANDOM_CLASS).appendClass('message_' + type + '_container'));
+      var classPrefix = 'message_' + type + '_';
+      var icon = new Private.TipIcon(type === 'warning' ? 'warn' : type, {
+        className: ICONCLASS
+      });
+      var text = $.node('span', '', appendClass(TEXTCLASS, classPrefix + 'text_box'));
+      var container = $.node('div', icon.html + text, appendClass(CONTAINERCLASS, RANDOM_CLASS, classPrefix + 'container'));
       insertElementToBody($(container));
 
       domAfterLoad(toSelector(RANDOM_CLASS), function () {
@@ -657,7 +829,7 @@
 
           var index = messageList.indexOf(_this3);
           $el.css({
-            'top': FirstMessagePosTop + index * elHeight + index * GapOfMessage + 'px' // 计算当前实例top值
+            top: FirstMessagePosTop + index * elHeight + index * GapOfMessage + 'px' // 计算当前实例top值
           });
 
           setTimeout(function () {
@@ -830,30 +1002,30 @@
       render: function render() {
         var srcList = this.createSrcList();
         var RANDOM_CLASS = this.RANDOM_CLASS,
-            _options2 = this.options,
-            pagination = _options2.pagination,
-            navgation = _options2.navgation;
+            _options4 = this.options,
+            pagination = _options4.pagination,
+            navgation = _options4.navgation;
 
 
         var slideList = srcList.map(function (src) {
-          return $.node('div', '<img src="' + src + '" />', 'swiper-slide');
+          return $.node('div', '<img src=' + src + ' />', 'swiper-slide');
         });
 
         var swiperWrapper = $.node('div', slideList, 'swiper-wrapper');
         if (pagination) {
-          swiperWrapper += $.node('div', '', GALLERY_PAGINATION_CLASS.appendClass('swiper-pagination'));
+          swiperWrapper += $.node('div', '', appendClass(GALLERY_PAGINATION_CLASS, 'swiper-pagination'));
         }
 
-        var swiperContainer = $.node('div', swiperWrapper, GALLERY_SWIPER_CONTAINER_CLASS.appendClass('swiper-container'));
+        var swiperContainer = $.node('div', swiperWrapper, appendClass(GALLERY_SWIPER_CONTAINER_CLASS, 'swiper-container'));
         if (navgation) {
-          var prevBtn = $.node('div', '', GALLERY_BUTTON_PREV_CLASS.appendClass('swiper-button-prev'));
-          var nextBtn = $.node('div', '', GALLERY_BUTTON_NEXT_CLASS.appendClass('swiper-button-next'));
+          var prevBtn = $.node('div', '', appendClass(GALLERY_BUTTON_PREV_CLASS, 'swiper-button-prev'));
+          var nextBtn = $.node('div', '', appendClass(GALLERY_BUTTON_NEXT_CLASS, 'swiper-button-next'));
           swiperContainer += prevBtn + nextBtn;
         }
 
         var galleryWrappper = $.node('div', swiperContainer, GALLERY_WRAPPER_CLASS);
 
-        var galleryContainer = $.node('section', galleryWrappper, GALLERY_CONTAINER_CLASS.appendClass(GALLERY_CONTAINER_CLASS_HIDDEN).appendClass(RANDOM_CLASS));
+        var galleryContainer = $.node('section', galleryWrappper, appendClass(GALLERY_CONTAINER_CLASS, GALLERY_CONTAINER_CLASS_HIDDEN, RANDOM_CLASS));
 
         return [{
           html: galleryContainer,
@@ -868,11 +1040,11 @@
 
       style: function style() {
         var maxZIndex = this.getMaxZIndex();
-        var _options3 = this.options,
-            width = _options3.width,
-            height = _options3.height,
-            bgColor = _options3.bgColor,
-            navgation = _options3.navgation;
+        var _options5 = this.options,
+            width = _options5.width,
+            height = _options5.height,
+            bgColor = _options5.bgColor,
+            navgation = _options5.navgation;
 
         var $container = this.$container;
 
@@ -908,7 +1080,7 @@
 
         // 设置gallery容器宽高，默认透明背景
         $container.css({
-          'background-color': bgColor
+          backgroundColor: bgColor
         });
       },
 
@@ -928,7 +1100,7 @@
 
           if (!GALLERY.$swiper) {
             index > 0 && (swiperOptions.initialSlide = index);
-            GALLERY.$swiper = new Swiper(toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_SWIPER_CONTAINER_CLASS)), swiperOptions);
+            GALLERY.$swiper = new Swiper(appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_SWIPER_CONTAINER_CLASS)), swiperOptions);
           } else {
             GALLERY.$swiper.slideTo(index, 0, false);
           }
@@ -984,20 +1156,20 @@
 
       swiperOptionsHandler: function swiperOptionsHandler() {
         var RANDOM_CLASS = this.RANDOM_CLASS,
-            _options4 = this.options,
-            swiperOptions = _options4.swiperOptions,
-            pagination = _options4.pagination,
-            navgation = _options4.navgation;
+            _options6 = this.options,
+            swiperOptions = _options6.swiperOptions,
+            pagination = _options6.pagination,
+            navgation = _options6.navgation;
 
 
         if (swiperOptions.pagination) delete swiperOptions.pagination;
         if (swiperOptions.nextButton) delete swiperOptions.nextButton;
         if (swiperOptions.prevButton) delete swiperOptions.prevButton;
 
-        if (pagination) swiperOptions.pagination = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_PAGINATION_CLASS));
+        if (pagination) swiperOptions.pagination = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_PAGINATION_CLASS));
         if (navgation) {
-          swiperOptions.nextButton = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_BUTTON_NEXT_CLASS));
-          swiperOptions.prevButton = toSelector(RANDOM_CLASS).appendClass(toSelector(GALLERY_BUTTON_PREV_CLASS));
+          swiperOptions.nextButton = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_BUTTON_NEXT_CLASS));
+          swiperOptions.prevButton = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_BUTTON_PREV_CLASS));
         }
 
         swiperOptions.observer = true;
@@ -1008,6 +1180,17 @@
     });
   }(window, jQuery, Swiper, Component);!function (win, $, Component) {
 
+    /**
+     * @param options: {
+     *    dataSource: Array,
+     *    lineItemNumber: Number, // 每行Card的数量
+     *    ratio: Number, // 宽高比
+     *    border: Boolen, // 是否需要边框
+     *    style: Object, // 添加到Card容器的style标签内容
+     *    renderItem: Function(data) // Card内容的渲染回调，data为dataSource中的某一项
+     * }
+     */
+
     var CARD_LIST_ITEM_INNER_CLASS = 'cardList-item-inner';
     var CARD_LIST_ITEM_CLASS = 'cardList-item';
 
@@ -1016,7 +1199,8 @@
         dataSource: [],
         lineItemNumber: 3,
         ratio: 0.57,
-        bordered: false,
+        border: false,
+        style: null,
         renderItem: null
       };
 
@@ -1032,10 +1216,10 @@
 
     Object.assign(CardList.prototype, {
       render: function render() {
-        var _options5 = this.options,
-            dataSource = _options5.dataSource,
-            renderItem = _options5.renderItem,
-            lineItemNumber = _options5.lineItemNumber;
+        var _options7 = this.options,
+            dataSource = _options7.dataSource,
+            renderItem = _options7.renderItem,
+            lineItemNumber = _options7.lineItemNumber;
         var $container = this.$container;
 
 
@@ -1045,7 +1229,7 @@
           var itemDom = isFunction(renderItem) ? renderItem(data) : data;
           var itemInner = $.node('div', itemDom, CARD_LIST_ITEM_INNER_CLASS);
 
-          return $.node('div', itemInner, CARD_LIST_ITEM_CLASS.appendClass('flex-percent-' + itemPercent));
+          return $.node('div', itemInner, appendClass(CARD_LIST_ITEM_CLASS, 'flex-percent-' + itemPercent));
         });
 
         return [{
@@ -1055,9 +1239,9 @@
       },
       style: function style() {
         var $container = this.$container;
-        var _options6 = this.options,
-            ratio = _options6.ratio,
-            bordered = _options6.bordered;
+        var _options8 = this.options,
+            ratio = _options8.ratio,
+            border = _options8.border;
 
 
         $container.addClass('flex');
@@ -1066,9 +1250,12 @@
         $item.css({
           height: 0,
           paddingBottom: ratio * 100 + '%',
-          border: bordered ? '1px solid #eee' : 'none'
+          border: border ? '1px solid #eee' : 'none'
         });
       }
     });
+  }(window, jQuery, Component);!function (win, $, Component) {
+
+    function Alert() {}
   }(window, jQuery, Component);
 }(window, window.jQuery, window.Swiper, window.Component, window.Util);
