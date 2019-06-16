@@ -1233,8 +1233,8 @@
       render () {
         const { type, $container, options } = this;
         const { closable, closeText, showIcon, description, message, defaultVisible, style } = options;
-        const iconOptions = {};
         const withDesc = isString(description) && description !== '';
+        const iconOptions = {};
         if (withDesc) {
           iconOptions.size = 24;
         } else {
@@ -1244,10 +1244,7 @@
 
         this.isVisible = !!defaultVisible;
 
-        const icon = showIcon ? (new Icon(type, {
-          className: ALERT_ICON_CLASS,
-          ...iconOptions
-        })).html : '';
+        const icon = showIcon ? ( new Icon(type, Object.assign({ className: ALERT_ICON_CLASS }, iconOptions)) ).html : '';
         const msg = $.node('p', message, ALERT_MESSAGE_CLASS);
         const desc = $.node('p', description, ALERT_DESCRIPTION_CLASS);
 
@@ -1290,7 +1287,7 @@
         if (closable) {
           this.$closeIcon.on('click', function () {
             isFunction(onClose) && onClose();
-            _this.hide(afterClose);
+            _this.hide();
           });
         }
       },

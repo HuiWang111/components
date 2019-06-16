@@ -561,10 +561,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @example
    * appendClass('test1', 'test2', 'test3'); //'test1 test2 test3'
    */
-  function appendClass(string, className) {
-    return Array.from(arguments).reduce(function (result, current, index) {
-      var willAppend = isString(current) ? current : '';
-      var division = index === 0 ? '' : ' ';
+  function appendClass() {
+    return Array.from(arguments).reduce(function (result, current) {
+      var willAppend = isString(current) ? current : String(current);
+      var division = result === '' || willAppend === '' ? '' : ' ';
       return result += division + willAppend;
     }, '');
   }
