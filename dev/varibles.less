@@ -1,0 +1,22 @@
+@warning-color: #faad14;
+@success-color: #52c41a;
+@error-color: #f5222d;
+@info-color: #1890ff;
+@base-border-radius: 4px;
+
+/* Alert */
+@alert-success-bg: #f6ffed;
+@alert-success-border: #b7eb8f;
+@alert-info-bg: #e6f7ff;
+@alert-info-border: #91d5ff;
+@alert-warn-bg: #fffbe6;
+@alert-warn-border: #ffe58f;
+@alert-error-bg: #fff1f0;
+@alert-error-border: #ffa39e;
+
+.flex-percent(@ratio: 1) when (@ratio <= 100) {
+  .flex-percent-@{ratio} {
+    flex: 0 0 percentage(@ratio/100);
+  }
+  .flex-percent(@ratio + 1);
+}

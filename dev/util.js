@@ -560,10 +560,10 @@
    * @example
    * appendClass('test1', 'test2', 'test3'); //'test1 test2 test3'
    */
-  function appendClass (string, className) {
-    return Array.from(arguments).reduce((result, current, index) => {
-      const willAppend = isString(current) ? current : '';
-      const division = index === 0 ? '' : ' ';
+  function appendClass () {
+    return Array.from(arguments).reduce((result, current) => {
+      const willAppend = isString(current) ? current : String(current);
+      const division = result === '' || willAppend === '' ? '' : ' ';
       return result += division + willAppend;
     }, '');
   }

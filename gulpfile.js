@@ -68,17 +68,17 @@ gulp.task('testJS', function () {
  */
 gulp.task('less',function(){
   return (
-    gulp.src('dev/*.less')
+    gulp.src(['dev/components.base.less'])
     .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
     .pipe(less())
     .pipe(autoprefixer({
-      browsers: ['last 10 versions', 'Android >= 3.0']
+      browsers: ['>0%']
     }))
     .pipe(gulp.dest('dev'))
   );
 });
 gulp.task('watchLess',function(){
-  gulp.watch(['dev/*.less'],['less']);
+  gulp.watch(['dev/components.base.less'],['less']);
 });
 gulp.task('taskList', ['less', 'watchLess']);
 gulp.task('toCSS', function() {
