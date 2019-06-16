@@ -78,6 +78,13 @@
   const disableColor = '#ccc';
   const prevSvgDisable = getPrevSvg(disableColor);
   const nextSvgDisable = getNextSvg(disableColor);
+
+  /* button className */
+  const DEFAULT_BTN_CLASS = 'components_btn',
+        GHOST_BTN_CLASS = 'ghost_btn',
+        PRIMARY_BTN_CLASS = 'primary_btn',
+        DANGER_BTN_CLASS = 'primary_btn',
+        DASHED_BTN_CLASS = 'dashed_btn';
   
   /* 全局缓存区 */
   const GlobalCache = {};
@@ -1187,6 +1194,20 @@
 
   ;!function (win, $, Component) {
 
+    /**
+     * @param options = {
+     *    closable: Boolen,
+     *    closeText: String,
+     *    showIcon: Boolen,
+     *    description: String,
+     *    message: String,
+     *    defaultVisible: Boolen, // 默认是否显示
+     *    style: Object, // Alert容器style
+     *    onClose: Function,
+     *    afterClose: Function
+     * }
+     */
+
     const ALERT_MESSAGE_CLASS = 'alert_message',
           ALERT_DESCRIPTION_CLASS = 'alert_description',
           ALERT_ICON_CLASS = 'alert_icon',
@@ -1319,6 +1340,123 @@
         deleteKeys(this, 'options,$container,$closeIcon');
       }
     });
+
+  }(window, jQuery, Component)
+
+  ;!function (win, $, Component) {
+    /**
+     * @param options = {
+     *   bodyStyle: Object,
+     *   cancelText: String,
+     *   centered: Boolen,
+     *   centered: Boolen,
+     *   closable: Boolen,
+     *   destroyOnClose: Boolen,
+     *   footer: DOMElement,
+     *   keyboard: Boolen,
+     *   mask: Boolen,
+     *   maskClosable: Boolen,
+     *   maskStyle: Object,
+     *   okText: String,
+     *   okType: String,
+     *   okButtonProps: Object,
+     *   cancelButtonProps: Object,
+     *   style: Object,
+     *   title: String,
+     *   wrapClassName: String,
+     *   zIndex: Number,
+     *   bodyContent: String,
+     *   afterClose: Function,
+     *   onCancel: Function,
+     *   onOk: Function
+     * }
+     */
+
+    const MODAL_FOOTER_CONTAINER_CLASS = 'modal_footer_container',
+          MODAL_FOOTER_WRAP_CLASS = 'modal_footer_wrapper',
+          MODAL_HEADER_CONTAINER_CLASS = 'modal_header_container',
+          MODAL_HEADER_WRAP_CLASS = 'modal_header_wrapper',
+          MODAL_CLOSE_ICON_CLASS = 'modal_close_icon',
+          MODAL_BODY_CLASS = 'modal_body',
+          MODAL_CONTAINER_CLASS = 'modal_container';
+
+    function Modal(options) {
+      const defaultOptions = {
+        afterClose: null,
+        bodyStyle: {},
+        cancelText: '取消',
+        centered: false,
+        closable: false,
+        destroyOnClose: false,
+        keyboard: true,
+        mask: true,
+        maskClosable: true,
+        maskStyle: {},
+        okText: '确认',
+        okType: 'primary',
+        okButtonProps: {},
+        cancelButtonProps: {},
+        style: {},
+        title: '',
+        wrapClassName: '',
+        zIndex: 1000,
+        bodyContent: '',
+        onCancel: null,
+        onOk: null
+      };
+
+      // 默认 footer
+      const cancelText = isString(options.cancelText) && options.cancelText !== '' ? options.cancelText : defaultOptions.cancelText;
+      const cancelButtonProps = isObject(options.cancelButtonProps) ? options.cancelButtonProps : defaultOptions.cancelButtonProps;
+      const okText = isString(options.okText) && options.okText !== '' ? options.okText : defaultOptions.okText;
+      const okButtonProps = isObject(options.okButtonProps) ? options.okButtonProps : defaultOptions.okButtonProps;
+
+      const cancelBtn = $.node('button', cancelText, DEFAULT_BTN_CLASS);
+      const okBtn = $.node('button', okText, appendClass(DEFAULT_BTN_CLASS, PRIMARY_BTN_CLASS));
+      const btnWrap = $.node('div', cancelBtn + okBtn, MODAL_FOOTER_WRAP_CLASS);
+
+      defaultOptions.footer = $.node('div', btnWrap, MODAL_FOOTER_CONTAINER_CLASS);
+
+      this.options = Object.assign({}, defaultOptions, options);
+      this.super();
+    }
+
+    $.inherit(Component, Modal);
+    win.Modal = Modal;
+
+    Object.assign(Modal.prototype, {
+      render () {
+        const { title, closable, bodyContent, footer } = this.options;
+        
+        const titleDOM = '';
+        if (isString(title) && title !== '') {
+          const titleWrap = $.node('div', title, MODAL_HEADER_WRAP_CLASS);
+          titleDOM = $.node('div', titleWrap, MODAL_HEADER_CONTAINER_CLASS);
+        }
+
+        const closeDOM = '';
+        if (closable) {
+          const closeIcon = (new Icon('close')).html;
+          closeDOM = $.node('div', closeIcon, MODAL_CLOSE_ICON_CLASS);
+        }
+
+        const bodyContentDOM = $.node('div', bodyContent, MODAL_BODY_CLASS);
+
+        const footerDOM = '';
+        if (isString(footer) && footer !== '') {
+          footerDOM = footer;
+        }
+
+        const html = $.node('div', titleDOM + closeDOM + bodyContentDOM, footerDOM, MODAL_CONTAINER_CLASS);
+
+        return [{
+          html,
+          contaier: 'body',
+          type: 'append'
+        }];
+      }
+    });
+
 
   }(window, jQuery, Component)
 
