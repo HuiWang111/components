@@ -24,7 +24,8 @@
     buildRandomString,
     toNumber,
     SetMock,
-    appendClass
+    appendClass,
+    getRandomClassName
   } = Util;
   
   /* icons */
@@ -748,7 +749,7 @@
       this.type = type;
   
       //为每个Message实例的容器创建一个随机className
-      const RANDOM_CLASS = buildRandomString();
+      const RANDOM_CLASS = getRandomClassName();
       
       const classPrefix = `message_${type}_`;
       const icon = new Icon(type === 'warning' ? 'warn' : type, {
@@ -941,7 +942,7 @@
       this.$source = $(selector);
   
       // 为每个实例容器创建一个随机className
-      const RANDOM_CLASS = buildRandomString();
+      const RANDOM_CLASS = getRandomClassName();
       this.RANDOM_CLASS = RANDOM_CLASS;
   
       this.super();
@@ -1282,7 +1283,7 @@
           case 'error': wrapClass = ALERT_ERROR_CLASS; break;
           case 'info': wrapClass = ALERT_INFO_CLASS; break;
         }
-        const RANDOM_CLASS = buildRandomString();
+        const RANDOM_CLASS = getRandomClassName();
         const klass = appendClass(wrapClass, RANDOM_CLASS, ALERT_CONTAINER_CLASS, showIcon ? ALERT_WITH_ICON_CLASS : '', withDesc ? ALERT_WITH_DESC_CLASS : '', closable ? ALERT_WITH_CLOSE_CLASS : '', defaultVisible ? '' : ALERT_INVISIBLE_CLASS);
         const wrapper = $.node('div', icon + msg + desc + closeIcon, klass, {
           style,
@@ -1355,7 +1356,6 @@
      *   footer: DOMElement,
      *   keyboard: Boolen,
      *   mask: Boolen,
-     *   maskClosable: Boolen,
      *   maskStyle: Object,
      *   okText: String,
      *   okType: String,
@@ -1374,26 +1374,35 @@
 
     const MODAL_FOOTER_CONTAINER_CLASS = 'modal_footer_container',
           MODAL_FOOTER_WRAP_CLASS = 'modal_footer_wrapper',
+          MODAL_FOOTER_OK_BTN_CLASS = 'modal_footer_ok_button',
+          MODAL_FOOTER_CANCEL_BTN_CLASS = 'modal_footer_cancel_button',
+
           MODAL_HEADER_CONTAINER_CLASS = 'modal_header_container',
           MODAL_HEADER_WRAP_CLASS = 'modal_header_wrapper',
+
           MODAL_CLOSE_ICON_CLASS = 'modal_close_icon',
+
           MODAL_BODY_CLASS = 'modal_body',
-          MODAL_CONTAINER_CLASS = 'modal_container';
+
+          MODAL_CONTAINER_CLASS = 'modal_container',
+          MODAL_CONTAINER_CENTERED_CLASS = 'modal_centered',
+          MODAL_CONTAINER_INVISIBLE_CLASS = 'modal_container_invisible',
+          
+          MODAL_MASK_CLASS = 'modal_mask',
+          MODAL_MASK_INVISIBLE_CLASS = 'modal_mask_invisible';
 
     function Modal(options) {
       const defaultOptions = {
-        afterClose: null,
         bodyStyle: {},
         cancelText: '取消',
         centered: false,
         closable: false,
-        destroyOnClose: false,
-        keyboard: true,
+        destroyOnClose: false, // 未实现
+        keyboard: true, // 未实现
         mask: true,
-        maskClosable: true,
         maskStyle: {},
         okText: '确认',
-        okType: 'primary',
+        okType: 'primary', // 未实现
         okButtonProps: {},
         cancelButtonProps: {},
         style: {},
@@ -1402,6 +1411,7 @@
         zIndex: 1000,
         bodyContent: '',
         onCancel: null,
+        afterClose: null,
         onOk: null
       };
 
@@ -1411,8 +1421,8 @@
       const okText = isString(options.okText) && options.okText !== '' ? options.okText : defaultOptions.okText;
       const okButtonProps = isObject(options.okButtonProps) ? options.okButtonProps : defaultOptions.okButtonProps;
 
-      const cancelBtn = $.node('button', cancelText, DEFAULT_BTN_CLASS);
-      const okBtn = $.node('button', okText, appendClass(DEFAULT_BTN_CLASS, PRIMARY_BTN_CLASS));
+      const cancelBtn = $.node('button', cancelText, appendClass(DEFAULT_BTN_CLASS, MODAL_FOOTER_CANCEL_BTN_CLASS));
+      const okBtn = $.node('button', okText, appendClass(DEFAULT_BTN_CLASS, PRIMARY_BTN_CLASS, MODAL_FOOTER_OK_BTN_CLASS));
       const btnWrap = $.node('div', cancelBtn + okBtn, MODAL_FOOTER_WRAP_CLASS);
 
       defaultOptions.footer = $.node('div', btnWrap, MODAL_FOOTER_CONTAINER_CLASS);
@@ -1426,7 +1436,7 @@
 
     Object.assign(Modal.prototype, {
       render () {
-        const { title, closable, bodyContent, footer } = this.options;
+        const { title, closable, bodyContent, footer, bodyStyle, centered, style, wrapClassName, zIndex } = this.options;
         
         const titleDOM = '';
         if (isString(title) && title !== '') {
@@ -1438,22 +1448,99 @@
         if (closable) {
           const closeIcon = (new Icon('close')).html;
           closeDOM = $.node('div', closeIcon, MODAL_CLOSE_ICON_CLASS);
+          this.isModalClosable = true;
         }
 
-        const bodyContentDOM = $.node('div', bodyContent, MODAL_BODY_CLASS);
+        const bodyContentDOM = $.node('div', bodyContent, MODAL_BODY_CLASS, {
+          style: isObject(bodyStyle) ? bodyStyle : {}
+        });
 
         const footerDOM = '';
         if (isString(footer) && footer !== '') {
           footerDOM = footer;
         }
 
-        const html = $.node('div', titleDOM + closeDOM + bodyContentDOM, footerDOM, MODAL_CONTAINER_CLASS);
+        const RANDOM_CLASS = getRandomClassName();
+        this.RANDOM_CLASS = RANDOM_CLASS;
+        const klass = appendClass(
+          MODAL_CONTAINER_CLASS, 
+          centered ? MODAL_CONTAINER_CENTERED_CLASS : '',
+          isString(wrapClassName) ? wrapClassName : '',
+          RANDOM_CLASS
+        );
+        
+        const html = $.node('div', this.handleMask(titleDOM + closeDOM + bodyContentDOM + footerDOM), klass, {
+          style: Object.assign(isObject(style) ? style : {}, { zIndex })
+        });
 
         return [{
           html,
           contaier: 'body',
           type: 'append'
         }];
+      },
+
+      componentDidMount () {
+        const { isIncludeMask, isModalClosable } = this;
+
+        if (isIncludeMask) {
+          this.$mask = $(toSelector(`${this.RANDOM_CLASS}_mask`));
+        }
+        isModalClosable && ( this.$modalCloseBtn = this.$container.find(toSelector(MODAL_CLOSE_ICON_CLASS)) );
+        this.$container = $(toSelector(this.RANDOM_CLASS));
+        this.$cancelBtn = this.$container.find(toSelector(MODAL_FOOTER_CANCEL_BTN_CLASS));
+        this.$okBtn = this.$container.find(toSelector(MODAL_FOOTER_OK_BTN_CLASS));
+      },
+
+      bindEvents () {
+        const { isModalClosable, $modalCloseBtn, $cancelBtn, $okBtn, options: { afterClose, onCancel, onOk } } = this;
+
+        const _this = this;
+        const closeModalHandler = function () {
+          _this.hide();
+
+          const $this = $(this);
+          if ($this.hasClass(MODAL_FOOTER_CANCEL_BTN_CLASS)) {
+            isFunction(onCancel) && onCancel();
+          }
+          if ($this.hasClass(MODAL_FOOTER_OK_BTN_CLASS)) {
+            isFunction(onOk) && onOk();
+          }
+
+          isFunction(afterClose) && afterClose();
+        }
+
+        if (isModalClosable) {
+          $modalCloseBtn.on('click', closeModalHandler);
+        }
+
+        $cancelBtn.on('click', closeModalHandler);
+        $okBtn.on('click', closeModalHandler);
+
+      },
+
+      show () {
+        const { isIncludeMask, $mask, $container } = this;
+        $container.removeClass(MODAL_CONTAINER_INVISIBLE_CLASS);
+        isIncludeMask && $mask.removeClass(MODAL_MASK_INVISIBLE_CLASS);
+      },
+
+      hide() {
+        const { isIncludeMask, $mask, $container } = this;
+        $container.addClass(MODAL_CONTAINER_INVISIBLE_CLASS);
+        isIncludeMask && $mask.addClass(MODAL_MASK_INVISIBLE_CLASS);
+      },
+
+      handleMask (dom) {
+        const { maskStyle, mask } = this.options;
+
+        if (!mask) return dom;
+
+        this.isIncludeMask = true;
+
+        return $.node('div', dom, appendClass(MODAL_MASK_CLASS, `${this.RANDOM_CLASS}_mask`), {
+          style: isObject(maskStyle) ? maskStyle : {}
+        });
       }
     });
 

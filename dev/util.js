@@ -766,6 +766,15 @@
     return randomString;
   }
 
+  function getRandomClassName() {
+    const className = buildRandomString();
+    if (!document.querySelector(toSelector(className))) {
+      return className;
+    } else {
+      getRandomClassName();
+    }
+  }
+
   /**
    * @description 下划线或中划线命名法转驼峰命名法
    * @example
@@ -1382,6 +1391,7 @@
     tagOf,
     getSelector,
     appendClass,
+    getRandomClassName,
 
     // 数组方法
     uniq,
