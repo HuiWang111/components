@@ -4,7 +4,8 @@
   const {
     isString,
     isObject,
-    isEmptyObject,
+    isObjectLike,
+    isEmpty,
     isFunction,
     isNumber,
     isNumeric,
@@ -1423,9 +1424,8 @@
 
       const cancelBtn = $.node('button', cancelText, appendClass(DEFAULT_BTN_CLASS, MODAL_FOOTER_CANCEL_BTN_CLASS));
       const okBtn = $.node('button', okText, appendClass(DEFAULT_BTN_CLASS, PRIMARY_BTN_CLASS, MODAL_FOOTER_OK_BTN_CLASS));
-      const btnWrap = $.node('div', cancelBtn + okBtn, MODAL_FOOTER_WRAP_CLASS);
 
-      defaultOptions.footer = $.node('div', btnWrap, MODAL_FOOTER_CONTAINER_CLASS);
+      defaultOptions.footer = $.node('div', cancelBtn + okBtn, MODAL_FOOTER_WRAP_CLASS);
 
       this.options = Object.assign({}, defaultOptions, options);
       this.super();
@@ -1438,13 +1438,13 @@
       render () {
         const { title, closable, bodyContent, footer, bodyStyle, centered, style, wrapClassName, zIndex } = this.options;
         
-        const titleDOM = '';
+        let titleDOM = '';
         if (isString(title) && title !== '') {
           const titleWrap = $.node('div', title, MODAL_HEADER_WRAP_CLASS);
           titleDOM = $.node('div', titleWrap, MODAL_HEADER_CONTAINER_CLASS);
         }
 
-        const closeDOM = '';
+        let closeDOM = '';
         if (closable) {
           const closeIcon = (new Icon('close')).html;
           closeDOM = $.node('div', closeIcon, MODAL_CLOSE_ICON_CLASS);
@@ -1455,9 +1455,9 @@
           style: isObject(bodyStyle) ? bodyStyle : {}
         });
 
-        const footerDOM = '';
+        let footerDOM = '';
         if (isString(footer) && footer !== '') {
-          footerDOM = footer;
+          footerDOM = $.node('div', footer, MODAL_FOOTER_CONTAINER_CLASS);
         }
 
         const RANDOM_CLASS = getRandomClassName();
@@ -1469,13 +1469,13 @@
           RANDOM_CLASS
         );
         
-        const html = $.node('div', this.handleMask(titleDOM + closeDOM + bodyContentDOM + footerDOM), klass, {
+        const html = $.node('div', titleDOM + closeDOM + bodyContentDOM + footerDOM, klass, {
           style: Object.assign(isObject(style) ? style : {}, { zIndex })
         });
 
         return [{
-          html,
-          contaier: 'body',
+          html: this.handleMask(html),
+          container: 'body',
           type: 'append'
         }];
       },
@@ -1532,13 +1532,13 @@
       },
 
       handleMask (dom) {
-        const { maskStyle, mask } = this.options;
+        const { maskStyle, mask, centered } = this.options;
 
         if (!mask) return dom;
 
         this.isIncludeMask = true;
 
-        return $.node('div', dom, appendClass(MODAL_MASK_CLASS, `${this.RANDOM_CLASS}_mask`), {
+        return $.node('div', dom, appendClass(MODAL_MASK_CLASS, `${this.RANDOM_CLASS}_mask`, centered ? MODAL_CONTAINER_CENTERED_CLASS : ''), {
           style: isObject(maskStyle) ? maskStyle : {}
         });
       }

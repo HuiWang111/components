@@ -7,23 +7,35 @@
   <link rel="stylesheet" href="../components.base.css">
   <title>Document</title>
   <style>
-    button {
-      display: block;
-      width: 50px;
-      height: 25px;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
-  <button>显示</button>
+  <button class="showModal components_btn">显示</button>
 
   <script src="../lib/jquery-3.3.1.min.js"></script>
   <script src="../util.js"></script>
   <script src="../components.base.js"></script>
   <script>
-    var modal = new Modal({});
-    console.log(modal);
+    var modal = new Modal({
+      title: 'title',
+      bodyContent: $.node('div', '1234', {
+        style: {
+          height: 100,
+          lineHeight: 100,
+          fontSize: '20px'
+        }
+      }) + $.node('div', '1234', {
+        style: {
+          height: 100,
+          lineHeight: 100,
+          fontSize: '20px'
+        }
+      })
+    });
+  
+    $('.showModal').on('click', function () {
+      modal.show();
+    });
   </script>
 </body>
 </html>

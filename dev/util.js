@@ -163,12 +163,12 @@
 
         let array = this;
         const len = array.length;
-        if (start == null && end == null) {
+        if (isNil(start) && isNil(end)) {
           array = array.map(function () {
             return fill;
           });
           return array;
-        } else if (start == null && end != null) {
+        } else if (isNil(start) && end != null) {
           if (!isNumeric(end)) throw new Error(end + ' is not a number');
   
           end = parseInt(end);
@@ -181,7 +181,7 @@
             });
             return array;
           }
-        } else if (start != null && end == null) {
+        } else if (start != null && isNil(end)) {
           if (!isNumeric(start)) throw new Error(start + ' is not a number');
   
           start = parseInt(start);
@@ -253,7 +253,7 @@
    */
   if (!Object.entries) {
     Object.entries = function (object) {
-      if (object == null) {
+      if (isNil(object)) {
         throw new TypeError('Cannot convert undefined or null to object');
       }
 
@@ -269,7 +269,7 @@
     }
 
     Object.values = function (object) {
-      if (object == null) {
+      if (isNil(object)) {
         throw new TypeError('Cannot convert undefined or null to object');
       }
 
@@ -308,8 +308,8 @@
     
       doms.forEach((dom) => {
         let { condition, container, html, type } = dom;
-        if (html == null) throw new Error('缺少需挂载的dom字符串');
-        if (container == null) throw new Error('缺少挂载目标容器');
+        if (isNil(html)) throw new Error('缺少需挂载的dom字符串');
+        if (isNil(container)) throw new Error('缺少挂载目标容器');
 
         // condition默认为true
         typeof condition === 'undefined' && (condition = true);
@@ -391,30 +391,44 @@
   /**
    * @public Util全局对象中的方法
    */
-  function isString(target) {
-    return typeof target === 'string';
+  function isString(value) {
+    return typeof value === 'string';
   }
-  function isObject(target) {
-    return typeof target === 'object';
+  function isObjectLike(value) {
+    return typeof value === 'object' && value !== null;
   }
-  function isEmptyObject(target) {
-    for (const _ in target) return !1;
-    return !0;
+  function isObject(value) {
+    return value && value.constructor === Object;
+  }
+  function isNil(value) {
+    return value == null;
+  }
+  function isEmpty(value) {
+    if (isNil(value)) {
+      return !0;
+    } else if (isLength(value.length)) {
+      return value.length === 0;
+    } else if (isObject(value)) {
+      for (const _ in value) return !1;
+      return !0;
+    } else if (isNumber(value)) {
+      return value === 0;
+    }
   }
   /**
    * @description 判断是否是数字，包括字符串数值
    */
-  function isNumeric(target) {
-    return !isNaN(parseFloat(target));
+  function isNumeric(value) {
+    return !isNaN(parseFloat(value));
   }
   /**
    * @description 判断是否是Number实例
    */
-  function isNumber(target) {
-    return (typeof target === 'number');
+  function isNumber(value) {
+    return (typeof value === 'number');
   }
-  function isFunction(target) {
-    return (typeof target === 'function');
+  function isFunction(value) {
+    return (typeof value === 'function');
   }
 
   /**
@@ -422,21 +436,21 @@
    * toNumber('5') // 5
    * toNumber('abc') // false
    */
-  function toNumber(target) {
-    var number = parseFloat(target);
+  function toNumber(value) {
+    const number = parseFloat(value);
     return isNaN(number) ? false : number;
   }
   /**
    * @description 是否为整数
    */
-  function isInteger(target) {
-    return isNumber(target) && (target % 1 === 0);
+  function isInteger(value) {
+    return isNumber(value) && (value % 1 === 0);
   }
   /**
    * @description 是否为符合规范的length属性值
    */
-  function isLength(target) {
-    return isInteger(target) && target > -1;
+  function isLength(value) {
+    return isInteger(value) && value > -1;
   }
   /**
    * @description 判断是否为dom元素
@@ -529,7 +543,7 @@
    * });
    */
   function appendStyle(object, type = 'self') {
-    if (!isObject(object) || isEmptyObject(object) || object === null) {
+    if (!isObject(object) || isEmpty(object)) {
       return;
     }
     
@@ -863,12 +877,12 @@
   function keyOf(object, target, excludes, isOwn) {
     if (!isObject(object)) throw new Error(object + ' is not a object');
     
-    const isNil = excludes == null;
-    if (!isNil && !isString(excludes)) throw new Error(excludes + ' is not a string');
+    const is_Nil = isNil(excludes);
+    if (!is_Nil && !isString(excludes)) throw new Error(excludes + ' is not a string');
 
-    !isNil && (excludes = excludes.split(','));
+    !is_Nil && (excludes = excludes.split(','));
     for(const key in object) {
-      if (isNil) {
+      if (is_Nil) {
         if (Object.is(object[key], target)) return isOwn ? (object.hasOwnProperty(key) ? key : undefined) : key;
       } else {
         if (!excludes.includes(key)) {
@@ -892,11 +906,11 @@
     if (excludes != null && !isString(excludes)) throw new Error(excludes + ' is not a string');
 
     let keyList, excludeList;
-    if (keys == null) {
+    if (isNil(keys)) {
       keyList = null;
-      excludeList = excludes == null ? null : excludes.split(',');
+      excludeList = isNil(excludes) ? null : excludes.split(',');
     } else {
-      if (excludes == null) {
+      if (isNil(excludes)) {
         keyList = keys.split(',');
       } else {
         keyList = remove(keys.split(','), excludes.split(','));
@@ -905,11 +919,11 @@
     }
 
     forInOwn(object, (_, key, self) => {
-      if (keyList == null && excludeList == null) {
+      if (isNil(keyList) && isNil(excludeList)) {
         delete self[key];
-      } else if (keyList != null && excludeList == null) {
+      } else if (keyList != null && isNil(excludeList)) {
         keyList.includes(key) && delete self[key];
-      } else if (keyList == null && excludeList != null) {
+      } else if (isNil(keyList) && excludeList != null) {
         !excludeList.includes(key) && delete self[key];
       }
     });
@@ -1074,7 +1088,7 @@
 
   function sum(array) {
     let sum = 0;
-    const len = array == null ? 0 : array.length;
+    const len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 1) return sum;
 
     return array.reduce((sum, current) => {
@@ -1084,7 +1098,7 @@
 
   function sumBy(array, iteratee) {
     let sum = 0;
-    const len = array == null ? 0 : array.length;
+    const len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return sum;
 
     if (isString(iteratee)) {
@@ -1100,7 +1114,7 @@
   }
 
   function max(array) {
-    const len = array == null ? 0 : array.length;
+    const len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return;
 
     return array.reduce((max, current) => {
@@ -1109,7 +1123,7 @@
   }
 
   function maxBy(array, iteratee) {
-    const len = array == null ? 0 : array.length;
+    const len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return;
     
     let initialValue;
@@ -1131,7 +1145,7 @@
   }
 
   function min(array) {
-    const len = array == null ? 0 : array.length;
+    const len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len ===0) return;
 
     return array.reduce((min, current) => {
@@ -1140,7 +1154,7 @@
   }
 
   function minBy(array, iteratee) {
-    const len = array == null ? 0 : array.length;
+    const len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return;
 
     let initialValue;
@@ -1162,14 +1176,14 @@
   }
   
   function mean(array) {
-    const len = array == null ? 0 : array.length;
+    const len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return;
 
     return sum(array) / len;
   }
 
   function meanBy(array, iteratee) {
-    const len = array == null ? 0 : array.length;
+    const len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return;
 
     return sumBy(array, iteratee) / len;
@@ -1369,16 +1383,18 @@
 
   const Util = {
 
-    // 类型方法
+    // 判断
     isString,
+    isObjectLike,
     isObject,
-    isEmptyObject,
+    isEmpty,
     isFunction,
     isNumber,
     isNumeric,
     isDom,
     isInteger,
     isLength,
+    isEmpty,
 
     // number方法
     toNumber,
@@ -1490,7 +1506,7 @@
    * @param { Number | Function } y
    */
   $.prototype.translate = function (x, y) {
-    if (x == null && y == null) {
+    if (isNil(x) && isNil(y)) {
       return [
         parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[4]),
         parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[5])
@@ -1498,7 +1514,7 @@
     }
 
     let xValue, yValue;
-    if (y == null) {
+    if (isNil(y)) {
       xValue = isFunction(x) ? parseFloat(x()) : parseFloat(x);
       if (!isNaN(xValue)) {
         this.css({
@@ -1506,7 +1522,7 @@
         });
       }
       return this;
-    } else if (x == null) {
+    } else if (isNil(y)) {
       yValue = isFunction(y) ? parseFloat(y()) : parseFloat(y);
       if (!isNaN(yValue)) {
         this.css({
@@ -1526,13 +1542,13 @@
     }
   }
   $.prototype.translateX = function (value) {
-    if (value == null) {
+    if (isNil(value)) {
       return parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[4]);
     }
     this.translate(value);
   }
   $.prototype.translateY = function (value) {
-    if (value == null) {
+    if (isNil(value)) {
       return parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[5]);
     }
     this.translate(null, value);
@@ -1609,7 +1625,7 @@
      * // "<div class="test" data-value="1" style="background-color: red;color: #fff;">1234</div>"
      */
     node: function (wrapper, children, klass, attr) {
-      if (children == null) return '';
+      if (isNil(children)) return '';
   
       // If the children is an array, do a join
       children = Array.isArray(children) ? children.join('') : children;
