@@ -16,9 +16,8 @@
   <script src="../util.js"></script>
   <script src="../components.base.js"></script>
   <script>
-    var modal = new Modal({
-      title: 'title',
-      bodyContent: $.node('div', '1234', {
+
+    var bodyContent = $.node('div', '1234', {
         style: {
           height: 100,
           lineHeight: 100,
@@ -30,7 +29,21 @@
           lineHeight: 100,
           fontSize: '20px'
         }
-      })
+      });
+
+    var modal = new Modal({
+      // title: 'title',
+      mask: true,
+      bodyContent: bodyContent,
+      onOk: function () {
+        console.log('onOk');
+      },
+      onCancel: function () {
+        console.log('onCancel');
+      },
+      afterClose: function () {
+        console.log('afterClose');
+      }
     });
   
     $('.showModal').on('click', function () {

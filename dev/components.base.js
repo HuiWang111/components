@@ -10,6 +10,8 @@
     isNumber,
     isNumeric,
     isDom,
+    isUndefined,
+    isNull,
     toSelector,
     appendStyle,
     insertElementToBody,
@@ -80,16 +82,11 @@
   const disableColor = '#ccc';
   const prevSvgDisable = getPrevSvg(disableColor);
   const nextSvgDisable = getNextSvg(disableColor);
-
-  /* button className */
-  const DEFAULT_BTN_CLASS = 'components_btn',
-        GHOST_BTN_CLASS = 'ghost_btn',
-        PRIMARY_BTN_CLASS = 'primary_btn',
-        DANGER_BTN_CLASS = 'primary_btn',
-        DASHED_BTN_CLASS = 'dashed_btn';
   
   /* 全局缓存区 */
   const GlobalCache = {};
+  
+  /* ========Components======== */
 
   !function (win, $) {
     /**
@@ -197,9 +194,86 @@
       }
     });
 
-  }(window, $)
-  
-  /* ========Components======== */
+  }(window, window.jQuery)
+
+  const DEFAULT_BTN_CLASS = 'components_btn',
+        GHOST_BTN_CLASS = 'ghost_btn',
+        PRIMARY_BTN_CLASS = 'primary_btn',
+        DANGER_BTN_CLASS = 'primary_btn',
+        DASHED_BTN_CLASS = 'dashed_btn',
+        LINK_BTN_CLASS = 'link_btn',
+        CIRCLE_BTN_CLASS = 'circle_btn',
+        BLOCK_BTN_CLASS = 'block_btn';
+  ;!function (win, $) {
+    /**
+     * @description 将页面上已有的元素定义成components-button 注：必须是页面中已有的元素
+     */
+    function Button(selector, options) {
+      if ($(selector).length === 0) {
+        throw new Error(`not found ${selector} elemet`);
+      }
+
+      const defaultOptions = {
+        type: '',
+        disabled: false,
+        ghost: false,
+        htmlType: 'button',
+        icon: '',
+        shape: 'round',
+        onClick: null,
+        block: false,
+        className: ''
+      }
+
+      this.options = Object.assign({}, defaultOptions, options);
+
+      const RANDOM_CLASS = getRandomClassName();
+      $(selector).eq(0).addClass(RANDOM_CLASS);
+      this.$el = $(toSelector(RANDOM_CLASS));
+
+      this.render();
+      this.bindEvents();
+    }
+
+    win.Button = Button;
+
+    Object.assign(Button.prototype, {
+      render () {
+        const { $el, options: { type, shape, ghost, disabled, icon, block, className } } = this;
+
+        let typeClass;
+        switch (type) {
+          case 'primary': typeClass = PRIMARY_BTN_CLASS; break;
+          case 'danger': typeClass = DANGER_BTN_CLASS; break;
+          case 'dashed': typeClass = DASHED_BTN_CLASS; break;
+          case 'link': typeClass = LINK_BTN_CLASS; break;
+        }
+
+        $el.addClass(appendClass(
+          DEFAULT_BTN_CLASS,
+          typeClass,
+          ghost ? GHOST_BTN_CLASS : '',
+          shape === 'circle' ? CIRCLE_BTN_CLASS : '',
+          block ? BLOCK_BTN_CLASS : '',
+          isEmpty(className) ? '' : className
+        ));
+
+        disabled && $el.attr('disabled', 'disabled');
+        
+        $el.attr('type', htmlType);
+
+        !isEmpty(icon) && $el.prepend(icon);
+      },
+
+      bindEvents() {
+        const { $el, options: { onClick } } = this;
+        isFunction(onClick) && $el.on('click', function () {
+          onClick();
+        });
+      }
+    });
+
+  }(window, window.jQuery)
   
   /* Tab组件 */
   ;!function (win, $, Component) {
@@ -1349,6 +1423,7 @@
     /**
      * @param options = {
      *   bodyStyle: Object,
+     *   defaultVisible: Boolen,
      *   cancelText: String,
      *   centered: Boolen,
      *   centered: Boolen,
@@ -1395,6 +1470,7 @@
     function Modal(options) {
       const defaultOptions = {
         bodyStyle: {},
+        defaultVisible: false,
         cancelText: '取消',
         centered: false,
         closable: false,
@@ -1436,7 +1512,7 @@
 
     Object.assign(Modal.prototype, {
       render () {
-        const { title, closable, bodyContent, footer, bodyStyle, centered, style, wrapClassName, zIndex } = this.options;
+        const { title, closable, bodyContent, footer, bodyStyle, centered, style, wrapClassName, zIndex, defaultVisible } = this.options;
         
         let titleDOM = '';
         if (isString(title) && title !== '') {
@@ -1466,7 +1542,8 @@
           MODAL_CONTAINER_CLASS, 
           centered ? MODAL_CONTAINER_CENTERED_CLASS : '',
           isString(wrapClassName) ? wrapClassName : '',
-          RANDOM_CLASS
+          RANDOM_CLASS,
+          defaultVisible ? '' : MODAL_CONTAINER_INVISIBLE_CLASS
         );
         
         const html = $.node('div', titleDOM + closeDOM + bodyContentDOM + footerDOM, klass, {
@@ -1520,7 +1597,8 @@
       },
 
       show () {
-        const { isIncludeMask, $mask, $container } = this;
+        const { isIncludeMask, $mask, $container, $okBtn } = this;
+        $okBtn[0].focus();
         $container.removeClass(MODAL_CONTAINER_INVISIBLE_CLASS);
         isIncludeMask && $mask.removeClass(MODAL_MASK_INVISIBLE_CLASS);
       },
@@ -1532,17 +1610,44 @@
       },
 
       handleMask (dom) {
-        const { maskStyle, mask, centered } = this.options;
+        const { maskStyle, mask, centered, defaultVisible } = this.options;
 
         if (!mask) return dom;
 
         this.isIncludeMask = true;
 
-        return $.node('div', dom, appendClass(MODAL_MASK_CLASS, `${this.RANDOM_CLASS}_mask`, centered ? MODAL_CONTAINER_CENTERED_CLASS : ''), {
+        const klass = appendClass(
+          MODAL_MASK_CLASS,
+          `${this.RANDOM_CLASS}_mask`,
+          centered ? MODAL_CONTAINER_CENTERED_CLASS : '',
+          defaultVisible ? '' : MODAL_MASK_INVISIBLE_CLASS
+        );
+        return $.node('div', dom, klass, {
           style: isObject(maskStyle) ? maskStyle : {}
         });
       }
     });
+
+    const MODAL_CONFIRM_BODY_CLASS = 'modal_confirm_body',
+          MODAL_CONFIRM_BTNS_CLASS = 'modal_confirm_buttons',
+          MODAL_CONFIRM_TITLE_CLASS = 'modal_confirm_title',
+          MODAL_CONFIRM_CONTENT_CLASS = 'modal_confirm_content';
+
+    Modal.error = function (options) {
+      const defaultOptions = {
+        title: '',
+        content: '',
+        okText: '确定',
+        cancelText: '取消',
+        centered: false,
+        icon: ( new Icon('error', { size:  22 }) ).html,
+        mask: true,
+        width: 500,
+        zIndex: 1000,
+        onOk: null,
+        onCancel: null
+      }
+    }
 
 
   }(window, jQuery, Component)

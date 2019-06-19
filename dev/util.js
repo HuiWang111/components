@@ -415,6 +415,12 @@
       return value === 0;
     }
   }
+  function isUndefined(value) {
+    return typeof value === 'undefined';
+  }
+  function isNull(value) {
+    return value === null;
+  }
   /**
    * @description 判断是否是数字，包括字符串数值
    */
@@ -1395,6 +1401,8 @@
     isInteger,
     isLength,
     isEmpty,
+    isUndefined,
+    isNull,
 
     // number方法
     toNumber,
