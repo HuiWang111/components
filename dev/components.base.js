@@ -105,13 +105,13 @@
     const themes = ['wireframe', 'filled'];
     const tipIconTypes = iconTypes.slice(0, 4);
 
-    const ICON_CLASS = 'cps_icon';
-    const FILLED_CLASS = 'cps_icon_filled';
-    const WARNING_ICON_CLASS = 'cps_warn_icon',
-          SUCCESS_ICON_CLASS = 'cps_success_icon',
-          INFO_ICON_CLASS = 'cps_info_icon',
-          ERROR_ICON_CLASS = 'cps_error_icon',
-          CLOSE_ICON_CLASS = 'cps_close_icon';
+    const ICON_CLASS = 'cpts_icon';
+    const FILLED_CLASS = 'cpts_icon_filled';
+    const WARNING_ICON_CLASS = 'cpts_warn_icon',
+          SUCCESS_ICON_CLASS = 'cpts_success_icon',
+          INFO_ICON_CLASS = 'cpts_info_icon',
+          ERROR_ICON_CLASS = 'cpts_error_icon',
+          CLOSE_ICON_CLASS = 'cpts_close_icon';
 
     function Icon(type, options) {
       if (!iconTypes.includes(type)) {
@@ -196,14 +196,14 @@
 
   }(window, window.jQuery)
 
-  const DEFAULT_BTN_CLASS = 'cps_btn',
-        GHOST_BTN_CLASS = 'cps_ghost_btn',
-        PRIMARY_BTN_CLASS = 'cps_primary_btn',
-        DANGER_BTN_CLASS = 'cps_danger_btn',
-        DASHED_BTN_CLASS = 'cps_dashed_btn',
-        LINK_BTN_CLASS = 'cps_link_btn',
-        CIRCLE_BTN_CLASS = 'cps_circle_btn',
-        BLOCK_BTN_CLASS = 'cps_block_btn';
+  const DEFAULT_BTN_CLASS = 'cpts_btn',
+        GHOST_BTN_CLASS = 'cpts_ghost_btn',
+        PRIMARY_BTN_CLASS = 'cpts_primary_btn',
+        DANGER_BTN_CLASS = 'cpts_danger_btn',
+        DASHED_BTN_CLASS = 'cpts_dashed_btn',
+        LINK_BTN_CLASS = 'cpts_link_btn',
+        CIRCLE_BTN_CLASS = 'cpts_circle_btn',
+        BLOCK_BTN_CLASS = 'cpts_block_btn';
   ;!function (win, $) {
     /**
      * @description 将页面上已有的元素定义成components-button 注：必须是页面中已有的元素
