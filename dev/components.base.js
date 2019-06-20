@@ -280,31 +280,33 @@
   ;!function (win, $, Component) {
   
     //className
-    const TAB_ITEM_CLASS = 'tabs-tab-item';
-    const TAB_ITEM_CLASS_ACTIVE = 'tabs-tab-item-active';
-    const TAB_ITEM_WRAP_CLASS = 'tabs-tab-wrapper';
-    const TAB_ITEM_INNER_CLASS = 'tabs-tab-inner';
+    const TAB_ITEM_CLASS = 'cpts_tabs_tab_item';
+    const TAB_ITEM_CLASS_ACTIVE = 'cpts_tabs_tab_item_active';
+    const TAB_ITEM_WRAP_CLASS = 'cpts_tabs_tab_wrapper';
+    const TAB_ITEM_INNER_CLASS = 'cpts_tabs_tab_inner';
   
-    const PANE_ITEM_CLASS = 'tabs-pane-item';
-    const PANE_ITEM_CLASS_ACTIVE = 'tabs-pane-item-active';
-    const PANE_ITEM_WRAP_CLASS = 'tabs-pane-wrapper';
+    const PANE_ITEM_CLASS = 'cpts_tabs_pane_item';
+    const PANE_ITEM_CLASS_ACTIVE = 'cpts_tabs_pane_item_active';
+    const PANE_ITEM_WRAP_CLASS = 'cpts_tabs_pane_wrapper';
   
-    const TAB_ARROW_CLASS = 'tabs-arrow';
-    const TAB_ARROW_CLASS_DISABLE = 'tabs-arrow-disable';
-    const TAB_ARROW_CLASS_INVISIBLE = 'tabs-arrow-invisible';
-    const TAB_PREVIOUS_ARROW_CLASS = 'tabs-prev-arrow';
-    const TAB_NEXT_ARROW_CLASS = 'tabs-next-arrow';
+    const TAB_ARROW_CLASS = 'cpts_tabs_arrow';
+    const TAB_ARROW_CLASS_DISABLE = 'cpts_tabs_arrow_disable';
+    const TAB_ARROW_CLASS_INVISIBLE = 'cpts_tabs_arrow_invisible';
+    const TAB_PREVIOUS_ARROW_CLASS = 'cpts_tabs_prev_arrow';
+    const TAB_NEXT_ARROW_CLASS = 'cpts_tabs_next_arrow';
   
-    const UNDERLINE_CLASS = 'tabs-underline';
+    const UNDERLINE_CLASS = 'cpts_tabs_underline';
     
     /**
      *  @param options: {
      *    tabsText: Array,
      *    paneContainerSelector: String,
-     *    themeColor: String,
      *    onChange: Function(index),
      *    renderPaneItem: Function(tabName, index)
      *  }
+     * 
+     * instance methods:
+     *  changeTo(index); // index从1开始
      */
     function Tabs(selector, options) {
   
@@ -312,7 +314,6 @@
       const defaultOptions = {
         tabsText: [],
         paneContainerSelector: null,
-        themeColor: '#1890ff',
         onChange: null,
         renderPaneItem: null
       };
@@ -329,7 +330,7 @@
   
     Object.assign(Tabs.prototype, {
       render () {
-        const { tabsText, renderPaneItem, themeColor, paneContainerSelector } = this.options;
+        const { tabsText, renderPaneItem, paneContainerSelector } = this.options;
   
         let tabs = '', panes = '';
         const $container = this.$container;
@@ -355,7 +356,7 @@
           }
         });
         
-        const underline = $.node('div', '', UNDERLINE_CLASS, { style: {backgroundColor: themeColor} });
+        const underline = $.node('div', '', UNDERLINE_CLASS);
     
         const tabsInner = $.node('div', tabs + underline, TAB_ITEM_INNER_CLASS);
         const tabsWrap = $.node('div', tabsInner, TAB_ITEM_WRAP_CLASS);
@@ -376,21 +377,11 @@
       style () {
   
         /* tabs style */
-        const { themeColor } = this.options;
         const { isIncludePane, $container, $paneContainer } = this;
   
         $container.addClass('flex');
         $container.css({
           overflow: 'hidden'
-        });
-  
-        appendStyle({
-          '.tabs-tab-item-active': {
-            color: themeColor
-          },
-          '.tabs-tab-item:hover': {
-            color: themeColor
-          }
         });
   
         /* panes style */
@@ -569,21 +560,20 @@
   ;!function (win, $, Component) {
   
     //className
-    var PAGINATION_ITEM_CLASS = 'pagination-item';
-    var PAGINATION_ITEM_CLASS_ACTIVE = 'pagination-item-active';
-    var PAGINATION_ITEM_CLASS_BORDER = 'pagination-item-border';
-    // var PAGINATION_ITEM_CLASS_MORE = 'pagination-item-more';
-    var PAGINATION_ITEM_CLASS_DISABLE = 'pagination-item-disable';
-    var PAGINATION_ITEM_CLASS_PREV = 'pagination-item-previous';
-    var PAGINATION_ITEM_CLASS_NEXT = 'pagination-item-next';
+    var PAGINATION_ITEM_CLASS = 'cpts_pagination_item';
+    var PAGINATION_ITEM_CLASS_ACTIVE = 'cpts_pagination_item_active';
+    var PAGINATION_ITEM_CLASS_BORDER = 'cpts_pagination_item_border';
+    // var PAGINATION_ITEM_CLASS_MORE = 'cpts_pagination_item_more';
+    var PAGINATION_ITEM_CLASS_DISABLE = 'cpts_pagination_item_disable';
+    var PAGINATION_ITEM_CLASS_PREV = 'cpts_pagination_item_previous';
+    var PAGINATION_ITEM_CLASS_NEXT = 'cpts_pagination_item_next';
     
     /**
      *  @param options: {
      *    total: Numer,
      *    pageSize: Number,
      *    current: Number,
-     *    border: true | false, // 页码是否需要边框
-     *    themeColor: String,
+     *    bordered: true | false, // 页码是否需要边框
      *    onChange: Function (current),
      *    itemRender: Function (current, type, originalElement)
      *  }
@@ -595,8 +585,7 @@
         total: 0,
         pageSize: 10,
         current: 1,
-        border: true,
-        themeColor: '#1890ff',
+        bordered: true,
         onChange: null,
         itemRender: null
       };
@@ -624,7 +613,7 @@
     Object.assign(Pagination.prototype, {
       render () {
         const { $container, options } = this;
-        const { current, total, pageSize, itemRender, border } = options;
+        const { current, total, pageSize, itemRender, bordered } = options;
   
         const totalPage = Math.ceil(total/pageSize);
         this.totalPage = totalPage;
@@ -635,7 +624,7 @@
           let klass = i === current ? (
             appendClass(PAGINATION_ITEM_CLASS, PAGINATION_ITEM_CLASS_ACTIVE)
           ) : PAGINATION_ITEM_CLASS;
-          klass = border ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
+          klass = bordered ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
   
           const originalElement = $.node('a', i);
           const element = isFunction(itemRender) ? itemRender(i, 'pagination', originalElement) : originalElement;
@@ -649,7 +638,7 @@
         //previous
         const previous = () => {
           let klass = current === 1 ? PAGINATION_ITEM_CLASS_DISABLE : '';
-          klass = border ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
+          klass = bordered ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
   
           const svg = current === 1 ? prevSvgDisable : prevSvg;
           const originalElement = $.node('a', svg);
@@ -666,7 +655,7 @@
         //next
         const next = () => {
           let klass = current === totalPage ? PAGINATION_ITEM_CLASS_DISABLE : '';
-          klass = border ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
+          klass = bordered ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
   
           const svg = current === totalPage ? nextSvgDisable : nextSvg;
           const originalElement = $.node('a', svg);
@@ -685,21 +674,6 @@
           html: prevItem + ulInner + nextItem,
           container: $container
         }];
-      },
-  
-      style () {
-        const { themeColor } = this.options;
-        appendStyle({
-          '.pagination-item.pagination-item-active > a': {
-            color: themeColor
-          },
-          '.pagination-item.pagination-item-active.pagination-item-border': {
-            borderColor: themeColor
-          },
-          '.pagination-item:hover > a': {
-            color: themeColor
-          }
-        });
       },
   
       bindEvents () {

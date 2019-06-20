@@ -398,6 +398,7 @@
     return typeof value === 'object' && value !== null;
   }
   function isObject(value) {
+    console.log(value.constructor);
     return value && value.constructor === Object;
   }
   function isNil(value) {
@@ -408,7 +409,7 @@
       return !0;
     } else if (isLength(value.length)) {
       return value.length === 0;
-    } else if (isObject(value)) {
+    } else if (isObjectLike(value)) {
       for (const _ in value) return !1;
       return !0;
     } else if (isNumber(value)) {
@@ -881,7 +882,7 @@
    * @returns target对应的key
    */
   function keyOf(object, target, excludes, isOwn) {
-    if (!isObject(object)) throw new Error(object + ' is not a object');
+    if (!isObjectLike(object)) throw new Error(object + ' is not a object');
     
     const is_Nil = isNil(excludes);
     if (!is_Nil && !isString(excludes)) throw new Error(excludes + ' is not a string');
@@ -907,7 +908,7 @@
    * keys和excludes同时存在，keys取两者的差集
    */
   function deleteKeys(object, keys, excludes) {
-    if (!isObject(object)) throw new Error(object + ' is not a object');
+    if (!isObjectLike(object)) throw new Error(object + ' is not a object');
     if (keys != null && !isString(keys)) throw new Error(keys + ' is not a string');
     if (excludes != null && !isString(excludes)) throw new Error(excludes + ' is not a string');
 
@@ -1240,7 +1241,7 @@
       if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
       forInOwn(this, (value, key, self) => {
-        isObject(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
+        isObjectLike(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
       });
     },
 
@@ -1382,7 +1383,7 @@
       if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
       forInOwn(this, (value, key, self) => {
-        isObject(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
+        isObjectLike(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
       });
     }
   };
@@ -1676,4 +1677,4 @@
     
   });
 
-}(window, jQuery)
+}(window, window.jQuery)
