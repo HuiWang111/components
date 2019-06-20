@@ -22,12 +22,12 @@ html, body {
 /*
  * Icon
  */
-.components_icon {
+.cps_icon {
   display: inline-block;
   position: relative;
   box-sizing: border-box;
   
-  &.close_icon {
+  &.cps_close_icon {
     cursor: pointer;
   }
 
@@ -40,7 +40,7 @@ html, body {
 /*
  * Button
  */
-.components_btn {
+.cps_btn {
   display: inline-block;
   text-align: center;
   padding: 0 15px;
@@ -50,7 +50,7 @@ html, body {
   line-height: 1.499;
   font-weight: 400;
   white-space: normal;
-  box-shadow: 0 2px 0 rgba(0,0,0,0.015);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .015);
   cursor: pointer;
   height: 32px;
   box-sizing: border-box;
@@ -60,14 +60,7 @@ html, body {
   background-color: #fff;
   border-color: #d9d9d9;
 
-  &[disabled] {
-    border-color: @disabled-border;
-    color: @disabled-color;
-    background-color: @disabled-bg;
-    cursor: not-allowed;
-  }
-
-  &.ghost_btn {
+  &.cps_ghost_btn {
     background-color: transparent;
     border-color: #fff;
     color: #fff;
@@ -83,18 +76,18 @@ html, body {
     color: @primary-color;
   }
 
-  &.primary_btn {
+  &.cps_primary_btn {
     border-color: @primary-color;
     background-color: @primary-color;
     color: #fff;
 
-    &.ghost_btn {
+    &.cps_ghost_btn {
       background-color: transparent;
       color: @primary-color;
     }
   }
 
-  &.danger_btn {
+  &.cps_danger_btn {
     color: @error-color;
 
     &:hover {
@@ -103,17 +96,38 @@ html, body {
       border-color: @error-color;
     }
 
-    &.ghost_btn {
+    &.cps_ghost_btn {
       background-color: transparent;
       color: @error-color;
       border-color: @error-color;
     }
   }
 
-  &.dashed_btn {
+  &.cps_dashed_btn {
     border-style: dashed;
   }
 
+  &.cps_link_btn {
+    color: @primary-color;
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  &.cps_circle_btn {
+    border-radius: 50%;
+  }
+
+  &.cps_block_btn {
+    width: 100%;
+  }
+
+  &[disabled] {
+    border-color: @disabled-border;
+    color: @disabled-color;
+    background-color: @disabled-bg;
+    cursor: not-allowed;
+  }
 }
 
 /*
