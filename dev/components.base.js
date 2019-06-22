@@ -21,8 +21,8 @@
     uniq,
     ins,
     makeArray,
-    keyOf,
-    deleteKeys,
+    findKey,
+    removeKeys,
     dateFormater,
     buildRandomString,
     toNumber,
@@ -190,7 +190,7 @@
       },
 
       destroy () {
-        deleteKeys(this, 'options');
+        removeKey(this, 'options');
       }
     });
 
@@ -548,7 +548,7 @@
       },
   
       destroy () {
-        deleteKeys(this, 'options,isIncludePane,paneWidth');
+        removeKeys(this, 'options, isIncludePane, paneWidth');
       }
     });
   
@@ -764,7 +764,7 @@
       },
   
       destroy () {
-        deleteKeys(this, 'nextEl,nextOriginEl,prevEl,prevOriginEl,totalPage');
+        removeKeys(this, 'nextEl, nextOriginEl, prevEl, prevOriginEl, totalPage');
       }
     });
   
@@ -1388,7 +1388,7 @@
       },
 
       destroy () {
-        deleteKeys(this, 'options,$container,$closeIcon');
+        removeKeys(this, 'options, $container, $closeIcon');
       }
     });
 

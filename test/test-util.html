@@ -15,7 +15,7 @@
   <script src="../dev/lib/jquery-3.3.1.min.js"></script>
   <script src="../dev/util.js"></script>
   <!-- <script src="../dist/test.js"></script> -->
-  <script src="../dev/components.base.js"></script>
+  <!-- <script src="../dev/components.base.js"></script> -->
   <script>
     var isString = Util.isString,
         isObject = Util.isObject,
@@ -32,8 +32,9 @@
         uniq = Util.uniq,
         ins = Util.ins,
         makeArray = Util.makeArray,
-        keyOf = Util.keyOf,
-        deleteKeys = Util.deleteKeys,
+        findKey = Util.findKey,
+        removeKeys = Util.removeKeys,
+        removeKey = Util.removeKey,
         dateFormater = Util.dateFormater,
         buildRandomString = Util.buildRandomString,
         sum = Util.sum,
@@ -60,9 +61,7 @@
     // });console.log(closeIcon)
     // $('body').append(closeIcon.html);
 
-    new Alert('body', 'warn', {
-      message: 'warning'
-    })
+    
 
   </script>
 </body>

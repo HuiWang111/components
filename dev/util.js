@@ -6,6 +6,9 @@
  * 
  * ES8可用方法：Object.entries, Object.values
  */
+
+// 优化baseRemove
+
 ;!function(win, $) {
   
   const emptyArray = [];
@@ -373,24 +376,189 @@
 
   win.Component = Component;
 
-  /**
-   * @private 私有方法，不添加到Util全局对象
-   */
-  function baseUnion () {
-    const args = arguments;
+
+  /* ======== 私有方法，不添加到Util全局对象 ======== */
+
+  function baseUnion(args, isSample) {
     const array = [];
+    let prop = null;
     for( let i = 0, len = args.length; i < len; i++) {
       if (Array.isArray(args[i])) {
         array.push(...args[i]);
+      } else {
+        prop = args[i];
+        break;
       }
     }
 
-    return array;
+    return !isSample ? { array, prop } : array;
   }
 
   /**
-   * @public Util全局对象中的方法
+   * @description 在对象中查找需要的key值
+   * @param { Object } object
+   * @param { Boolen } deep 是否第一次查找到后继续遍历查找
    */
+  function baseKeyOf(object, iteratee, deep) {
+    if (!isObjectLike(object)) throw new Error( `${object} is not a object`);
+
+    const keys = [];
+    for (key in object) {
+      if (isFunction(iteratee)) {
+        const result = iteratee(object[key], key, object);
+        if (result === true) {
+          keys.push(key);
+          if (!deep) break;
+        }
+      } else {
+        if (Object.is(object[key], iteratee)) {
+          keys.push(key);
+          if (!deep) break;
+        }
+      }
+    }
+
+    return keys;
+  }
+
+  /**
+   * @description 删除对象中的键值对
+   * @param iteratee 函数或者需要删除的键值
+   * @param deep 是否删除第一个后继续往下遍历
+   */
+  function baseRemoveKey(object, iteratee, deep) {
+    if (!isObjectLike(object)) throw new Error( `${object} is not a object`);
+
+    const isFunc = isFunction(iteratee);
+
+    let obj = {}, flag = false;
+    if (isFunc) {
+      for (const key in object) {
+        const result = iteratee(object[key], key, object);
+        if (result === true) {
+          const value = object[key];
+          delete object[key];
+          flag = true;
+          Object.assign(obj, { [key]: value });
+          if (!deep) break;
+        }
+      }
+    } else {
+      if (iteratee in object) {
+        const value = object[iteratee];
+        delete object[iteratee];
+        flag = true;
+        Object.assign(obj, { [iteratee]: value });
+      }
+    }
+
+    return flag ? obj : flag;
+  }
+
+  function baseRemoveAt(array, indexes) {
+    const length = array && isLength(array.length) ? array.length : 0;
+    indexes = uniq(indexes);
+    
+    for (let i = length - 1; i > -1; i--) {
+      const index = indexes[i];
+      if (isIndex(index)) {
+        emptyArray.splice.call(array, index, 1);
+      } else {
+        if (index in array) delete array[index];
+      }
+    }
+  }
+
+  function baseRemove (array, iteratee) {
+    if (!Array.isArray(array)) throw new TypeError(`${array} is not a Array`);
+
+    const isFunc = isFunction(iteratee);
+    const isArr = Array.isArray(iteratee);
+    const indexes = [], result = [];
+
+    for (let i = 0, len = array.length; i < len; i++) {
+      const value = array[i];
+      switch(true) {
+        case (isFunc):
+          const ifRemove = iteratee(value, i, array);
+          if (ifRemove === true) {
+            result.push(value);
+            indexes.push(i);
+          }
+          break;
+          
+        case (isArr):
+          if (iteratee.includes(value)) {
+            result.push(value);
+            indexes.push(i);
+          }
+          break;
+
+        default: 
+          if (Object.is(iteratee, value)) {
+            result.push(value);
+            indexes.push(i);
+          }
+      }
+    }
+
+    baseRemoveAt(array, indexes);
+    return result;
+  }
+
+  function getLetters () {
+    const letters = [];
+    for (let i = 65; i < 91; i++) {
+      letters.push(String.fromCharCode(i));
+    }
+    for (let j = 97; j < 123; j++) {
+      letters.push(String.fromCharCode(j));
+    }
+    return letters;
+  }
+
+  function baseRandomLetter (size) {
+    const letters = getLetters();
+
+    let result = letters[Math.floor(Math.random()*letters.length)];
+    size = toInteger(size);
+
+    if (size && size > 1) {
+      for (let i = 1; i < size; i++) {
+        result += letters[Math.floor(Math.random()*letters.length)];
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * @description 创建一个规定长度的随机字符串，默认长度随机
+   * @param { Number } length
+   * @returns 随机字符串
+   */
+  function buildRandomString(length) {
+    let randomString = Math.random().toString(36).substr(2);
+    const letter = baseRandomLetter();
+    randomString =  letter + randomString; //保证第一位一定是字母
+
+    length = toInteger(length);
+    if (length) {
+      const size = randomString.length;
+      if (length > size) {
+        const diff = length - size;
+        const letters = baseRandomLetter(diff);
+        randomString += letters;
+      } else if (length < size) {
+        randomString = randomString.substr(0, length);
+      }
+    }
+
+    return randomString;
+  }
+
+  /* ======== Util全局对象中的方法 ======== */
+
   function isString(value) {
     return typeof value === 'string';
   }
@@ -398,7 +566,6 @@
     return typeof value === 'object' && value !== null;
   }
   function isObject(value) {
-    console.log(value.constructor);
     return value && value.constructor === Object;
   }
   function isNil(value) {
@@ -447,6 +614,10 @@
     const number = parseFloat(value);
     return isNaN(number) ? false : number;
   }
+  function toInteger(value) {
+    const int = parseInt(value);
+    return isNaN(int) ? false : int;
+  }
   /**
    * @description 是否为整数
    */
@@ -457,6 +628,9 @@
    * @description 是否为符合规范的length属性值
    */
   function isLength(value) {
+    return isInteger(value) && value > -1;
+  }
+  function isIndex(value) {
     return isInteger(value) && value > -1;
   }
   /**
@@ -742,58 +916,24 @@
     return days;
   }
 
-  /**
-   * @description 创建一个规定长度的随机字符串，默认长度随机
-   * @param { Number } length
-   * @returns 随机字符串
-   */
-  function buildRandomString(length) {
-
-    const randomLetter = (size) => {
-      const letters = [];
-      for (let i = 65; i < 91; i++) {
-        letters.push(String.fromCharCode(i));
-      }
-      for (let j = 97; j < 123; j++) {
-        letters.push(String.fromCharCode(j));
-      }
-
-      let result = letters[Math.floor(Math.random()*letters.length)];
-      if (isNumeric(size)) {
-        size = parseInt(size);
-        if (size > 1) {
-          for (let i = 1; i < size; i++) {
-            result += letters[Math.floor(Math.random()*letters.length)];
-          }
-        }
-      }
-
-      return result;
+  const stringSet = new SetMock();
+  function getUniqString() {
+    const string = buildRandomString();
+    if (!stringSet.has(string)) {
+      stringSet.add(string);
+      return string;
     }
 
-    let randomString = Math.random().toString(36).substr(2);
-    const letter = randomLetter();
-    randomString =  letter + randomString; //保证第一位一定是字母
-    if (isNumeric(length)) {
-      length = parseInt(length);
-      if (randomString.length > length) {
-        randomString = randomString.substr(0, length);
-      } else if (randomString.length < length) {
-        const diff = length - randomString.length;
-        const letters = randomLetter(diff);
-        randomString += letters;
-      }
-    }
-    return randomString;
+    getUniqString();
   }
 
   function getRandomClassName() {
     const className = buildRandomString();
     if (!document.querySelector(toSelector(className))) {
       return className;
-    } else {
-      getRandomClassName();
     }
+
+    getRandomClassName();
   }
 
   /**
@@ -873,74 +1013,42 @@
     }
   });
 
-  /**
-   * @description 通过value值在对象中查找key
-   * @param { Object } object
-   * @param { * } target
-   * @param { String } excludes 排除不查找的键值，以逗号分割多个键值
-   * @param { Boolen } isOwn 是否使用hasOwnProperty排除原型属性
-   * @returns target对应的key
-   */
-  function keyOf(object, target, excludes, isOwn) {
-    if (!isObjectLike(object)) throw new Error(object + ' is not a object');
-    
-    const is_Nil = isNil(excludes);
-    if (!is_Nil && !isString(excludes)) throw new Error(excludes + ' is not a string');
-
-    !is_Nil && (excludes = excludes.split(','));
-    for(const key in object) {
-      if (is_Nil) {
-        if (Object.is(object[key], target)) return isOwn ? (object.hasOwnProperty(key) ? key : undefined) : key;
-      } else {
-        if (!excludes.includes(key)) {
-          if (Object.is(object[key], target)) return isOwn ? (object.hasOwnProperty(key) ? key : undefined) : key;
-        }
-      }
-    }
-    return undefined;
+  function findKey(object, iteratee) {
+    const keys = baseKeyOf(object, iteratee);
+    return keys.length === 0 ? undefined : keys[0];
   }
-  
-  /**
-   * @description 删除对象中的键值
-   * @param { Object } object
-   * @param { String | undefined } keys 需要删除的键值,以逗号分割多个键值
-   * @param { String | undefined } excludes 排除不删的键值,以逗号分割多个键值
-   * keys和excludes同时存在，keys取两者的差集
-   */
-  function deleteKeys(object, keys, excludes) {
-    if (!isObjectLike(object)) throw new Error(object + ' is not a object');
-    if (keys != null && !isString(keys)) throw new Error(keys + ' is not a string');
-    if (excludes != null && !isString(excludes)) throw new Error(excludes + ' is not a string');
 
-    let keyList, excludeList;
-    if (isNil(keys)) {
-      keyList = null;
-      excludeList = isNil(excludes) ? null : excludes.split(',');
-    } else {
-      if (isNil(excludes)) {
-        keyList = keys.split(',');
-      } else {
-        keyList = remove(keys.split(','), excludes.split(','));
-      }
-      excludeList = null;
+  function removeKey(object, iteratee, deep) {
+    return baseRemoveKey(object, iteratee, deep);
+  }
+
+  function removeKeys(object, iteratees) {
+    if (isNil(iteratees)) {
+      forInOwn(object, (_, key, self) => { delete self[key] });
+      return;
     }
 
-    forInOwn(object, (_, key, self) => {
-      if (isNil(keyList) && isNil(excludeList)) {
-        delete self[key];
-      } else if (keyList != null && isNil(excludeList)) {
-        keyList.includes(key) && delete self[key];
-      } else if (isNil(keyList) && excludeList != null) {
-        !excludeList.includes(key) && delete self[key];
+    const isStr = isString(iteratees);
+    if (!isStr && Array.isArray(iteratees)) throw new Error(`${iteratee} is not a function and string`);
+
+    iteratees = isStr ? iteratees.split(',') : iteratees;
+    let obj = {}, flag = false;
+    iteratees.forEach((iteratee) => {
+      const result = baseRemoveKey(object, iteratee.trim());
+      if (result) {
+        Object.assign(obj, result);
+        flag = true;
       }
     });
+
+    return flag ? obj : flag;
   }
 
   /**
    * @description for-in循环
    */
   function forIn(object, callback) {
-    if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+    if (!isFunction(callback)) throw new Error( `${callback} is not a function`);
 
     for (const key in object) {
       const isBreak = callback(object[key], key, object);
@@ -980,7 +1088,7 @@
    */
   function insert(array, insertSet) {
     [array, insertSet].forEach((v) => {
-      if (!Array.isArray(v)) throw new Error(v + ' is not a Array');
+      if (!Array.isArray(v)) throw new Error( `${v} is not a Array`);
     });
 
     let adder = 0;
@@ -1017,23 +1125,12 @@
    * @description 多个数据的并集
    */
   function union() {
-    return uniq(baseUnion(arguments));
+    return uniq(baseUnion(Array.from(arguments), true));
   }
 
   function unionBy() {
-    const args = arguments;
-    const array = [];
-    let prop;
-    for( let i = 0, len = args.length; i < len; i++) {
-      if (Array.isArray(args[i])) {
-        array.push(...args[i]);
-      } else if (isString(args[i])) {
-        prop = args[i];
-        break;
-      }
-    }
-
-    return uniqBy(array, prop);
+    const { array, prop } = baseUnion(Array.from(arguments));
+    return prop ? uniqBy(array, prop) : uniq(array);
   }
 
   /**
@@ -1042,8 +1139,10 @@
    */
   function includesBy(array, target, prop) {
     let result = false;
+    if ( !(prop in target) ) return result;
+
     for (let i = 0, len = array.length; i < len; i++) {
-      if (Object.is(array[i][prop], target[prop])) {
+      if ((prop in array[i]) && Object.is(array[i][prop], target[prop])) {
         result = true;
         break;
       }
@@ -1229,11 +1328,13 @@
 
   }
 
-  SetMock.prototype = {
+  SetMock.prototype = { //'size,nextKey'
     constructor: SetMock,
 
     has (item) {
-      const key  = keyOf(this, item, 'size,nextKey');
+      const key  = findKey(this, (value, key) => {
+        return !['size', 'nextKey'].includes(key) && Object.is(value, item);
+      });
       return (typeof key !== 'undefined');
     },
 
@@ -1266,7 +1367,7 @@
     },
 
     delete (item) {
-      const key = keyOf(this, item);
+      const key = findKey(this, item);
       if (typeof key !== 'undefined') {
         delete this[key];
         this.size--;
@@ -1276,7 +1377,7 @@
     },
 
     clear: function() {
-      deleteKeys(this);
+      removeKeys(this);
       this.size = 0;
       this.nextKey = 0;
     },
@@ -1375,7 +1476,7 @@
     },
 
     clear () {
-      deleteKeys(this);
+      removeKeys(this);
       this.size = 0;
     },
 
@@ -1437,16 +1538,17 @@
     unionBy,
 
     // 对象方法
-    deleteKeys,
-    keyOf,
+    removeKey,
+    removeKeys,
+    findKey,
     lastOf,
     forIn,
     forInOwn,
 
     // String方法
     toCamelCase,
-    buildRandomString,
     fromCamelCase,
+    getUniqString,
     
     // 其他方法
     dateFormater,

@@ -19,9 +19,34 @@
 @alert-error-bg: #fff1f0;
 @alert-error-border: #ffa39e;
 
-.flex-percent(@ratio: 1) when (@ratio <= 100) {
-  .flex-percent-@{ratio} {
-    flex: 0 0 percentage(@ratio/100);
+/*
+ * grid栅格布局
+ * @part col所占row的份额
+ * @total 总共分成多少份
+ * @ratio 每份固定的 高/宽 的比例，使用paddigng-bottom实现，为0或者不设置的时候不设置固定宽高比
+ * @prefix 前缀
+ */
+.rowStyle (@index) when (@index = 1) {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.isFixed (@part, @total, @ratio) when (isnumber(@ratio)) and (@ratio > 0) {
+  height: 0;
+  padding-bottom: percentage((@part/@total)*@ratio);
+}
+.base-grid (@part: 1, @total: 24, @ratio: 0, @prefix: cpts) when (@part <= @total) {
+  .@{prefix}-row {
+    .rowStyle(@part);
+
+    & > .@{prefix}-col-@{part} {
+      flex: 0 0 percentage(@part/@total);
+      .isFixed(@part, @total, @ratio);
+    }
+
+    & > .@{prefix}-col-offset-@{part} {
+      margin-left: percentage(@part/@total);
+    }
   }
-  .flex-percent(@ratio + 1);
+
+  .base-grid(@part + 1, @total, @ratio);
 }

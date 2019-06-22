@@ -9,47 +9,19 @@ const cleanCSS = require('gulp-clean-css');
 const autoprefixer = require('gulp-autoprefixer');
 const gutil = require('gulp-util');
 
-/**
- * @description 压缩dev下的js文件
- */
-gulp.task('compressJS',function(){
+function getSrc(filesName, fileType) {
+  fileType = fileType ? fileType.trim() : 'js';
 
-  return gulp.src('dev/*.js')
-  .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
-  .pipe(babel({
-    presets: ['es2015']
-  }))
-  .pipe(uglify({
-    mangle: {
-      reserved: ['Component']
-    }
-  }))
-  .on('error', function (err) {
-    gutil.log(gutil.colors.red('[Error]'), err.toString());
-  })
-  .pipe(rename({
-    suffix: '.min'
-  }))
-  .pipe(gulp.dest('dist'));
+  if ( (filesName == null) || (filesName.trim && (filesName.trim() === '*')) ) {
+    return 'dev/*.' + fileType;
+  }
 
-});
+  const files = Array.isArray(filesName) ? filesName : filesName.split(',');
 
-/**
- * @description 输出es5未压缩版的js文件
- */
-gulp.task('outputES5',function(){
-
-  return gulp.src(['dev/util.js', 'dev/components.base.js'])
-  .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
-  .pipe(babel({
-    presets: ['es2015']
-  }))
-  .pipe(rename({
-    suffix: '.es5'
-  }))
-  .pipe(gulp.dest('dist'));
-
-});
+  return files.map((file) => {
+    return 'dev/' + file.trim() + '.' + fileType;
+  });
+}
 
 /**
  * @description  测试任务
@@ -64,38 +36,99 @@ gulp.task('testJS', function () {
 });
 
 /**
+ * @description 压缩dev下的js文件
+ */
+function compressJS (filesName) {
+  const src = getSrc(filesName);
+
+  gulp.task('compressJS',function(){
+    return gulp.src(src)
+    .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
+    .pipe(babel({
+      presets: ['es2015']
+    }))
+    .pipe(uglify({
+      mangle: {
+        reserved: ['Component']
+      }
+    }))
+    .on('error', function (err) {
+      gutil.log(gutil.colors.red('[Error]'), err.toString());
+    })
+    .pipe(rename({
+      suffix: '.min'
+    }))
+    .pipe(gulp.dest('dist'));
+  });
+}
+
+compressJS();
+
+/**
+ * @description 输出es5未压缩版的js文件
+ */
+function getES5 (filesName) {
+  const src = getSrc(filesName);
+
+  gulp.task('getES5',function(){
+    return gulp.src(src)
+    .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
+    .pipe(babel({
+      presets: ['es2015']
+    }))
+    .pipe(rename({
+      suffix: '.es5'
+    }))
+    .pipe(gulp.dest('dist'));
+  });
+}
+
+getES5('util, components.base');
+
+/**
  * @description less => css, 监听less变化自动更新css
  */
-gulp.task('less',function(){
-  return (
-    gulp.src(['dev/components.base.less'])
-    .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
-    .pipe(less())
-    .pipe(autoprefixer({
-      browsers: ['>0%']
-    }))
-    .pipe(gulp.dest('dev'))
-  );
-});
-gulp.task('watchLess',function(){
-  gulp.watch(['dev/components.base.less'],['less']);
-});
-gulp.task('taskList', ['less', 'watchLess']);
-gulp.task('toCSS', function() {
-  gulp.start('taskList');
-});
+function toCSS (filesName) {
+  const src = getSrc(filesName, 'less');
+
+  gulp.task('less',function(){
+    return (
+      gulp.src(src)
+      .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
+      .pipe(less())
+      .pipe(autoprefixer({
+        browsers: ['>0%']
+      }))
+      .pipe(gulp.dest('dev'))
+    );
+  });
+  gulp.task('watchLess',function(){
+    gulp.watch(src,['less']);
+  });
+  gulp.task('taskList', ['less', 'watchLess']);
+  gulp.task('toCSS', function() {
+    gulp.start('taskList');
+  });
+}
+toCSS('components.base');
 
 /**
  * @description 压缩dev下的css文件
  */
-gulp.task('compressCSS',function(){
-  return (
-    gulp.src('dev/*.css')
-    .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
-    .pipe(cleanCSS())
-    .pipe(rename({
-      suffix: '.min'
-    }))
-    .pipe(gulp.dest('dist'))
-  );
-});
+function compressCSS (filesName) {
+  const src = getSrc(filesName, 'css');
+
+  gulp.task('compressCSS',function(){
+    return (
+      gulp.src(src)
+      .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
+      .pipe(cleanCSS())
+      .pipe(rename({
+        suffix: '.min'
+      }))
+      .pipe(gulp.dest('dist'))
+    );
+  });
+}
+
+compressCSS();
