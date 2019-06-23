@@ -9,6 +9,17 @@
 @base-border-radius: 4px;
 @base-border-color: #e8e8e8;
 
+/* button */
+@btn-default-size: 32px;
+@btn-default-padding: 0 15px;
+@btn-large-size: 40px;
+@btn-large-padding: @btn-default-padding;
+@btn-small-size: 24px;
+@btn-small-padding: 0 7px;
+@btn-box-shadow: 0 2px 0 rgba(0, 0, 0, .015);
+@btn-default-border-color: #d9d9d9;
+
+
 /* Alert */
 @alert-success-bg: #f6ffed;
 @alert-success-border: #b7eb8f;
@@ -19,13 +30,6 @@
 @alert-error-bg: #fff1f0;
 @alert-error-border: #ffa39e;
 
-/*
- * grid栅格布局
- * @part col所占row的份额
- * @total 总共分成多少份
- * @ratio 每份固定的 高/宽 的比例，使用paddigng-bottom实现，为0或者不设置的时候不设置固定宽高比
- * @prefix 前缀
- */
 .rowStyle (@index) when (@index = 1) {
   display: flex;
   flex-wrap: nowrap;
@@ -34,13 +38,20 @@
   height: 0;
   padding-bottom: percentage((@part/@total)*@ratio);
 }
-.base-grid (@part: 1, @total: 24, @ratio: 0, @prefix: cpts) when (@part <= @total) {
+/*
+ * flex实现grid栅格布局
+ * @part col所占row的份额
+ * @total 总共分成多少份
+ * @ratio 每份固定的 高/宽 的比例，使用paddigng-bottom实现，为0或者不设置的时候不设置固定宽高比
+ * @prefix 前缀
+ */
+.base-flex-grid (@part: 1, @total: 24, @ratio: 0, @prefix: cpts) when (@part <= @total) {
   .@{prefix}-row {
-    .rowStyle(@part);
+    .rowStyle(@part); // 只有第一次循环的时候才生成row的样式，避免冗余
 
     & > .@{prefix}-col-@{part} {
       flex: 0 0 percentage(@part/@total);
-      .isFixed(@part, @total, @ratio);
+      .isFixed(@part, @total, @ratio); // 固定宽高比
     }
 
     & > .@{prefix}-col-offset-@{part} {
@@ -48,5 +59,5 @@
     }
   }
 
-  .base-grid(@part + 1, @total, @ratio);
+  .base-flex-grid(@part + 1, @total, @ratio);
 }

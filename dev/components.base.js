@@ -1,4 +1,4 @@
-;!function (window, jQuery, Swiper, Component, Util) {
+;!function (win, $, Swiper, Component, Util) {
 
   /* utils */
   const {
@@ -12,6 +12,7 @@
     isDom,
     isUndefined,
     isNull,
+    isNil,
     toSelector,
     appendStyle,
     insertElementToBody,
@@ -22,6 +23,7 @@
     ins,
     makeArray,
     findKey,
+    removeKey,
     removeKeys,
     dateFormater,
     buildRandomString,
@@ -31,7 +33,7 @@
     getRandomClassName
   } = Util;
   
-  /* icons */
+  /* svg */
   const getPrevSvg = (color) => {
     const fill = isString(color) ? ` fill="${color}"` : '';
     return `<svg t="1556267832953" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="12283" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><style type="text/css"></style></defs><path d="M340.01899999 512l416.35800001 416.332-36.198 36.224-452.557-452.557 452.557-452.557 36.198 36.224z" p-id="12284"${fill}></path></svg>`;
@@ -76,6 +78,10 @@
     color = String(color);
     return `<svg t="1560650069724" class="icon" style="" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="936" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="200"><defs><style type="text/css"></style></defs><path d="M810.666667 273.493333L750.506667 213.333333 512 451.84 273.493333 213.333333 213.333333 273.493333 451.84 512 213.333333 750.506667 273.493333 810.666667 512 572.16 750.506667 810.666667 810.666667 750.506667 572.16 512z" fill="${color}" p-id="937"></path></svg>`;
   }
+  const getLoadingSvg = (color) => {
+    color = String(color);
+    return `<svg t="1561267146231" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2830" width="200" height="200"><path d="M980.752 313.697c-25.789-60.972-62.702-115.725-109.713-162.736-47.012-47.011-101.764-83.924-162.736-109.713C645.161 14.542 578.106 1 509 1c-2.242 0-4.48 0.015-6.715 0.043-16.567 0.211-29.826 13.812-29.615 30.38 0.209 16.438 13.599 29.618 29.99 29.618l0.39-0.002c1.98-0.026 3.963-0.039 5.95-0.039 61.033 0 120.224 11.947 175.93 35.508 53.82 22.764 102.162 55.359 143.683 96.879s74.115 89.862 96.88 143.683C949.054 392.776 961 451.967 961 513c0 16.568 13.432 30 30 30s30-13.432 30-30c0-69.106-13.541-136.162-40.248-199.303z" p-id="2831" fill="${color}"></path></svg>`;
+  }
 
   const prevSvg = getPrevSvg();
   const nextSvg = getNextSvg();
@@ -88,193 +94,282 @@
   
   /* ========Components======== */
 
-  !function (win, $) {
-    /**
-     * @description Icon
-     * @param options = {
-     *    size: Number | String,
-     *    className: String,
-     *    theme: 'wireframe' | 'filled',
-     *    
-     *    // warn, success, info, error不支持以下属性
-     *    color: String,
-     *    onClick: Function
-     * }
-     */
-    const iconTypes = ['warn', 'success', 'info', 'error', 'close'];
-    const themes = ['wireframe', 'filled'];
-    const tipIconTypes = iconTypes.slice(0, 4);
+  /**
+   * @description Icon
+   * @param options = {
+   *    size: Number | String,
+   *    className: String,
+   *    theme: 'wireframe' | 'filled',
+   *    color: String,
+   *    spin: Boolen
+   * }
+   */
 
-    const ICON_CLASS = 'cpts_icon';
-    const FILLED_CLASS = 'cpts_icon_filled';
-    const WARNING_ICON_CLASS = 'cpts_warn_icon',
-          SUCCESS_ICON_CLASS = 'cpts_success_icon',
-          INFO_ICON_CLASS = 'cpts_info_icon',
-          ERROR_ICON_CLASS = 'cpts_error_icon',
-          CLOSE_ICON_CLASS = 'cpts_close_icon';
+  const iconTypes = ['warn', 'success', 'info', 'error', 'close', 'loading'];
+  const themes = ['outline', 'filled'];
 
-    function Icon(type, options) {
-      if (!iconTypes.includes(type)) {
-        throw new Error(`${type} is not a correct icon type`);
-      }
-      if (typeof options.theme !== 'undefined' && !themes.includes(options.theme)) {
-        throw new Error(`${options.theme} is not a correct theme`);
-      }
+  const ICON_CLASS = 'cpts-icon',
+        FILLED_CLASS = 'cpts-icon-filled',
+        WARNING_ICON_CLASS = 'cpts-warn-icon',
+        SUCCESS_ICON_CLASS = 'cpts-success-icon',
+        INFO_ICON_CLASS = 'cpts-info-icon',
+        ERROR_ICON_CLASS = 'cpts-error-icon',
+        CLOSE_ICON_CLASS = 'cpts-close-icon',
+        SPIN_ICON_CLASS = 'cpts-spin-icon',
+        LOADING_ICON_CLASS = 'cpts-loading-icon';
 
-      let defaultSize;
+  function Icon(type, options) {
+    isNil(options) && (options = {});
+
+    if (!iconTypes.includes(type)) {
+      throw new Error(`${type} is not a correct icon type`);
+    }
+    if (!isUndefined(options.theme) && !themes.includes(options.theme)) {
+      throw new Error(`${options.theme} is not a correct theme`);
+    }
+    
+    let defaultSize;
+    switch (type) {
+      case 'warn':
+      case 'success':
+      case 'info':
+      case 'error':
+      case 'close': defaultSize = 16;break;
+    }
+
+    const defaultOptions = {
+      size: defaultSize,
+      className: '',
+      color: '#cccccc',
+      theme: 'outline',
+      spin: false
+    }
+
+    this.options = Object.assign({}, defaultOptions, options);
+    
+    this.type = type;
+    this.html = this.render();
+    this.destroy();
+  }
+
+  win.Icon = Icon;
+
+  Object.assign(Icon.prototype, {
+    render () {
+      const { type, options: { size, className, theme, color, spin } } = this;
+      const isDefaultTheme = theme === 'outline';
+
+      let typeClass, svg;
       switch (type) {
-        case 'warn':
-        case 'success':
-        case 'info':
-        case 'error':
-        case 'close': defaultSize = 16;break;
+        case 'warn': 
+          typeClass = WARNING_ICON_CLASS;
+          svg = isDefaultTheme ? getWarnSvg() : getWarnFilledSvg();
+          break;
+        case 'success': 
+          typeClass = SUCCESS_ICON_CLASS;
+          svg = isDefaultTheme ? getSuccessSvg() : getSuccessFilledSvg();
+          break;
+        case 'info': 
+          typeClass = INFO_ICON_CLASS;
+          svg = isDefaultTheme ? getInfoSvg() : getInfoFilledSvg();
+          break;
+        case 'error': 
+          typeClass = ERROR_ICON_CLASS;
+          svg = isDefaultTheme ? getErrorSvg() : getErrorFilledSvg();
+          break;
+        case 'close': 
+          typeClass = CLOSE_ICON_CLASS;
+          svg = getCloseSvg(color);
+          break;
+        case 'loading':
+          typeClass = LOADING_ICON_CLASS;
+          svg = getLoadingSvg(color);
+          break;
       }
 
-      const defaultOptions = {
-        size: defaultSize,
-        className: '',
-        color: '#cccccc',
-        theme: 'wireframe',
-        onClick: null
-      }
+      const klass = appendClass(
+        className,
+        ICON_CLASS,
+        typeClass,
+        isDefaultTheme ? '' : FILLED_CLASS,
+        spin ? SPIN_ICON_CLASS : ''
+      );
 
-      this.options = Object.assign({}, defaultOptions, options);
+      const icon = $.node('i', svg, klass, {
+        style: {
+          width: isNumber(size) ? `${size}px` : size,
+          height: isNumber(size) ? `${size}px` : size
+        }
+      });
 
-      this.type = type;
-      this.html = this.render();
-      !tipIconTypes.includes(type) && (this.onClick = this.options.onClick);
-      this.destroy();
+      return icon;
+    },
+
+    destroy () {
+      removeKey(this, 'options');
+    }
+  });
+
+  const DEFAULT_BTN_CLASS = 'cpts-btn',
+        GHOST_BTN_CLASS = 'cpts-ghost-btn',
+        PRIMARY_BTN_CLASS = 'cpts-primary-btn',
+        DANGER_BTN_CLASS = 'cpts-danger-btn',
+        DASHED_BTN_CLASS = 'cpts-dashed-btn',
+        LINK_BTN_CLASS = 'cpts-link-btn',
+        CIRCLE_BTN_CLASS = 'cpts-circle-btn',
+        ROUND_BTN_CLASS = 'cpts-round-btn',
+        LARGE_BTN_CLASS = 'cpts-large-btn',
+        SMALL_BTN_CLASS = 'cpts-small-btn',
+        BLOCK_BTN_CLASS = 'cpts-block-btn',
+        WITHICON_BTN_CLASS = 'cpts-with-icon-btn',
+        LOADING_BTN_CLASS = 'cpts-loading-btn';
+  /**
+   * @description 将页面上已有的元素定义成components-button 注：必须是页面中已有的元素
+   */
+  function Button(selector, options) {
+    if ($(selector).length === 0) {
+      throw new Error(`not found ${selector} elemet in Button`);
+    }
+    if (!isUndefined(options.size) && !['large', 'default', 'small'].includes(options.size)) {
+      throw new Error(`${options.size} in not correct Button size`);
     }
 
-    win.Icon = Icon;
-
-    Object.assign(Icon.prototype, {
-      render () {
-        const { type, options: { size, className, theme, color } } = this;
-        const isDefaultTheme = theme === 'wireframe';
-
-        let klass, svg;
-        switch (type) {
-          case 'warn': 
-            klass = WARNING_ICON_CLASS;
-            svg = isDefaultTheme ? getWarnSvg() : getWarnFilledSvg();
-            break;
-          case 'success': 
-            klass = SUCCESS_ICON_CLASS;
-            svg = isDefaultTheme ? getSuccessSvg() : getSuccessFilledSvg();
-            break;
-          case 'info': 
-            klass = INFO_ICON_CLASS;
-            svg = isDefaultTheme ? getInfoSvg() : getInfoFilledSvg();
-            break;
-          case 'error': 
-            klass = ERROR_ICON_CLASS;
-            svg = isDefaultTheme ? getErrorSvg() : getErrorFilledSvg();
-            break;
-          case 'close': 
-            klass = CLOSE_ICON_CLASS;
-            svg = getCloseSvg(color);
-            break;
-        }
-
-        const filledClass = isDefaultTheme ? '' : FILLED_CLASS;
-
-        const icon = $.node('i', svg, appendClass(className, ICON_CLASS, klass, filledClass), {
-          style: {
-            width: isNumber(size) ? `${size}px` : size,
-            height: isNumber(size) ? `${size}px` : size
-          }
-        });
-
-        return icon;
-      },
-
-      destroy () {
-        removeKey(this, 'options');
-      }
-    });
-
-  }(window, window.jQuery)
-
-  const DEFAULT_BTN_CLASS = 'cpts_btn',
-        GHOST_BTN_CLASS = 'cpts_ghost_btn',
-        PRIMARY_BTN_CLASS = 'cpts_primary_btn',
-        DANGER_BTN_CLASS = 'cpts_danger_btn',
-        DASHED_BTN_CLASS = 'cpts_dashed_btn',
-        LINK_BTN_CLASS = 'cpts_link_btn',
-        CIRCLE_BTN_CLASS = 'cpts_circle_btn',
-        BLOCK_BTN_CLASS = 'cpts_block_btn';
-  ;!function (win, $) {
-    /**
-     * @description 将页面上已有的元素定义成components-button 注：必须是页面中已有的元素
-     */
-    function Button(selector, options) {
-      if ($(selector).length === 0) {
-        throw new Error(`not found ${selector} elemet`);
-      }
-
-      const defaultOptions = {
-        type: '',
-        disabled: false,
-        ghost: false,
-        htmlType: 'button',
-        icon: '',
-        shape: 'round',
-        onClick: null,
-        block: false,
-        className: '',
-        children: '' //
-      }
-
-      this.options = Object.assign({}, defaultOptions, options);
-
-      const RANDOM_CLASS = getRandomClassName();
-      $(selector).eq(0).addClass(RANDOM_CLASS);
-      this.$el = $(toSelector(RANDOM_CLASS));
-
-      this.render();
-      this.bindEvents();
+    const defaultOptions = {
+      type: '',
+      disabled: false,
+      ghost: false,
+      htmlType: 'button',
+      iconType: '',
+      iconOptions: {},
+      shape: '',
+      onClick: null,
+      block: false,
+      size: 'default',
+      className: '',
+      text: ''
     }
 
-    win.Button = Button;
+    this.options = Object.assign({}, defaultOptions, options);
 
-    Object.assign(Button.prototype, {
-      render () {
-        const { $el, options: { type, shape, ghost, disabled, icon, block, className } } = this;
+    const RANDOM_CLASS = getRandomClassName();
+    $(selector).eq(0).addClass(RANDOM_CLASS);
+    this.$el = $(toSelector(RANDOM_CLASS));
 
-        let typeClass;
-        switch (type) {
-          case 'primary': typeClass = PRIMARY_BTN_CLASS; break;
-          case 'danger': typeClass = DANGER_BTN_CLASS; break;
-          case 'dashed': typeClass = DASHED_BTN_CLASS; break;
-          case 'link': typeClass = LINK_BTN_CLASS; break;
-        }
+    this.render();
+    this.bindEvents();
+    this.destroy();
+  }
 
-        $el.addClass(appendClass(
-          DEFAULT_BTN_CLASS,
-          typeClass,
-          ghost ? GHOST_BTN_CLASS : '',
-          shape === 'circle' ? CIRCLE_BTN_CLASS : '',
-          block ? BLOCK_BTN_CLASS : '',
-          isEmpty(className) ? '' : className
-        ));
+  win.Button = Button;
 
-        disabled && $el.attr('disabled', 'disabled');
-        
-        $el.attr('type', htmlType);
+  Object.assign(Button.prototype, {
+    render () {
+      const { $el, options: { type, shape, ghost, disabled, iconType, iconOptions, block, className, htmlType, size, text } } = this;
 
-        !isEmpty(icon) && $el.prepend(icon);
-      },
-
-      bindEvents() {
-        const { $el, options: { onClick } } = this;
-        isFunction(onClick) && $el.on('click', function () {
-          onClick();
-        });
+      let typeClass;
+      switch (type) {
+        case 'primary': typeClass = PRIMARY_BTN_CLASS; break;
+        case 'danger': typeClass = DANGER_BTN_CLASS; break;
+        case 'dashed': typeClass = DASHED_BTN_CLASS; break;
+        case 'link': typeClass = LINK_BTN_CLASS; break;
       }
-    });
 
-  }(window, window.jQuery)
+      let sizeClass = '';
+      switch(size) {
+        case 'large': sizeClass = LARGE_BTN_CLASS; break;
+        case 'small': sizeClass = SMALL_BTN_CLASS; break;
+      }
+
+      let shapeClass = '';
+      switch (shape) {
+        case 'circle': shapeClass = CIRCLE_BTN_CLASS; break;
+        case 'round': shapeClass = ROUND_BTN_CLASS; break;
+      }
+
+      const children = $el[0].childNodes;
+      if (children.length === 1 && children[0].nodeType === 3) {
+        const span = $.node('span', children[0].nodeValue);
+        $el.html(span);
+      } else if (children.length === 0 && !isEmpty(text)) {
+        const span = $.node('span', text);
+        $el.html(span);
+      }
+
+      let iconSize = 16;
+        switch(size) {
+          case 'large': iconSize = 18; break;
+          case 'small': iconSize = 14; break;
+        }
+        this.iconSize = iconSize;
+      
+      if (!isEmpty(iconType)) {
+        Object.assign(iconOptions, { size: iconSize });
+
+        const icon = new Icon(iconType, iconOptions);
+        $el.prepend(icon.html);
+
+        this.icon = icon.html;
+      }
+
+      $el.addClass(appendClass(
+        DEFAULT_BTN_CLASS,
+        typeClass,
+        ghost ? GHOST_BTN_CLASS : '',
+        shapeClass,
+        block ? BLOCK_BTN_CLASS : '',
+        isEmpty(className) ? '' : className,
+        sizeClass,
+        !isEmpty(iconType) ? WITHICON_BTN_CLASS : ''
+      ));
+
+      disabled && $el.attr('disabled', 'disabled');
+
+      $el.attr('type', htmlType);
+    },
+
+    bindEvents() {
+      const { $el, options: { onClick } } = this;
+      const _this = this;
+      isFunction(onClick) && $el.on('click', function () {
+        onClick.call(_this);
+      });
+    },
+
+    setLoading () {
+      const { $el, icon, iconSize } = this;
+      let { loadingIcon } = this;
+      
+      if (isEmpty(loadingIcon)) {
+        loadingIcon = (
+          new Icon('loading', { size: iconSize, spin: true })
+        ).html;
+        this.loadingIcon = loadingIcon;
+      }
+
+      if (isEmpty(icon)) {
+        $el.addClass(appendClass(WITHICON_BTN_CLASS, LOADING_BTN_CLASS));
+        $el.prepend(loadingIcon);
+      } else {
+        $el.addClass(LOADING_BTN_CLASS);
+        $el.children(toSelector(ICON_CLASS)).replaceWith(loadingIcon);
+      }
+    },
+
+    removeLoading () {
+      const { $el, icon } = this;
+      if (isEmpty(icon)) {
+        $el.removeClass(appendClass(WITHICON_BTN_CLASS, LOADING_BTN_CLASS));
+        $el.children(toSelector(ICON_CLASS)).remove();
+      } else {
+        $el.removeClass(LOADING_BTN_CLASS);
+        $(toSelector(ICON_CLASS)).replaceWith(icon);
+      }
+    },
+
+    destroy () {
+      removeKey(this, 'options');
+    }
+  });
   
   /* Tab组件 */
   ;!function (win, $, Component) {

@@ -6,62 +6,41 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
   <link rel="stylesheet" href="../dev/components.base.css">
+  <style>
+    button > .cpts-icon > svg {
+      font-size: 20px;
+    }
+  </style>
 </head>
-<body style="background-color: #ccc;">
-  <div class="klass" id="id"></div>
-  <span id="span"></span>
-  <button class="components_btn ghost_btn dashed_btn">哈哈哈</button>
+<body>
+  <button></button>
   
   <script src="../dev/lib/jquery-3.3.1.min.js"></script>
   <script src="../dev/util.js"></script>
   <!-- <script src="../dist/test.js"></script> -->
-  <!-- <script src="../dev/components.base.js"></script> -->
+  <script src="../dev/components.base.js"></script>
   <script>
-    var isString = Util.isString,
-        isObject = Util.isObject,
-        isEmptyObject = Util.isEmptyObject,
-        isFunction = Util.isFunction,
-        isNumber = Util.isNumber,
-        isNumeric = Util.isNumeric,
-        isDom = Util.isDom,
-        toSelector = Util.toSelector,
-        appendStyle = Util.appendStyle,
-        insertElementToBody = Util.insertElementToBody,
-        domAfterLoad = Util.domAfterLoad,
-        tagOf = Util.tagOf,
-        uniq = Util.uniq,
-        ins = Util.ins,
-        makeArray = Util.makeArray,
-        findKey = Util.findKey,
-        removeKeys = Util.removeKeys,
-        removeKey = Util.removeKey,
-        dateFormater = Util.dateFormater,
-        buildRandomString = Util.buildRandomString,
-        sum = Util.sum,
-        sumBy = Util.sumBy,
-        max = Util.max,
-        maxBy = Util.maxBy,
-        min = Util.min,
-        minBy = Util.minBy,
-        mean = Util.mean,
-        meanBy = Util.meanBy,
-        getMonthData = Util.getMonthData,
-        forIn = Util.forIn,
-        forInOwn = Util.forInOwn,
-        toCamelCase = Util.toCamelCase,
-        insert = Util.insert,
-        fromCamelCase = Util.fromCamelCase,
-        union = Util.union,
-        appendClass = Util.appendClass;
-        SetMock = Util.SetMock;
 
-    // var closeIcon = new Icon('close', {
-    //   theme: 'filled',
-    //   // size: 200
-    // });console.log(closeIcon)
-    // $('body').append(closeIcon.html);
+    var button = new Button('button', {
+      type: 'primary',
+      // disabled: true,
+      // ghost: true,
+      // size: 'small',
+      // shape: 'circle',
+      // iconType: 'error',
+      block: true,
+      iconOptions: { theme: 'filled' },
+      text: 'forbid',
+      onClick () {
+        
+        this.setLoading();
 
-    
+        setTimeout(() => {
+          this.removeLoading();
+        }, 5000);
+      }
+    });
+    console.log(button);
 
   </script>
 </body>

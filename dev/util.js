@@ -7,8 +7,6 @@
  * ES8可用方法：Object.entries, Object.values
  */
 
-// 优化baseRemove
-
 ;!function(win, $) {
   
   const emptyArray = [];
@@ -469,7 +467,7 @@
     }
   }
 
-  function baseRemove (array, iteratee) {
+  function baseRemove(array, iteratee) {
     if (!Array.isArray(array)) throw new TypeError(`${array} is not a Array`);
 
     const isFunc = isFunction(iteratee);
@@ -506,7 +504,7 @@
     return result;
   }
 
-  function getLetters () {
+  function getLetters() {
     const letters = [];
     for (let i = 65; i < 91; i++) {
       letters.push(String.fromCharCode(i));
@@ -517,7 +515,7 @@
     return letters;
   }
 
-  function baseRandomLetter (size) {
+  function baseRandomLetter(size) {
     const letters = getLetters();
 
     let result = letters[Math.floor(Math.random()*letters.length)];
@@ -557,6 +555,22 @@
     return randomString;
   }
 
+  function baseClone(object, deep) {
+    if (!isObjectLike(object)) throw new TypeError(`${object} expect a object`);
+
+    const result = Array.isArray(object) ? [] : {};
+    for (let key in object) {
+      const value = object[key];
+      if (isObjectLike(value) && deep) {
+        result[key] =  baseClone(value, true);
+      } else {
+        result[key] = value;
+      }
+    }
+
+    return result;
+  }
+
   /* ======== Util全局对象中的方法 ======== */
 
   function isString(value) {
@@ -576,6 +590,8 @@
       return !0;
     } else if (isLength(value.length)) {
       return value.length === 0;
+    } else if (isLength(value.size)) {
+      return value.size === 0;
     } else if (isObjectLike(value)) {
       for (const _ in value) return !1;
       return !0;
@@ -1044,6 +1060,13 @@
     return flag ? obj : flag;
   }
 
+  function clone(object) {
+    return baseClone(object);
+  }
+  function cloneDeep(object) {
+    return baseClone(object, true);
+  }
+
   /**
    * @description for-in循环
    */
@@ -1159,22 +1182,7 @@
    * remove([1,2,3,4,5,6], [2,3]); // [1,4,5,6]
    */
   function remove(array, iteratee) {
-    if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
-
-    const result = [];
-    uniq(array).forEach(function (item, index, self) {
-      switch (true) {
-        case (Array.isArray(iteratee)):
-          !iteratee.includes(item) && result.push(item);
-          break;
-        case (isFunction(iteratee)):
-          iteratee(item, index, self) === false && result.push(item);
-          break;
-        default: iteratee !== item && result.push(item);
-      }
-    });
-
-    return result;
+    return baseRemove(array, iteratee);
   }
 
   /**
@@ -1505,9 +1513,11 @@
     isEmpty,
     isUndefined,
     isNull,
+    isNil,
 
     // number方法
     toNumber,
+    toInteger,
 
     // dom方法
     toSelector,
@@ -1544,6 +1554,8 @@
     lastOf,
     forIn,
     forInOwn,
+    clone,
+    cloneDeep,
 
     // String方法
     toCamelCase,
