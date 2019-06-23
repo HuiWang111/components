@@ -244,68 +244,75 @@ html, body {
 /*
  * Tabs
  */
-.cpts_tabs_tab_wrapper {
-  flex: 1;
-  overflow: hidden;
-  white-space: nowrap;
+ .cpts-tabs-tab-container {
+   overflow: hidden;
+   display: flex;
+   flex-wrap: nowrap;
 
-  & > .cpts_tabs_tab_inner {
-    display: inline-block;
-    transition: all .5s;
-
-    & > .cpts_tabs_tab_item {
-      display: inline-block;
-      padding: 12px 16px;
-      cursor: pointer;
-
-      &.cpts_tabs_tab_item_active {
-        color: @primary-color;
-      }
-
-      &:hover {
-        color: @primary-color;
+    & > .cpts-tabs-tab-wrapper {
+      flex: 1;
+      overflow: hidden;
+      white-space: nowrap;
+    
+      & > .cpts-tabs-tab-inner {
+        display: inline-block;
+        transition: all .5s;
+    
+        & > .cpts-tabs-tab-item {
+          display: inline-block;
+          padding: 12px 16px;
+          cursor: pointer;
+    
+          &.cpts-tabs-tab-item-active {
+            color: @primary-color;
+          }
+    
+          &:hover {
+            color: @primary-color;
+          }
+        }
+    
+        & > .cpts-tabs-underline {
+          height: 2px;
+          transition: all .5s;
+          background-color: @primary-color;
+        }
       }
     }
-
-    & > .cpts_tabs_underline {
-      height: 2px;
+    
+    .cpts-tabs-arrow {
+      width: 30px;
+      position: relative;
+    
+      & > svg {
+        width: 15px;
+        height: 15px;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        cursor: pointer;
+      }
+    
+      &.cpts-tabs-arrow-disable > svg {
+        cursor: not-allowed;
+      }
+    
+      &.cpts-tabs-arrow-invisible {
+        display: none;
+      }
+    }
+    /* pane */
+    .cpts-tabs-pane-wrapper {
       transition: all .5s;
-      background-color: @primary-color;
+    
+      & > .cpts-tabs-pane-item {
+        display: inline-block;
+        vertical-align: top;
+      }
     }
-  }
-}
+ }
 
-.cpts_tabs_arrow {
-  width: 30px;
-  position: relative;
-
-  & > svg {
-    width: 15px;
-    height: 15px;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    cursor: pointer;
-  }
-
-  &.cpts_tabs_arrow_disable > svg {
-    cursor: not-allowed;
-  }
-
-  &.cpts_tabs_arrow_invisible {
-    display: none;
-  }
-}
-/* pane */
-.cpts_tabs_pane_wrapper {
-  transition: all .5s;
-
-  & > .cpts_tabs_pane_item {
-    display: inline-block;
-    vertical-align: top;
-  }
-}
 
 /*
  * Pagination

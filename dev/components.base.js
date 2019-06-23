@@ -375,27 +375,28 @@
   ;!function (win, $, Component) {
   
     //className
-    const TAB_ITEM_CLASS = 'cpts_tabs_tab_item';
-    const TAB_ITEM_CLASS_ACTIVE = 'cpts_tabs_tab_item_active';
-    const TAB_ITEM_WRAP_CLASS = 'cpts_tabs_tab_wrapper';
-    const TAB_ITEM_INNER_CLASS = 'cpts_tabs_tab_inner';
+    const TAB_ITEM_CLASS = 'cpts-tabs-tab-item',
+          TAB_ITEM_CLASS_ACTIVE = 'cpts-tabs-tab-item-active',
+          TAB_ITEM_WRAP_CLASS = 'cpts-tabs-tab-wrapper',
+          TAB_ITEM_INNER_CLASS = 'cpts-tabs-tab-inner',
+          TAB_ITEM_CONTAINER_CLASS = 'cpts-tabs-tab-container',
   
-    const PANE_ITEM_CLASS = 'cpts_tabs_pane_item';
-    const PANE_ITEM_CLASS_ACTIVE = 'cpts_tabs_pane_item_active';
-    const PANE_ITEM_WRAP_CLASS = 'cpts_tabs_pane_wrapper';
+          PANE_ITEM_CLASS = 'cpts-tabs-pane-item',
+          PANE_ITEM_CLASS_ACTIVE = 'cpts-tabs-pane-item-active',
+          PANE_ITEM_WRAP_CLASS = 'cpts-tabs-pane-wrapper',
   
-    const TAB_ARROW_CLASS = 'cpts_tabs_arrow';
-    const TAB_ARROW_CLASS_DISABLE = 'cpts_tabs_arrow_disable';
-    const TAB_ARROW_CLASS_INVISIBLE = 'cpts_tabs_arrow_invisible';
-    const TAB_PREVIOUS_ARROW_CLASS = 'cpts_tabs_prev_arrow';
-    const TAB_NEXT_ARROW_CLASS = 'cpts_tabs_next_arrow';
+          TAB_ARROW_CLASS = 'cpts-tabs-arrow',
+          TAB_ARROW_CLASS_DISABLE = 'cpts-tabs-arrow-disable',
+          TAB_ARROW_CLASS_INVISIBLE = 'cpts-tabs-arrow-invisible',
+          TAB_PREVIOUS_ARROW_CLASS = 'cpts-tabs-prev-arrow',
+          TAB_NEXT_ARROW_CLASS = 'cpts-tabs-next-arrow',
   
-    const UNDERLINE_CLASS = 'cpts_tabs_underline';
+          UNDERLINE_CLASS = 'cpts-tabs-underline';
     
     /**
      *  @param options: {
-     *    tabsText: Array,
-     *    paneContainerSelector: String,
+     *    tabPanes: Array, // => [{tab: String, key: String, forceRender: Boolen}]
+     *    defaultKey: String,
      *    onChange: Function(index),
      *    renderPaneItem: Function(tabName, index)
      *  }
@@ -404,18 +405,20 @@
      *  changeTo(index); // index从1开始
      */
     function Tabs(selector, options) {
+
+      this.$container = $(selector);
+      if (this.$container.length < 1) throw new Error(`not found ${selector} Element`);
   
       //default
+      const defaultKey = options.tabPanes[0].key;
       const defaultOptions = {
-        tabsText: [],
-        paneContainerSelector: null,
+        tabPanes: [],
+        defaultKey,
         onChange: null,
         renderPaneItem: null
       };
   
       this.options = Object.assign({}, defaultOptions, options);
-      this.$container = $(selector);
-      if (this.$container.length < 1) throw new Error(`not found ${selector} Element`);
       this.super();
     };
   
@@ -425,47 +428,78 @@
   
     Object.assign(Tabs.prototype, {
       render () {
-        const { tabsText, renderPaneItem, paneContainerSelector } = this.options;
+        const { $container, props: { tabPanes, renderPaneItem, defaultKey } } = this;
   
-        let tabs = '', panes = '';
-        const $container = this.$container;
-        const $paneContainer = $(paneContainerSelector);
-        const isIncludePane = $paneContainer.length > 0;
+        let tabsDOM = '', panesDOM = '', isDefaultFirst = false, isDefaultLast = false;
+        const unRenderPanes = {}, isRenderRecords = {}, panesCount = tabPanes.length;
   
-        this.isIncludePane = isIncludePane;
-        this.$paneContainer = $paneContainer;
-  
-        tabsText.forEach(function (tabText, index) {
-          const klass = index === 0 ? appendClass(TAB_ITEM_CLASS, TAB_ITEM_CLASS_ACTIVE) : TAB_ITEM_CLASS;
+        tabPanes.forEach((pane, index) => {
+          const { forceRender, tab, key } = pane;
+          const isActive = key === defaultKey;
+
+          if (isActive && index === 0) isDefaultFirst = true;
+          if (isActive && index === panesCount) isDefaultFirst = true;
+
+          const klass = appendClass(
+            TAB_ITEM_CLASS,
+            isActive ? TAB_ITEM_CLASS_ACTIVE : ''
+          );
           
           //tab
-          let tab = $.node('div', tabText, klass);
-          tabs += tab;
+          let tabDOM = $.node('div', tab, klass);
+          tabsDOM += tabDOM;
           
           //pane
-          if (isIncludePane) {
-            const paneClass = index === 0 ? appendClass(PANE_ITEM_CLASS, PANE_ITEM_CLASS_ACTIVE) : PANE_ITEM_CLASS;
-            const paneInner = isFunction(renderPaneItem) ? renderPaneItem(tabText, index) : '';
-            const pane = $.node('div', paneInner, paneClass);
-            panes += pane;
+          const paneClass = appendClass(
+            PANE_ITEM_CLASS,
+            isActive ? PANE_ITEM_CLASS_ACTIVE : ''
+          );
+
+          const paneInner = isFunction(renderPaneItem) ? renderPaneItem(tab, key) : '';
+
+          let paneDOM;
+          if (forceRender || isActive) {
+            paneDOM = $.node('div', paneInner, paneClass);
+            isRenderRecords[key] = true;
+          } else {
+            paneDOM = $.node('div', '', paneClass);
+            unRenderPanes[key] = paneInner;
+            isRenderRecords[key] = false;
           }
+          
+          panesDOM += paneDOM;
         });
         
-        const underline = $.node('div', '', UNDERLINE_CLASS);
+        const underlineDOM = $.node('div', '', UNDERLINE_CLASS);
     
-        const tabsInner = $.node('div', tabs + underline, TAB_ITEM_INNER_CLASS);
-        const tabsWrap = $.node('div', tabsInner, TAB_ITEM_WRAP_CLASS);
+        const tabsInnerDOM = $.node('div', tabsDOM + underlineDOM, TAB_ITEM_INNER_CLASS);
+        const tabsWrapDOM = $.node('div', tabsInnerDOM, TAB_ITEM_WRAP_CLASS);
     
-        const prev = $.node('div', prevSvgDisable, appendClass(TAB_PREVIOUS_ARROW_CLASS, TAB_ARROW_CLASS, TAB_ARROW_CLASS_DISABLE, TAB_ARROW_CLASS_INVISIBLE));
-        const next = $.node('div', nextSvg, appendClass(TAB_NEXT_ARROW_CLASS, TAB_ARROW_CLASS, TAB_ARROW_CLASS_INVISIBLE));
+        const prevDOM = $.node('div', prevSvgDisable, appendClass(
+          TAB_PREVIOUS_ARROW_CLASS,
+          TAB_ARROW_CLASS,
+          isDefaultFirst ? TAB_ARROW_CLASS_DISABLE : '',
+          TAB_ARROW_CLASS_INVISIBLE
+        ));
+        const nextDOM = $.node('div', nextSvg, appendClass(
+          TAB_NEXT_ARROW_CLASS,
+          TAB_ARROW_CLASS,
+          isDefaultLast ? TAB_ARROW_CLASS_DISABLE : '',
+          TAB_ARROW_CLASS_INVISIBLE
+        ));
+
+        const tabsContainerDOM = $.node('div', [prevDOM, tabsWrapDOM , nextDOM], appendClass(
+          TAB_ITEM_CONTAINER_CLASS
+        ));
+
+        const panesWrapDOM = $.node('div', panesDOM, PANE_ITEM_WRAP_CLASS);
+
+        this.unRenderPanes = unRenderPanes;
+        this.isRenderRecords = isRenderRecords;
         
         return [{
-          html: prev + tabsWrap + next,
+          html: tabsContainerDOM + panesWrapDOM,
           container: $container
-        }, {
-          html: $.node('div', panes, PANE_ITEM_WRAP_CLASS),
-          container: $paneContainer,
-          condition: isIncludePane
         }];
       },
   
@@ -473,11 +507,6 @@
   
         /* tabs style */
         const { isIncludePane, $container, $paneContainer } = this;
-  
-        $container.addClass('flex');
-        $container.css({
-          overflow: 'hidden'
-        });
   
         /* panes style */
         if (isIncludePane) {
