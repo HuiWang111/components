@@ -9,10 +9,6 @@
   <style>
     .tab-container {
       width: 300px;
-      border: 1px solid #eee;
-    }
-    .tab-pane-container {
-      width: 300px;
       height: 500px;
       border: 1px solid #eee;
     }
@@ -20,25 +16,37 @@
 </head>
 <body>
   <div class="tab-container"></div>
-  <div class="tab-pane-container">
-
-  </div>
   
   <script src="../lib/jquery-3.3.1.min.js"></script>
   <script src="../util.js"></script>
-  <script src="../../dist/util.min.js"></script>
   <script src="../components.base.js"></script>
   <script>
     var myTab = new Tabs('.tab-container', {
-      tabsText: ['哈哈哈哈哈哈哈哈哈', '嘻嘻嘻我洗我洗衣西我细腻', '啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦', 'aaaaaaaaaa', 'ccccccc', 'qqqqqqqq'], //
-      paneContainerSelector: '.tab-pane-container',
-      themeColor: '#3C8E38',
+      tabPanes: [{
+        key: 'hh',
+        tab: '哈哈哈哈哈哈哈哈哈'
+      }, {
+        key: 'xx',
+        tab: '嘻嘻嘻我洗我洗衣西我细腻',
+        forceRender: false
+      }, {
+        key: 'lala',
+        tab: '啦啦啦啦啦啦啦啦啦啦啦啦啦啦啦'
+      }, {
+        key: 'aa',
+        tab: 'aaaaaaaaaa'
+      }, {
+        key: 'cc',
+        tab: 'ccccccc'
+      }, {
+        key: 'qq',
+        tab: 'qqqqqqqq'
+      }],
       onChange: function (index) {
         console.log(index);
       },
-      renderPaneItem: function (tabName, index) {
-        // console.log(tabName);
-        return $.node('span', index);
+      renderPaneItem: function (tabName, key) {
+        return $.node('span', tabName);
       }
     });
 

@@ -428,28 +428,32 @@
   
     Object.assign(Tabs.prototype, {
       render () {
-        const { $container, props: { tabPanes, renderPaneItem, defaultKey } } = this;
+        const { $container, options: { tabPanes, renderPaneItem, defaultKey } } = this;
   
         let tabsDOM = '', panesDOM = '', isDefaultFirst = false, isDefaultLast = false;
-        const unRenderPanes = {}, isRenderRecords = {}, panesCount = tabPanes.length;
+        const unRenderPanes = {}, isRenderedRecords = {}, panesCount = tabPanes.length;
   
         tabPanes.forEach((pane, index) => {
-          const { forceRender, tab, key } = pane;
+          const { tab, key } = pane;
+          let { forceRender } = pane;
+
+          isNil(forceRender) && (forceRender = true);
+
           const isActive = key === defaultKey;
 
           if (isActive && index === 0) isDefaultFirst = true;
-          if (isActive && index === panesCount) isDefaultFirst = true;
-
+          if (isActive && index === panesCount) isDefaultLast = true;
+          
+          // tab
           const klass = appendClass(
             TAB_ITEM_CLASS,
             isActive ? TAB_ITEM_CLASS_ACTIVE : ''
           );
-          
-          //tab
+
           let tabDOM = $.node('div', tab, klass);
           tabsDOM += tabDOM;
           
-          //pane
+          // pane
           const paneClass = appendClass(
             PANE_ITEM_CLASS,
             isActive ? PANE_ITEM_CLASS_ACTIVE : ''
@@ -460,11 +464,11 @@
           let paneDOM;
           if (forceRender || isActive) {
             paneDOM = $.node('div', paneInner, paneClass);
-            isRenderRecords[key] = true;
+            isRenderedRecords[key] = true;
           } else {
             paneDOM = $.node('div', '', paneClass);
             unRenderPanes[key] = paneInner;
-            isRenderRecords[key] = false;
+            isRenderedRecords[key] = false;
           }
           
           panesDOM += paneDOM;
@@ -488,83 +492,74 @@
           TAB_ARROW_CLASS_INVISIBLE
         ));
 
-        const tabsContainerDOM = $.node('div', [prevDOM, tabsWrapDOM , nextDOM], appendClass(
+        const tabsContainerDOM = $.node('div', [prevDOM, tabsWrapDOM, nextDOM], appendClass(
           TAB_ITEM_CONTAINER_CLASS
         ));
 
         const panesWrapDOM = $.node('div', panesDOM, PANE_ITEM_WRAP_CLASS);
 
         this.unRenderPanes = unRenderPanes;
-        this.isRenderRecords = isRenderRecords;
+        this.isRenderedRecords = isRenderedRecords;
         
         return [{
           html: tabsContainerDOM + panesWrapDOM,
           container: $container
         }];
       },
+
+      componentDidMount () {
+        const { $container } = this;
+
+        this.$paneWrap = $container.find(toSelector(PANE_ITEM_WRAP_CLASS));
+        this.$tabWrap = $container.find(toSelector(TAB_ITEM_WRAP_CLASS));
+        this.$tabItems = this.$tabWrap.find(toSelector(TAB_ITEM_CLASS));
+        this.$underline = this.$tabWrap.find(toSelector(UNDERLINE_CLASS));
+
+        this.containerWidth = $container.width();
+        this.$panes = this.$paneWrap.find(toSelector(PANE_ITEM_CLASS));
+
+        this.tabItemsWidthList = this.$tabItems.map((_, tabItem) => {
+          return $(tabItem).outerWidth();
+        });
+      },
   
       style () {
-  
-        /* tabs style */
-        const { isIncludePane, $container, $paneContainer } = this;
-  
-        /* panes style */
-        if (isIncludePane) {
-          $paneContainer.css({
-            overflow: 'hidden'
-          });
-          this.$paneContainer = $paneContainer;
-  
-          const paneWidth = $paneContainer.width();
-          const paneHeight = $paneContainer.height();
-          this.paneWidth = paneWidth;
-    
-          const $paneWrap = $paneContainer.find(toSelector(PANE_ITEM_WRAP_CLASS));
-          const $panes = $paneContainer.find(toSelector(PANE_ITEM_CLASS));
-    
-          $panes.width(paneWidth);
-          $panes.height(paneHeight);
-          $paneWrap.width(paneWidth*($panes.length));
-          $paneWrap.height(paneHeight);
-        }
+
+        const { $paneWrap, $container, containerWidth, $panes, options: { tabPanes } } = this;
+
+        $container.addClass('flex-column');
+        $container.css({overflow: 'hidden'});
+        
+        $panes.width(containerWidth + 'px');
+        $paneWrap.width(containerWidth*(tabPanes.length) + 'px');
       },
   
       bindEvents () {
-        const { $container, $paneContainer, paneWidth, options } = this;
-        const { onChange } = options;
+        const { $container, $paneWrap, containerWidth, $tabWrap, $tabItems, $underline, $panes, options: { onChange, tabPanes } } = this;
   
-        const $tabWrap = $container.find(toSelector(TAB_ITEM_WRAP_CLASS));
-        const $tabItems = $tabWrap.find(toSelector(TAB_ITEM_CLASS));
-        const $underline = $tabWrap.find(toSelector(UNDERLINE_CLASS));
-        const isIncludePane = this.isIncludePane;
+        this.setUnderLineWidth(0);
   
-        this.$tabItems = $tabItems;
-  
-        // 计算每个tab的宽度
-        const tabItemsWidthList = $tabItems.map((_, tabItem) => {
-          return $(tabItem).outerWidth();
-        });
-  
-        // underline宽度 = tab宽度
-        $underline.width(tabItemsWidthList[0]);
-  
-        //arrow
+        // arrow
         const $arrow = $container.find(toSelector(TAB_ARROW_CLASS));
-  
         const $tabInner = $tabWrap.find(toSelector(TAB_ITEM_INNER_CLASS));
+
         let wrapWidth = $tabWrap.width();
         const innerWidth = $tabInner.width();
+
+        let isMoving = false;
+
         if (wrapWidth < innerWidth) { // 显示左右切换箭头
           $arrow.removeClass(TAB_ARROW_CLASS_INVISIBLE);
   
-          wrapWidth = $tabWrap.width(); //重新计算外包元素宽度
+          wrapWidth = $tabWrap.width(); // 重新计算外包元素宽度
           let prevDistance = 0, nextDistance = innerWidth - wrapWidth;
           $arrow.on('click', function () {
             const $this = $(this);
   
             if ($this.hasClass(TAB_PREVIOUS_ARROW_CLASS)) { // 点击左箭头
-              if (!$this.hasClass(TAB_ARROW_CLASS_DISABLE)) {
-  
+              if (!$this.hasClass(TAB_ARROW_CLASS_DISABLE) && !isMoving) {
+                isMoving = true;
+
                 const translateXValue = $tabInner.translateX();
                 $tabInner.translateX(() => {
                   const distance = prevDistance < wrapWidth ? prevDistance : wrapWidth;
@@ -583,9 +578,12 @@
                   $next.removeClass(TAB_ARROW_CLASS_DISABLE);
                   $next.html(nextSvg);
                 }
+
+                setTimeout(() => { isMoving = false }, 500);
               }
             } else if ($this.hasClass(TAB_NEXT_ARROW_CLASS)) { // 点击右箭头
-              if (!$this.hasClass(TAB_ARROW_CLASS_DISABLE)) {
+              if (!$this.hasClass(TAB_ARROW_CLASS_DISABLE) && !isMoving) {
+                isMoving = true;
   
                 let translateXValue = $tabInner.translateX();
                 translateXValue = isNaN(translateXValue) ? 0 : translateXValue;
@@ -606,13 +604,12 @@
                   $prev.removeClass(TAB_ARROW_CLASS_DISABLE);
                   $prev.html(prevSvg);
                 }
+
+                setTimeout(() => { isMoving = false }, 500);
               }
             }
           });
         };
-        
-        const $paneWrap = $paneContainer.find(toSelector(PANE_ITEM_WRAP_CLASS));
-        const $panes = $paneWrap.find(toSelector(PANE_ITEM_CLASS));
 
         GlobalCache.TabsChanging = (current, index) => {
           // change active
@@ -620,37 +617,47 @@
           $tabItems.eq(index).addClass(TAB_ITEM_CLASS_ACTIVE);
 
           // move underline
-          $underline.width(tabItemsWidthList[index]);
+          this.setUnderLineWidth(index);
           $underline.translateX(() => {
             let i, distance = 0;
             for (i = 0; i < index; i++) {
-              distance += tabItemsWidthList[i];
+              distance += this.tabItemsWidthList[i];
             }
             return distance;
           });
 
           // change pane
-          if (isIncludePane) {
-            $paneWrap.translateX(-(paneWidth*index));
-            $panes.eq(current).removeClass(PANE_ITEM_CLASS_ACTIVE);
-            $panes.eq(index).addClass(PANE_ITEM_CLASS_ACTIVE);
-          }
+          $paneWrap.translateX(-(containerWidth*index));
+          $panes.eq(current).removeClass(PANE_ITEM_CLASS_ACTIVE);
+          $panes.eq(index).addClass(PANE_ITEM_CLASS_ACTIVE);
 
           isFunction(onChange) && onChange(index);
         };
   
         //click tab item
+        const { unRenderPanes, isRenderedRecords } = this;
+
         $tabItems.on('click', function() {
           const $this = $(this);
           if ( !$this.hasClass(TAB_ITEM_CLASS_ACTIVE) ) {
-  
             const $active = $tabItems.filter(toSelector(TAB_ITEM_CLASS_ACTIVE));
             const current = $tabItems.indexOf($active);
             const index = $tabItems.indexOf($this);
+            const { key } = tabPanes[index];
   
             GlobalCache.TabsChanging(current, index);
+
+            /* 渲染未在初始化时渲染的pane */
+            if (!isRenderedRecords[key]) {
+              $panes.eq(index).html(unRenderPanes[key]);
+            }
           }
         });
+      },
+
+      setUnderLineWidth (index) {
+        const { $underline, tabItemsWidthList } = this;
+        $underline.width(`${tabItemsWidthList[index]}px`);
       },
       
       /**
