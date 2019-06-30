@@ -8,9 +8,12 @@
   <link rel="stylesheet" href="../components.base.css">
   <style>
     .tab-container {
-      width: 300px;
+      width: 500px;
       height: 500px;
+      padding: 0 10px;
       border: 1px solid #eee;
+      margin: 10px auto;
+      border-top: none;
     }
   </style>
 </head>
@@ -22,6 +25,8 @@
   <script src="../components.base.js"></script>
   <script>
     var myTab = new Tabs('.tab-container', {
+      type: 'card',
+      editable: true,
       tabPanes: [{
         key: 'hh',
         tab: '哈哈哈哈哈哈哈哈哈'
@@ -43,10 +48,10 @@
         tab: 'qqqqqqqq'
       }],
       onChange: function (index) {
-        console.log(index);
+        // console.log(index);
       },
       renderPaneItem: function (tabName, key) {
-        return $.node('span', tabName);
+        return $.node('span', `this is ${tabName} pane content, this tab's key is "${key}"`);
       }
     });
 

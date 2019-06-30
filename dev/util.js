@@ -1630,9 +1630,11 @@
    */
   $.prototype.translate = function (x, y) {
     if (isNil(x) && isNil(y)) {
+      const tx = parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[4]);
+      const ty = parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[5]);
       return [
-        parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[4]),
-        parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[5])
+        isNaN(tx) ? 0 : tx,
+        isNaN(ty) ? 0 : ty,
       ];
     }
 
@@ -1666,15 +1668,15 @@
   }
   $.prototype.translateX = function (value) {
     if (isNil(value)) {
-      return parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[4]);
+      return this.translate()[0];
     }
-    this.translate(value);
+    return this.translate(value);
   }
   $.prototype.translateY = function (value) {
     if (isNil(value)) {
       return parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[5]);
     }
-    this.translate(null, value);
+    return this.translate(null, value);
   }
 
   /**
