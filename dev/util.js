@@ -386,6 +386,45 @@
 
   win.Component = Component;
 
+  function Observer(object, prop, options) {
+    this.options = options;
+    this.watching(object, prop);
+  }
+
+  Object.assign(Observer.prototype, {
+    constructor: Observer,
+    watching (object, prop) {
+      if (!object || !isObjectLike(object)) return;
+
+      if (isNil(prop)) {
+        for (const key in object) {
+          this.handlePropChange(object, key, object[key]);
+        }
+      } else {
+        this.handlePropChange(object, prop, object[prop]);
+      }
+    },
+
+    handlePropChange (object, prop, value) {
+      this.watching(value);
+
+      const { callbackAfterSet, callbackAfterGet } = this.options;
+
+      Object.defineProperty(object, prop, {
+        set (newValue) {
+          isFunction(callbackAfterSet) && callbackAfterSet(newValue);
+          value = newValue;
+        },
+        get () {
+          isFunction(callbackAfterGet) && callbackAfterGet();
+          return value;
+        }
+      });
+    }
+  });
+
+  win.Observer = Observer;
+
 
   /* ======== 私有方法，不添加到Util全局对象 ======== */
 
