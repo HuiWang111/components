@@ -13,6 +13,7 @@
     isUndefined,
     isNull,
     isNil,
+    isArray,
     toSelector,
     appendStyle,
     insertElementToBody,

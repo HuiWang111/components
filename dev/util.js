@@ -15,6 +15,18 @@
     return;
   }
 
+  const ARRAY_TAG = '[object Array]',
+        OBJECT_TAG ='[object Object]',
+        REGEXP_TAG = '[object RegExp]',
+        DATE_TAG = '[object Date]',
+        STRING_TAG = '[object String]',
+        NUMBER_TAG = '[object Number]',
+        BOOLEN_TAG = '[object Boolean]',
+        FUNCTION_TAG = '[object Function]',
+        UNDEFINED_TAG = '[object Undefined]',
+        NULL_TAG = '[object Null]';
+
+
   /**
    * @description ES6方法
    */
@@ -381,7 +393,7 @@
     const array = [];
     let prop = null;
     for( let i = 0, len = args.length; i < len; i++) {
-      if (Array.isArray(args[i])) {
+      if (isArray(args[i])) {
         array.push(...args[i]);
       } else {
         prop = args[i];
@@ -468,10 +480,10 @@
   }
 
   function baseRemove(array, iteratee) {
-    if (!Array.isArray(array)) throw new TypeError(`${array} is not a Array`);
+    if (!isArray(array)) throw new TypeError(`${array} is not a Array`);
 
     const isFunc = isFunction(iteratee);
-    const isArr = Array.isArray(iteratee);
+    const isArr = isArray(iteratee);
     const indexes = [], result = [];
 
     for (let i = 0, len = array.length; i < len; i++) {
@@ -558,7 +570,7 @@
   function baseClone(object, deep) {
     if (!isObjectLike(object)) throw new TypeError(`${object} expect a object`);
 
-    const result = Array.isArray(object) ? [] : {};
+    const result = isArray(object) ? [] : {};
     for (let key in object) {
       const value = object[key];
       if (isObjectLike(value) && deep) {
@@ -571,16 +583,21 @@
     return result;
   }
 
+  const emptyObject = {};
+  function baseToString(value) {
+    return emptyObject.toString.call(value);
+  }
+
   /* ======== Util全局对象中的方法 ======== */
 
   function isString(value) {
-    return typeof value === 'string';
+    return baseToString(value) === STRING_TAG;
   }
   function isObjectLike(value) {
-    return typeof value === 'object' && value !== null;
+    return typeof value === 'object' && !isNull(value);
   }
   function isObject(value) {
-    return value && value.constructor === Object;
+    return baseToString(value) === OBJECT_TAG;
   }
   function isNil(value) {
     return value == null;
@@ -600,10 +617,10 @@
     }
   }
   function isUndefined(value) {
-    return typeof value === 'undefined';
+    return baseToString(value) === UNDEFINED_TAG;
   }
   function isNull(value) {
-    return value === null;
+    return baseToString(value) === NULL_TAG;
   }
   /**
    * @description 判断是否是数字，包括字符串数值
@@ -615,12 +632,25 @@
    * @description 判断是否是Number实例
    */
   function isNumber(value) {
-    return (typeof value === 'number');
+    return baseToString(value) === NUMBER_TAG;
   }
   function isFunction(value) {
-    return (typeof value === 'function');
+    return baseToString(value) === FUNCTION_TAG;
   }
-
+  function isBoolen(value) {
+    return baseToString(value) === BOOLEN_TAG;
+  }
+  function isDate(value) {
+    return baseToString(value) === DATE_TAG;
+  }
+  const nativeIsArray = Array.isArray;
+  function isArray(value) {
+    return nativeIsArray ? nativeIsArray(value) : baseToString(value) === ARRAY_TAG;
+  }
+  function isRegExp(value) {
+    return baseToString(value) === REGEXP_TAG;
+  }
+  
   /**
    * @example
    * toNumber('5') // 5
@@ -1045,7 +1075,7 @@
     }
 
     const isStr = isString(iteratees);
-    if (!isStr && Array.isArray(iteratees)) throw new Error(`${iteratee} is not a function and string`);
+    if (!isStr && isArray(iteratees)) throw new Error(`${iteratee} is not a function and string`);
 
     iteratees = isStr ? iteratees.split(',') : iteratees;
     let obj = {}, flag = false;
@@ -1111,7 +1141,7 @@
    */
   function insert(array, insertSet) {
     [array, insertSet].forEach((v) => {
-      if (!Array.isArray(v)) throw new Error( `${v} is not a Array`);
+      if (!isArray(v)) throw new Error( `${v} is not a Array`);
     });
 
     let adder = 0;
@@ -1129,7 +1159,7 @@
    * @param { Array } array
    */
   function uniq(array) {
-    if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
+    if (!isArray(array)) throw new Error(array + ' is not a Array');
 
     return array.reduce((arr, item) => {
       return arr.includes(item) ? arr : [...arr, item];
@@ -1137,7 +1167,7 @@
   }
 
   function uniqBy(array, prop) {
-    if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
+    if (!isArray(array)) throw new Error(array + ' is not a Array');
 
     return array.reduce((arr, item) => {
       return includesBy(arr, item, prop) ? arr : [...arr, item];
@@ -1189,8 +1219,8 @@
    * @description 两数组的交集
    */
   function ins(array, list) {
-    if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
-    if (!Array.isArray(list)) throw new Error(list + ' is not a Array');
+    if (!isArray(array)) throw new Error(array + ' is not a Array');
+    if (!isArray(list)) throw new Error(list + ' is not a Array');
 
     const result = [];
     array.forEach(function (item) {
@@ -1362,7 +1392,7 @@
         }
       }
 
-      if (Array.isArray(item)) {
+      if (isArray(item)) {
         const set = uniq(item);
         set.forEach((setItem) => {
           addSet(setItem);
@@ -1432,11 +1462,11 @@
     });
 
     if (entries != null) {
-      if (!Array.isArray(entries)) {
+      if (!isArray(entries)) {
         throw new Error(entries + ' is not a Array');
       } else {
         entries.forEach((entry) => {
-          if (!Array.isArray(entry)) {
+          if (!isArray(entry)) {
             throw new Error(entry + ' is not a Array');
           } else {
             const key = entry[0], value = entry[1];
@@ -1514,6 +1544,10 @@
     isUndefined,
     isNull,
     isNil,
+    isBoolen,
+    isArray,
+    isDate,
+    isRegExp,
 
     // number方法
     toNumber,
@@ -1753,7 +1787,7 @@
       if (isNil(children)) return '';
   
       // If the children is an array, do a join
-      children = Array.isArray(children) ? children.join('') : children;
+      children = isArray(children) ? children.join('') : children;
   
       // Check for the class
       klass = klass ? ' class="' + klass + '"' : '';
