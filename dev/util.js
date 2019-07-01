@@ -386,7 +386,19 @@
 
   win.Component = Component;
 
+  /**
+   * @description 监听器，监听某个对象的某个属性或者所有属性的变化，根据属性值的变化执行响应的操作
+   * @param options = {
+   *   setAction: Function, // 在使用‘=’赋值的同时需要执行的操作
+   *   getAction: Function  // 在获取值的同时需要执行的操作
+   * }
+   */  
   function Observer(object, prop, options) {
+    if (isObject(prop) && isNil(options)) {
+      options = prop;
+      prop = null;
+    }
+
     this.options = options;
     this.watching(object, prop);
   }
@@ -408,15 +420,15 @@
     handlePropChange (object, prop, value) {
       this.watching(value);
 
-      const { callbackAfterSet, callbackAfterGet } = this.options;
+      const { setAction, getAction } = this.options;
 
       Object.defineProperty(object, prop, {
         set (newValue) {
-          isFunction(callbackAfterSet) && callbackAfterSet(newValue);
+          isFunction(setAction) && setAction(newValue);
           value = newValue;
         },
         get () {
-          isFunction(callbackAfterGet) && callbackAfterGet();
+          isFunction(getAction) && getAction();
           return value;
         }
       });
@@ -622,21 +634,21 @@
     return result;
   }
 
-  const emptyObject = {};
-  function baseToString(value) {
-    return emptyObject.toString.call(value);
+  const toString = Object.prototype.toString;
+  function getTag(value) {
+    return toString.call(value);
   }
 
   /* ======== Util全局对象中的方法 ======== */
 
   function isString(value) {
-    return baseToString(value) === STRING_TAG;
+    return getTag(value) === STRING_TAG;
   }
   function isObjectLike(value) {
     return typeof value === 'object' && !isNull(value);
   }
   function isObject(value) {
-    return baseToString(value) === OBJECT_TAG;
+    return getTag(value) === OBJECT_TAG;
   }
   function isNil(value) {
     return value == null;
@@ -656,10 +668,10 @@
     }
   }
   function isUndefined(value) {
-    return baseToString(value) === UNDEFINED_TAG;
+    return getTag(value) === UNDEFINED_TAG;
   }
   function isNull(value) {
-    return baseToString(value) === NULL_TAG;
+    return getTag(value) === NULL_TAG;
   }
   /**
    * @description 判断是否是数字，包括字符串数值
@@ -671,23 +683,23 @@
    * @description 判断是否是Number实例
    */
   function isNumber(value) {
-    return baseToString(value) === NUMBER_TAG;
+    return getTag(value) === NUMBER_TAG;
   }
   function isFunction(value) {
-    return baseToString(value) === FUNCTION_TAG;
+    return getTag(value) === FUNCTION_TAG;
   }
   function isBoolen(value) {
-    return baseToString(value) === BOOLEN_TAG;
+    return getTag(value) === BOOLEN_TAG;
   }
   function isDate(value) {
-    return baseToString(value) === DATE_TAG;
+    return getTag(value) === DATE_TAG;
   }
   const nativeIsArray = Array.isArray;
   function isArray(value) {
-    return nativeIsArray ? nativeIsArray(value) : baseToString(value) === ARRAY_TAG;
+    return nativeIsArray ? nativeIsArray(value) : getTag(value) === ARRAY_TAG;
   }
   function isRegExp(value) {
-    return baseToString(value) === REGEXP_TAG;
+    return getTag(value) === REGEXP_TAG;
   }
   
   /**
@@ -1747,7 +1759,7 @@
   }
   $.prototype.translateY = function (value) {
     if (isNil(value)) {
-      return parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[5]);
+      return this.translate()[1];
     }
     return this.translate(null, value);
   }
