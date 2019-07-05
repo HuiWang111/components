@@ -90,9 +90,6 @@
   const prevSvgDisable = getPrevSvg(disableColor);
   const nextSvgDisable = getNextSvg(disableColor);
   
-  /* 全局缓存区 */
-  const GlobalCache = {};
-  
   /* ========Components======== */
 
   /**
@@ -226,6 +223,8 @@
         LOADING_BTN_CLASS = 'cpts-loading-btn';
   /**
    * @description 将页面上已有的元素定义成components-button 注：必须是页面中已有的元素
+   * 
+   * 可以通过实例的loading属性设置button的loading状态
    */
   function Button(selector, options) {
     if ($(selector).length === 0) {
@@ -330,9 +329,21 @@
 
     bindEvents() {
       const { $el, options: { onClick } } = this;
-      const _this = this;
+      const __this__ = this;
       isFunction(onClick) && $el.on('click', function () {
-        onClick.call(_this);
+        onClick.call(__this__);
+      });
+
+      // loading
+      this.loading = false;
+      new Observer(this, 'loading', {
+        set (newValue) {
+          if (newValue) {
+            __this__.setLoading();
+          } else {
+            __this__.removeLoading();
+          }
+        }
       });
     },
 
@@ -372,642 +383,652 @@
     }
   });
   
-  /* Tabs组件 */
-  ;!function (win, $, Component) {
-  
-    //className
-    const TAB_ITEM_CLASS = 'cpts-tabs-tab-item',
-          TAB_ITEM_CLASS_ACTIVE = 'cpts-tabs-tab-item-active',
-          TAB_ITEM_CARD_CLASS = 'cpts-tabs-tab-card-item',
-          TAB_ITEM_WRAP_CLASS = 'cpts-tabs-tab-wrapper',
-          TAB_ITEM_INNER_CLASS = 'cpts-tabs-tab-inner',
-          TAB_ITEM_CARD_INNER_CALSS = 'cpts-tabs-tab-card-inner',
-          TAB_ITEM_CONTAINER_CLASS = 'cpts-tabs-tab-container',
-          TAB_ITEM_CONTAINER_WITH_ARROW_CLASS = 'cpts-tabs-tab-with-arrow-container',
-  
-          PANE_ITEM_CLASS = 'cpts-tabs-pane-item',
-          PANE_ITEM_CLASS_ACTIVE = 'cpts-tabs-pane-item-active',
-          PANE_ITEM_WRAP_CLASS = 'cpts-tabs-pane-wrapper',
-  
-          TAB_ARROW_CLASS = 'cpts-tabs-arrow',
-          TAB_ARROW_CLASS_DISABLE = 'cpts-tabs-arrow-disable',
-          TAB_ARROW_CLASS_INVISIBLE = 'cpts-tabs-arrow-invisible',
-          TAB_PREVIOUS_ARROW_CLASS = 'cpts-tabs-prev-arrow',
-          TAB_NEXT_ARROW_CLASS = 'cpts-tabs-next-arrow',
+  /**
+   * Tabs
+   */
+  //className
+  const TAB_ITEM_CLASS = 'cpts-tabs-tab-item',
+        TAB_ITEM_CLASS_ACTIVE = 'cpts-tabs-tab-item-active',
+        TAB_ITEM_CARD_CLASS = 'cpts-tabs-tab-card-item',
+        TAB_ITEM_WRAP_CLASS = 'cpts-tabs-tab-wrapper',
+        TAB_ITEM_INNER_CLASS = 'cpts-tabs-tab-inner',
+        TAB_ITEM_CARD_INNER_CALSS = 'cpts-tabs-tab-card-inner',
+        TAB_ITEM_CONTAINER_CLASS = 'cpts-tabs-tab-container',
+        TAB_ITEM_CONTAINER_WITH_ARROW_CLASS = 'cpts-tabs-tab-with-arrow-container',
 
-          TAB_CONTAINER_CLASS = 'cpts-tabs-container',
-  
-          UNDERLINE_CLASS = 'cpts-tabs-underline';
+        PANE_ITEM_CLASS = 'cpts-tabs-pane-item',
+        PANE_ITEM_CLASS_ACTIVE = 'cpts-tabs-pane-item-active',
+        PANE_ITEM_WRAP_CLASS = 'cpts-tabs-pane-wrapper',
 
-      const TAB_ITEM_GAP = 32;
+        TAB_ARROW_CLASS = 'cpts-tabs-arrow',
+        TAB_ARROW_CLASS_DISABLE = 'cpts-tabs-arrow-disable',
+        TAB_ARROW_CLASS_INVISIBLE = 'cpts-tabs-arrow-invisible',
+        TAB_PREVIOUS_ARROW_CLASS = 'cpts-tabs-prev-arrow',
+        TAB_NEXT_ARROW_CLASS = 'cpts-tabs-next-arrow',
+
+        TAB_CONTAINER_CLASS = 'cpts-tabs-container',
+
+        UNDERLINE_CLASS = 'cpts-tabs-underline';
+
+    const TAB_ITEM_GAP = 32;
+  
+  /**
+   *  @param options: {
+   *    type: 'line' | 'card', // default is 'line' 
+   *    tabPanes: Array, // => [{tab: String, key: String, forceRender: Boolen}]
+   *    defaultKey: String,
+   *    editab;e: Boolen, // 仅type='card'时有效
+   *    onChange: Function(index),
+   *    renderPaneItem: Function(tabName, index)
+   *  }
+   * 
+   *  bug:
+   *  type为card时的active tab下方应该没有下划线，有待优化
+   *  在关闭一个tab后切换tab时pane会出现位置错乱，有待优化
+   * 
+   *  instance methods:
+   *  changeTo(index); // index从1开始
+   */
+  function Tabs(selector, options) {
+
+    this.$container = $(selector);
+    if (this.$container.length < 1) throw new Error(`not found ${selector} Element`);
+
+    const { type } = options;
+    if (!isUndefined(type) && !['line', 'card'].includes(type)) {
+      throw new Error(`${type} is not a correct tabs type`);
+    }
+
+    //default
+    const defaultKey = options.tabPanes[0].key;
+    const defaultOptions = {
+      type: 'line',
+      tabPanes: [],
+      defaultKey,
+      editable: false,
+      onChange: null,
+      renderPaneItem: null
+    };
+
+    this.options = Object.assign({}, defaultOptions, options);
+    this.super();
+  };
+
+  $.inherit(Component, Tabs);
+
+  win.Tabs = Tabs;
+
+  Object.assign(Tabs.prototype, {
+    render () {
+      const { $container, options: { tabPanes, renderPaneItem, defaultKey, type, editable } } = this;
+
+      let tabsDOM = '', panesDOM = '', isDefaultFirst = false, isDefaultLast = false;
+      const unRenderPanes = {}, isRenderedRecords = {}, panesCount = tabPanes.length;
+      const isEditableCard = type === 'card' && editable;
+
+      tabPanes.forEach((pane, index) => {
+        const { tab, key } = pane;
+        let { forceRender } = pane;
+
+        isNil(forceRender) && (forceRender = true);
+
+        const isActive = key === defaultKey;
+
+        if (isActive && index === 0) isDefaultFirst = true;
+        if (isActive && index === panesCount) isDefaultLast = true;
+        
+        // tab
+        const klass = appendClass(
+          TAB_ITEM_CLASS,
+          isActive ? TAB_ITEM_CLASS_ACTIVE : '',
+          type === 'card' ? TAB_ITEM_CARD_CLASS : ''
+        );
+        const closeIcon = isEditableCard ? (
+          (new Icon('close')).html
+        ) : '';
+
+        let tabDOM = $.node('div', tab + closeIcon, klass);
+        tabsDOM += tabDOM;
+        
+        // pane
+        const paneClass = appendClass(
+          PANE_ITEM_CLASS,
+          isActive ? PANE_ITEM_CLASS_ACTIVE : ''
+        );
+
+        const paneInner = isFunction(renderPaneItem) ? renderPaneItem(tab, key) : '';
+
+        let paneDOM;
+        if (forceRender || isActive) {
+          paneDOM = $.node('div', paneInner, paneClass);
+          isRenderedRecords[key] = true;
+        } else {
+          paneDOM = $.node('div', '', paneClass);
+          unRenderPanes[key] = paneInner;
+          isRenderedRecords[key] = false;
+        }
+        
+        panesDOM += paneDOM;
+      });
+      
+      const underlineDOM = $.node('div', '', UNDERLINE_CLASS);
+  
+      const tabsInnerDOM = $.node('div', tabsDOM + underlineDOM, appendClass(
+        TAB_ITEM_INNER_CLASS,
+        type === 'card' ? TAB_ITEM_CARD_INNER_CALSS : ''
+      ));
+      const tabsWrapDOM = $.node('div', tabsInnerDOM, TAB_ITEM_WRAP_CLASS);
+  
+      const prevDOM = $.node('div', prevSvgDisable, appendClass(
+        TAB_PREVIOUS_ARROW_CLASS,
+        TAB_ARROW_CLASS,
+        isDefaultFirst ? TAB_ARROW_CLASS_DISABLE : '',
+        TAB_ARROW_CLASS_INVISIBLE
+      ));
+      const nextDOM = $.node('div', nextSvg, appendClass(
+        TAB_NEXT_ARROW_CLASS,
+        TAB_ARROW_CLASS,
+        isDefaultLast ? TAB_ARROW_CLASS_DISABLE : '',
+        TAB_ARROW_CLASS_INVISIBLE
+      ));
+
+      const tabsContainerDOM = $.node('div', [prevDOM, tabsWrapDOM, nextDOM], appendClass(
+        TAB_ITEM_CONTAINER_CLASS
+      ));
+
+      const panesWrapDOM = $.node('div', panesDOM, PANE_ITEM_WRAP_CLASS);
+
+      this.unRenderPanes = unRenderPanes;
+      this.isRenderedRecords = isRenderedRecords;
+      
+      return [{
+        html: $.node('div', [tabsContainerDOM, panesWrapDOM], TAB_CONTAINER_CLASS),
+        container: $container
+      }];
+    },
+
+    componentDidMount () {
+      const { $container, options: { tabPanes } } = this;
+
+      // tab
+      this.$tabContainer = $container.find(toSelector(TAB_ITEM_CONTAINER_CLASS));
+      this.$tabWrap = this.$tabContainer.find(toSelector(TAB_ITEM_WRAP_CLASS));
+      this.$tabInner = this.$tabWrap.find(toSelector(TAB_ITEM_INNER_CLASS));
+      this.$tabItems = this.$tabInner.find(toSelector(TAB_ITEM_CLASS));
+      this.$underline = this.$tabWrap.find(toSelector(UNDERLINE_CLASS));
+      this.$arrow = $container.find(toSelector(TAB_ARROW_CLASS));
+
+      // pane
+      this.$paneWrap = $container.find(toSelector(PANE_ITEM_WRAP_CLASS));
+      this.$panes = this.$paneWrap.find(toSelector(PANE_ITEM_CLASS));
+
+      // attr
+      this.containerWidth = $container.width();
+      this.tabItemsWidthList = this.$tabItems.map((_, tabItem) => {
+        return $(tabItem).outerWidth();
+      });
+
+      this.tabCount = tabPanes.length;
+    },
+
+    style () {
+
+      const { containerWidth, $panes } = this;
+      
+      $panes.width(containerWidth + 'px');
+      this.setPaneWrapWidth();
+    },
+
+    bindEvents () {
+      const { $tabItems, $panes, options: { editable } } = this;
+
+      this.setUnderLineWidth(0);
+
+      this.checkArrowVisibleStatus();
+      
+      const __this__ = this;
+
+      //click tab item
+      const { options: { type } } = this;
+
+      $tabItems.on('click', function() {
+        const $this = $(this);
+        if ( !$this.hasClass(TAB_ITEM_CLASS_ACTIVE) ) {
+          const $active = $tabItems.filter(toSelector(TAB_ITEM_CLASS_ACTIVE));
+          const current = $tabItems.indexOf($active);
+          const index = $tabItems.indexOf($this);
+
+          __this__.handleTabChange(current, index);
+        }
+      });
+
+      // close tab item by closeIcon
+      const isEditableCard = type === 'card' && editable;
+      isEditableCard && $tabItems.children(toSelector(CLOSE_ICON_CLASS)).on('click', function () {
+        const $tabItem = $(this).parent();
+        const current = $tabItems.indexOf($tabItem);
+        const currentIsActive = $tabItem.hasClass(TAB_ITEM_CLASS_ACTIVE);
+
+        const $nextItems = $tabItem.next();
+        const $prevItems = $tabItem.prev();
+
+        $tabItem.remove();
+        $panes.eq(current).remove();
+
+        if (currentIsActive) {
+          if ($nextItems.length > 0) {
+            __this__.handleTabChange(null, current, true);
+          } else if ($prevItems.length > 0) {
+            __this__.handleTabChange(null, current - 1, true);
+          }
+        }
+
+        __this__.setPaneWrapWidth('sub');
+        __this__.checkArrowVisibleStatus();
+      });
+    },
     
     /**
-     *  @param options: {
-     *    type: 'line' | 'card', // default is 'line' 
-     *    tabPanes: Array, // => [{tab: String, key: String, forceRender: Boolen}]
-     *    defaultKey: String,
-     *    editab;e: Boolen, // 仅type='card'时有效
-     *    onChange: Function(index),
-     *    renderPaneItem: Function(tabName, index)
-     *  }
-     * 
-     *  bug:
-     *  type为card时的active tab下方应该没有下划线，有待优化
-     *  在关闭一个tab后切换tab时pane会出现位置错乱，有待优化
-     * 
-     *  instance methods:
-     *  changeTo(index); // index从1开始
+     * @description index从1开始
      */
-    function Tabs(selector, options) {
-
-      this.$container = $(selector);
-      if (this.$container.length < 1) throw new Error(`not found ${selector} Element`);
-
-      const { type } = options;
-      if (!isUndefined(type) && !['line', 'card'].includes(type)) {
-        throw new Error(`${type} is not a correct tabs type`);
-      }
-  
-      //default
-      const defaultKey = options.tabPanes[0].key;
-      const defaultOptions = {
-        type: 'line',
-        tabPanes: [],
-        defaultKey,
-        editable: false,
-        onChange: null,
-        renderPaneItem: null
-      };
-  
-      this.options = Object.assign({}, defaultOptions, options);
-      this.super();
-    };
-  
-    $.inherit(Component, Tabs);
-  
-    win.Tabs = Tabs;
-  
-    Object.assign(Tabs.prototype, {
-      render () {
-        const { $container, options: { tabPanes, renderPaneItem, defaultKey, type, editable } } = this;
-  
-        let tabsDOM = '', panesDOM = '', isDefaultFirst = false, isDefaultLast = false;
-        const unRenderPanes = {}, isRenderedRecords = {}, panesCount = tabPanes.length;
-        const isEditableCard = type === 'card' && editable;
-  
-        tabPanes.forEach((pane, index) => {
-          const { tab, key } = pane;
-          let { forceRender } = pane;
-
-          isNil(forceRender) && (forceRender = true);
-
-          const isActive = key === defaultKey;
-
-          if (isActive && index === 0) isDefaultFirst = true;
-          if (isActive && index === panesCount) isDefaultLast = true;
-          
-          // tab
-          const klass = appendClass(
-            TAB_ITEM_CLASS,
-            isActive ? TAB_ITEM_CLASS_ACTIVE : '',
-            type === 'card' ? TAB_ITEM_CARD_CLASS : ''
-          );
-          const closeIcon = isEditableCard ? (
-            (new Icon('close')).html
-          ) : '';
-
-          let tabDOM = $.node('div', tab + closeIcon, klass);
-          tabsDOM += tabDOM;
-          
-          // pane
-          const paneClass = appendClass(
-            PANE_ITEM_CLASS,
-            isActive ? PANE_ITEM_CLASS_ACTIVE : ''
-          );
-
-          const paneInner = isFunction(renderPaneItem) ? renderPaneItem(tab, key) : '';
-
-          let paneDOM;
-          if (forceRender || isActive) {
-            paneDOM = $.node('div', paneInner, paneClass);
-            isRenderedRecords[key] = true;
-          } else {
-            paneDOM = $.node('div', '', paneClass);
-            unRenderPanes[key] = paneInner;
-            isRenderedRecords[key] = false;
-          }
-          
-          panesDOM += paneDOM;
-        });
-        
-        const underlineDOM = $.node('div', '', UNDERLINE_CLASS);
-    
-        const tabsInnerDOM = $.node('div', tabsDOM + underlineDOM, appendClass(
-          TAB_ITEM_INNER_CLASS,
-          type === 'card' ? TAB_ITEM_CARD_INNER_CALSS : ''
-        ));
-        const tabsWrapDOM = $.node('div', tabsInnerDOM, TAB_ITEM_WRAP_CLASS);
-    
-        const prevDOM = $.node('div', prevSvgDisable, appendClass(
-          TAB_PREVIOUS_ARROW_CLASS,
-          TAB_ARROW_CLASS,
-          isDefaultFirst ? TAB_ARROW_CLASS_DISABLE : '',
-          TAB_ARROW_CLASS_INVISIBLE
-        ));
-        const nextDOM = $.node('div', nextSvg, appendClass(
-          TAB_NEXT_ARROW_CLASS,
-          TAB_ARROW_CLASS,
-          isDefaultLast ? TAB_ARROW_CLASS_DISABLE : '',
-          TAB_ARROW_CLASS_INVISIBLE
-        ));
-
-        const tabsContainerDOM = $.node('div', [prevDOM, tabsWrapDOM, nextDOM], appendClass(
-          TAB_ITEM_CONTAINER_CLASS
-        ));
-
-        const panesWrapDOM = $.node('div', panesDOM, PANE_ITEM_WRAP_CLASS);
-
-        this.unRenderPanes = unRenderPanes;
-        this.isRenderedRecords = isRenderedRecords;
-        
-        return [{
-          html: $.node('div', [tabsContainerDOM, panesWrapDOM], TAB_CONTAINER_CLASS),
-          container: $container
-        }];
-      },
-
-      componentDidMount () {
-        const { $container, options: { tabPanes } } = this;
-
-        // tab
-        this.$tabContainer = $container.find(toSelector(TAB_ITEM_CONTAINER_CLASS));
-        this.$tabWrap = this.$tabContainer.find(toSelector(TAB_ITEM_WRAP_CLASS));
-        this.$tabInner = this.$tabWrap.find(toSelector(TAB_ITEM_INNER_CLASS));
-        this.$tabItems = this.$tabInner.find(toSelector(TAB_ITEM_CLASS));
-        this.$underline = this.$tabWrap.find(toSelector(UNDERLINE_CLASS));
-        this.$arrow = $container.find(toSelector(TAB_ARROW_CLASS));
-
-        // pane
-        this.$paneWrap = $container.find(toSelector(PANE_ITEM_WRAP_CLASS));
-        this.$panes = this.$paneWrap.find(toSelector(PANE_ITEM_CLASS));
-
-        // attr
-        this.containerWidth = $container.width();
-        this.tabItemsWidthList = this.$tabItems.map((_, tabItem) => {
-          return $(tabItem).outerWidth();
-        });
-
-        this.tabCount = tabPanes.length;
-      },
-  
-      style () {
-
-        const { containerWidth, $panes } = this;
-        
-        $panes.width(containerWidth + 'px');
-        this.setPaneWrapWidth();
-      },
-  
-      bindEvents () {
-        const { $tabItems, $panes, options: { editable } } = this;
-  
-        this.setUnderLineWidth(0);
-
-        this.checkArrowVisibleStatus();
-        
-        const __this__ = this;
-
-        //click tab item
-        const { options: { type } } = this;
-
-        $tabItems.on('click', function() {
-          const $this = $(this);
-          if ( !$this.hasClass(TAB_ITEM_CLASS_ACTIVE) ) {
-            const $active = $tabItems.filter(toSelector(TAB_ITEM_CLASS_ACTIVE));
-            const current = $tabItems.indexOf($active);
-            const index = $tabItems.indexOf($this);
-  
-            __this__.handleTabChange(current, index);
-          }
-        });
-
-        // close tab item by closeIcon
-        const isEditableCard = type === 'card' && editable;
-        isEditableCard && $tabItems.children(toSelector(CLOSE_ICON_CLASS)).on('click', function () {
-          const $tabItem = $(this).parent();
-          const current = $tabItems.indexOf($tabItem);
-          const currentIsActive = $tabItem.hasClass(TAB_ITEM_CLASS_ACTIVE);
-
-          const $nextItems = $tabItem.next();
-          const $prevItems = $tabItem.prev();
-
-          $tabItem.remove();
-          $panes.eq(current).remove();
-
-          if (currentIsActive) {
-            if ($nextItems.length > 0) {
-              __this__.handleTabChange(null, current, true);
-            } else if ($prevItems.length > 0) {
-              __this__.handleTabChange(null, current - 1, true);
-            }
-          }
-
-          __this__.setPaneWrapWidth('sub');
-          __this__.checkArrowVisibleStatus();
-        });
-      },
+    changeTo (index) {
+      const { $tabItems } = this;
+      const $active = $tabItems.filter(toSelector(TAB_ITEM_CLASS_ACTIVE));
+      const current = $tabItems.indexOf($active);
       
-      /**
-       * @description index从1开始
-       */
-      changeTo (index) {
-        const { $tabItems } = this;
-        const $active = $tabItems.filter(toSelector(TAB_ITEM_CLASS_ACTIVE));
-        const current = $tabItems.indexOf($active);
-        
-        this.handleTabChange(current, index - 1);
+      this.handleTabChange(current, index - 1);
 
-        /* 计算当前active基于父元素的left值 */
-        const activeOffsetLeft = $tabItems.reduce((value, item, i) => {
-          return value + ( i < (index - 1) ? $(item).outerWidth() : 0 )
-        }, 0);
-        $tabItems.parent().translateX(-activeOffsetLeft);
-      },
+      /* 计算当前active基于父元素的left值 */
+      const activeOffsetLeft = $tabItems.reduce((value, item, i) => {
+        return value + ( i < (index - 1) ? $(item).outerWidth() : 0 )
+      }, 0);
+      $tabItems.parent().translateX(-activeOffsetLeft);
+    },
 
-      setUnderLineWidth (activeIndex) {
-        const { $underline, tabItemsWidthList } = this;
-        $underline.width(`${tabItemsWidthList[activeIndex]}px`);
-      },
+    setUnderLineWidth (activeIndex) {
+      const { $underline, tabItemsWidthList } = this;
+      $underline.width(`${tabItemsWidthList[activeIndex]}px`);
+    },
 
-      /**
-       * @action 'add' | 'sub' 表示增加或者减少tab
-       */
-      setPaneWrapWidth (action) {
-        const { $paneWrap, containerWidth } = this;
+    /**
+     * @action 'add' | 'sub' 表示增加或者减少tab
+     */
+    setPaneWrapWidth (action) {
+      const { $paneWrap, containerWidth } = this;
 
-        if (action === 'add') {
-          this.tabCount++;
-        } else if (action === 'sub') {
-          this.tabCount--;
-        }
-        $paneWrap.width(containerWidth * this.tabCount + 'px');
-      },
-
-      checkArrowVisibleStatus () {
-        const { $arrow, $tabWrap, $tabInner, $tabContainer } = this;
-
-        let wrapWidth = $tabWrap.width();
-        const innerWidth = $tabInner.outerWidth();
-        if (innerWidth > wrapWidth) { // 显示tab左右切换箭头
-          $arrow.hasClass(TAB_ARROW_CLASS_INVISIBLE) && $arrow.removeClass(TAB_ARROW_CLASS_INVISIBLE);
-          !$tabContainer.hasClass(TAB_ITEM_CONTAINER_WITH_ARROW_CLASS) && $tabContainer.addClass(TAB_ITEM_CONTAINER_WITH_ARROW_CLASS);
-
-          wrapWidth = $tabWrap.width();
-          this.bindArrowEvent(wrapWidth, innerWidth); // 绑定事件
-        } else { // 隐藏左右切换箭头
-          !$arrow.hasClass(TAB_ARROW_CLASS_INVISIBLE) && $arrow.addClass(TAB_ARROW_CLASS_INVISIBLE);
-          $tabContainer.hasClass(TAB_ITEM_CONTAINER_WITH_ARROW_CLASS) && $tabContainer.removeClass(TAB_ITEM_CONTAINER_WITH_ARROW_CLASS);
-        }
-      },
-
-      bindArrowEvent (wrapWidth, innerWidth) {
-        const { $arrow, $tabInner } = this;
-        let isMoving = false;
-        const $next = $arrow.filter(toSelector(TAB_NEXT_ARROW_CLASS));
-        const $prev = $arrow.filter(toSelector(TAB_PREVIOUS_ARROW_CLASS));
-        let prevDistance = 0, nextDistance = innerWidth - wrapWidth;
-
-        $next.off();
-        $next.on('click', function () {
-          const $this = $(this);
-
-          if (!$this.hasClass(TAB_ARROW_CLASS_DISABLE) && !isMoving) {
-            isMoving = true;
-
-            const innerWidth = $tabInner.outerWidth();
-            const translateXValue = $tabInner.translateX();
-            nextDistance = innerWidth - wrapWidth - Math.abs(translateXValue);
-
-            $tabInner.translateX(() => {
-              const distance = nextDistance < wrapWidth ? nextDistance : wrapWidth;
-              prevDistance += distance;
-              nextDistance -= distance;
-              return translateXValue - distance;
-            });
-
-            if (nextDistance === 0) {
-              $this.addClass(TAB_ARROW_CLASS_DISABLE);
-              $this.html(nextSvgDisable);
-            }
-            
-            if ($prev.hasClass(TAB_ARROW_CLASS_DISABLE)) {
-              $prev.removeClass(TAB_ARROW_CLASS_DISABLE)
-              $prev.html(prevSvg);
-            }
-
-            setTimeout(() => { isMoving = false; }, 500);
-          }
-        });
-
-        $prev.off();
-        $prev.on('click', function () {
-          const $this = $(this);
-
-          if (!$this.hasClass(TAB_ARROW_CLASS_DISABLE) && !isMoving) {
-            isMoving = true;
-
-            const translateXValue = $tabInner.translateX();
-            $tabInner.translateX(() => {
-              const distance = prevDistance < wrapWidth ? prevDistance : wrapWidth;
-              prevDistance -= distance;
-              nextDistance += distance;
-              return translateXValue + distance;
-            });
-
-            if (prevDistance === 0) {
-              $this.addClass(TAB_ARROW_CLASS_DISABLE);
-              $this.html(prevSvgDisable);
-              // 计算精度误差导致了当prevDistance为0时tabInner的translateX值不为0，为了纠正精度误差，因此强制设为0
-              $tabInner.translateX(0);
-            }
-
-            if ($next.hasClass(TAB_ARROW_CLASS_DISABLE)) {
-              $next.removeClass(TAB_ARROW_CLASS_DISABLE);
-              $next.html(nextSvg);
-            }
-
-            setTimeout(() => { isMoving = false; }, 500);
-          }
-        });
-      },
-
-      /**
-       * @description static为true时不会改变pane和underline的translateX值
-       */
-      handleTabChange (current, index, isOnClose) {
-        const { unRenderPanes, isRenderedRecords, $underline, $paneWrap, $panes, containerWidth, options: { type, onChange, tabPanes } } = this;
-        let { $tabItems } = this;
-
-        if (isOnClose) {
-          $tabItems = this.$tabInner.find(toSelector(TAB_ITEM_CLASS));
-          this.$tabItems = $tabItems;
-        }
-
-        // change active
-        !isNil(current) && $tabItems.eq(current).removeClass(TAB_ITEM_CLASS_ACTIVE);
-        $tabItems.eq(index).addClass(TAB_ITEM_CLASS_ACTIVE);
-
-        // move underline
-        if (type === 'line') {
-          this.setUnderLineWidth(index);
-          $underline.translateX(() => {
-            let i, distance = 0;
-            for (i = 0; i < index; i++) {
-              distance += this.tabItemsWidthList[i] + TAB_ITEM_GAP;
-            }
-            return distance;
-          });
-        }
-
-        // change pane
-        $paneWrap.translateX(-(containerWidth * index));
-        !isNil(current) && $panes.eq(current).removeClass(PANE_ITEM_CLASS_ACTIVE);
-        $panes.eq(index).addClass(PANE_ITEM_CLASS_ACTIVE);
-
-        /* 渲染未在初始化时渲染的pane */
-        if (index < tabPanes.length) {
-          const { key } = tabPanes[index];
-          if (!isRenderedRecords[key]) {
-            $panes.eq(index).html(unRenderPanes[key]);
-            isRenderedRecords[key] = true;
-          }
-        }
-
-        isFunction(onChange) && onChange(index);
-      },
-  
-      destroy () {
-        removeKeys(this, 'isIncludePane, paneWidth');
+      if (action === 'add') {
+        this.tabCount++;
+      } else if (action === 'sub') {
+        this.tabCount--;
       }
-    });
-  
-  }(window, jQuery, Component)
+      $paneWrap.width(containerWidth * this.tabCount + 'px');
+    },
+
+    checkArrowVisibleStatus () {
+      const { $arrow, $tabWrap, $tabInner, $tabContainer } = this;
+
+      let wrapWidth = $tabWrap.width();
+      const innerWidth = $tabInner.outerWidth();
+      if (innerWidth > wrapWidth) { // 显示tab左右切换箭头
+        $arrow.hasClass(TAB_ARROW_CLASS_INVISIBLE) && $arrow.removeClass(TAB_ARROW_CLASS_INVISIBLE);
+        !$tabContainer.hasClass(TAB_ITEM_CONTAINER_WITH_ARROW_CLASS) && $tabContainer.addClass(TAB_ITEM_CONTAINER_WITH_ARROW_CLASS);
+
+        wrapWidth = $tabWrap.width();
+        this.bindArrowEvent(wrapWidth, innerWidth); // 绑定事件
+      } else { // 隐藏左右切换箭头
+        !$arrow.hasClass(TAB_ARROW_CLASS_INVISIBLE) && $arrow.addClass(TAB_ARROW_CLASS_INVISIBLE);
+        $tabContainer.hasClass(TAB_ITEM_CONTAINER_WITH_ARROW_CLASS) && $tabContainer.removeClass(TAB_ITEM_CONTAINER_WITH_ARROW_CLASS);
+      }
+    },
+
+    bindArrowEvent (wrapWidth, innerWidth) {
+      const { $arrow, $tabInner } = this;
+      let isMoving = false;
+      const $next = $arrow.filter(toSelector(TAB_NEXT_ARROW_CLASS));
+      const $prev = $arrow.filter(toSelector(TAB_PREVIOUS_ARROW_CLASS));
+      let prevDistance = 0, nextDistance = innerWidth - wrapWidth;
+
+      $next.off();
+      $next.on('click', function () {
+        const $this = $(this);
+
+        if (!$this.hasClass(TAB_ARROW_CLASS_DISABLE) && !isMoving) {
+          isMoving = true;
+
+          const innerWidth = $tabInner.outerWidth();
+          const translateXValue = $tabInner.translateX();
+          nextDistance = innerWidth - wrapWidth - Math.abs(translateXValue);
+
+          $tabInner.translateX(() => {
+            const distance = nextDistance < wrapWidth ? nextDistance : wrapWidth;
+            prevDistance += distance;
+            nextDistance -= distance;
+            return translateXValue - distance;
+          });
+
+          if (nextDistance === 0) {
+            $this.addClass(TAB_ARROW_CLASS_DISABLE);
+            $this.html(nextSvgDisable);
+          }
+          
+          if ($prev.hasClass(TAB_ARROW_CLASS_DISABLE)) {
+            $prev.removeClass(TAB_ARROW_CLASS_DISABLE)
+            $prev.html(prevSvg);
+          }
+
+          setTimeout(() => { isMoving = false; }, 500);
+        }
+      });
+
+      $prev.off();
+      $prev.on('click', function () {
+        const $this = $(this);
+
+        if (!$this.hasClass(TAB_ARROW_CLASS_DISABLE) && !isMoving) {
+          isMoving = true;
+
+          const translateXValue = $tabInner.translateX();
+          $tabInner.translateX(() => {
+            const distance = prevDistance < wrapWidth ? prevDistance : wrapWidth;
+            prevDistance -= distance;
+            nextDistance += distance;
+            return translateXValue + distance;
+          });
+
+          if (prevDistance === 0) {
+            $this.addClass(TAB_ARROW_CLASS_DISABLE);
+            $this.html(prevSvgDisable);
+            // 计算精度误差导致了当prevDistance为0时tabInner的translateX值不为0，为了纠正精度误差，因此强制设为0
+            $tabInner.translateX(0);
+          }
+
+          if ($next.hasClass(TAB_ARROW_CLASS_DISABLE)) {
+            $next.removeClass(TAB_ARROW_CLASS_DISABLE);
+            $next.html(nextSvg);
+          }
+
+          setTimeout(() => { isMoving = false; }, 500);
+        }
+      });
+    },
+
+    /**
+     * @description static为true时不会改变pane和underline的translateX值
+     */
+    handleTabChange (current, index, isOnClose) {
+      const { unRenderPanes, isRenderedRecords, $underline, $paneWrap, $panes, containerWidth, options: { type, onChange, tabPanes } } = this;
+      let { $tabItems } = this;
+
+      if (isOnClose) {
+        $tabItems = this.$tabInner.find(toSelector(TAB_ITEM_CLASS));
+        this.$tabItems = $tabItems;
+      }
+
+      // change active
+      !isNil(current) && $tabItems.eq(current).removeClass(TAB_ITEM_CLASS_ACTIVE);
+      $tabItems.eq(index).addClass(TAB_ITEM_CLASS_ACTIVE);
+
+      // move underline
+      if (type === 'line') {
+        this.setUnderLineWidth(index);
+        $underline.translateX(() => {
+          let i, distance = 0;
+          for (i = 0; i < index; i++) {
+            distance += this.tabItemsWidthList[i] + TAB_ITEM_GAP;
+          }
+          return distance;
+        });
+      }
+
+      // change pane
+      $paneWrap.translateX(-(containerWidth * index));
+      !isNil(current) && $panes.eq(current).removeClass(PANE_ITEM_CLASS_ACTIVE);
+      $panes.eq(index).addClass(PANE_ITEM_CLASS_ACTIVE);
+
+      /* 渲染未在初始化时渲染的pane */
+      if (index < tabPanes.length) {
+        const { key } = tabPanes[index];
+        if (!isRenderedRecords[key]) {
+          $panes.eq(index).html(unRenderPanes[key]);
+          isRenderedRecords[key] = true;
+        }
+      }
+
+      isFunction(onChange) && onChange(index);
+    },
+
+    destroy () {
+      removeKeys(this, 'isIncludePane, paneWidth');
+    }
+  });
   
   /**
    * Pagination
    */
-  ;!function (win, $, Component) {
+  //className
+  const PAGINATION_ITEM_CLASS = 'cpts-pagination-item',
+        PAGINATION_ITEM_CLASS_ACTIVE = 'cpts-pagination-item-active',
+        PAGINATION_ITEM_CLASS_BORDER = 'cpts-pagination-item-border',
+        PAGINATION_ITEM_CLASS_DISABLE = 'cpts-pagination-item-disable',
+        PAGINATION_ITEM_CLASS_PREV = 'cpts-pagination-item-previous',
+        PAGINATION_ITEM_CLASS_NEXT = 'cpts-pagination-item-next',
+        PAGINATION_CONTAINER_CLASS = 'cpts-pagination-container';
   
-    //className
-    var PAGINATION_ITEM_CLASS = 'cpts_pagination_item';
-    var PAGINATION_ITEM_CLASS_ACTIVE = 'cpts_pagination_item_active';
-    var PAGINATION_ITEM_CLASS_BORDER = 'cpts_pagination_item_border';
-    // var PAGINATION_ITEM_CLASS_MORE = 'cpts_pagination_item_more';
-    var PAGINATION_ITEM_CLASS_DISABLE = 'cpts_pagination_item_disable';
-    var PAGINATION_ITEM_CLASS_PREV = 'cpts_pagination_item_previous';
-    var PAGINATION_ITEM_CLASS_NEXT = 'cpts_pagination_item_next';
-    
-    /**
-     *  @param options: {
-     *    total: Numer,
-     *    pageSize: Number,
-     *    current: Number,
-     *    bordered: true | false, // 页码是否需要边框
-     *    onChange: Function (current),
-     *    itemRender: Function (current, type, originalElement)
-     *  }
-     */
-    function Pagination(selector, options) {
-  
-      //default
-      const defaultOptions = {
-        total: 0,
-        pageSize: 10,
-        current: 1,
-        bordered: true,
-        onChange: null,
-        itemRender: null
-      };
-  
-      const opts = Object.assign({}, defaultOptions, options);
-  
-      var mustBeNumber = ['total', 'pageSize', 'current'];
-      for (var key in opts) {
-        if (mustBeNumber.indexOf(key) > -1) {
-          if (!isNumber(opts[key])) throw new Error(`${key} is not a number`);
-        }
-      }
-  
-      this.options = opts;
-      this.$container = $(selector);
-      if (tagOf(this.$container) !== 'ul') throw new Error(`${selector} is not a <ul> Element`);
-  
-      this.super();
+  /**
+   *  @param options: {
+   *    total: Numer,
+   *    pageSize: Number,
+   *    current: Number,
+   *    bordered: true | false, // 页码是否需要边框
+   *    onChange: Function (current),
+   *    itemRender: Function (current, type, originalElement)
+   *  }
+   */
+  function Pagination(selector, options) {
+
+    //default
+    const defaultOptions = {
+      total: 0,
+      pageSize: 10,
+      current: 1,
+      bordered: true,
+      onChange: null,
+      itemRender: null
     };
-  
-    $.inherit(Component, Pagination);
-  
-    win.Pagination = Pagination;
-  
-    Object.assign(Pagination.prototype, {
-      render () {
-        const { $container, options } = this;
-        const { current, total, pageSize, itemRender, bordered } = options;
-  
-        const totalPage = Math.ceil(total/pageSize);
-        this.totalPage = totalPage;
-  
-        //pagination
-        let i, ulInner = '';
-        for (i = 1; i <= totalPage; i++) {
-          let klass = i === current ? (
-            appendClass(PAGINATION_ITEM_CLASS, PAGINATION_ITEM_CLASS_ACTIVE)
-          ) : PAGINATION_ITEM_CLASS;
-          klass = bordered ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
+
+    const opts = Object.assign({}, defaultOptions, options);
+
+    var mustBeNumber = ['total', 'pageSize', 'current'];
+    for (var key in opts) {
+      if (mustBeNumber.indexOf(key) > -1) {
+        if (!isNumber(opts[key])) throw new Error(`${key} is not a number`);
+      }
+    }
+
+    this.options = opts;
+    this.$container = $(selector);
+
+    this.super();
+  };
+
+  $.inherit(Component, Pagination);
+
+  win.Pagination = Pagination;
+
+  Object.assign(Pagination.prototype, {
+    render () {
+      const { $container, options } = this;
+      const { current, total, pageSize, itemRender, bordered } = options;
+
+      const totalPage = Math.ceil(total/pageSize);
+      Object.defineProperty(this, 'totalPage', {
+        writable: false,
+        configurable: true,
+        enumerable: false,
+        value: totalPage
+      });
+
+      const MAXTOTAL = 8;
+
+      //pagination
+      let i, ulInner = '';
+      for (i = 1; i <= totalPage; i++) {
+        if (i < 6) {
+          const klass = appendClass(
+            PAGINATION_ITEM_CLASS,
+            i === current ? PAGINATION_ITEM_CLASS_ACTIVE : '',
+            bordered ? PAGINATION_ITEM_CLASS_BORDER : ''
+          );
   
           const originalElement = $.node('a', i);
           const element = isFunction(itemRender) ? itemRender(i, 'pagination', originalElement) : originalElement;
-  
-          klass = appendClass(klass, PAGINATION_ITEM_CLASS + '-' + i);
-          const pagination = $.node('li', element, klass);
-  
-          ulInner += pagination;
+          
+          const pagination = $.node('li', element, klass, {
+            title: i
+          });
         }
-  
-        //previous
-        const previous = () => {
-          let klass = current === 1 ? PAGINATION_ITEM_CLASS_DISABLE : '';
-          klass = bordered ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
-  
-          const svg = current === 1 ? prevSvgDisable : prevSvg;
-          const originalElement = $.node('a', svg);
-          const element = isFunction(itemRender) ? (
-            itemRender(null, 'prev', originalElement)
-          ) : originalElement;
-          this.prevEl = element;
-          this.prevOriginEl = originalElement;
-  
-          return $.node('li', element, appendClass(klass, PAGINATION_ITEM_CLASS_PREV));
-        }
-        var prevItem = previous();
-  
-        //next
-        const next = () => {
-          let klass = current === totalPage ? PAGINATION_ITEM_CLASS_DISABLE : '';
-          klass = bordered ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
-  
-          const svg = current === totalPage ? nextSvgDisable : nextSvg;
-          const originalElement = $.node('a', svg);
-  
-          const element = isFunction(itemRender) ? (
-            itemRender(null, 'next', originalElement)
-          ) : originalElement;
-          this.nextEl = element;
-          this.nextOriginEl = originalElement;
-  
-          return $.node('li', element, appendClass(klass, PAGINATION_ITEM_CLASS_NEXT));
-        }
-        var nextItem = next();
-  
-        return [{
-          html: prevItem + ulInner + nextItem,
-          container: $container
-        }];
-      },
-  
-      bindEvents () {
-  
-        const Pagination = this;
-        const { $container, totalPage, options } = this;
-        const { onChange } = options;
-  
-        const $next = $container.find(toSelector(PAGINATION_ITEM_CLASS_NEXT));
-        const $prev = $container.find(toSelector(PAGINATION_ITEM_CLASS_PREV));
-        const $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
-        this.$pagination = $pagination;
-        
-        GlobalCache.paginationChanging = (current, index) => {
-  
-          $pagination.eq(current).removeClass(PAGINATION_ITEM_CLASS_ACTIVE);
-          $pagination.eq(index).addClass(PAGINATION_ITEM_CLASS_ACTIVE);
-  
-          index += 1; // index 转为 页码
-          if ( (index !== totalPage) && ($next.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
-            (Pagination.nextEl === Pagination.nextOriginEl) && $next.children('a').html(nextSvg);
-            $next.removeClass(PAGINATION_ITEM_CLASS_DISABLE);
-          }
-          if ( (index === totalPage) && (!$next.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
-            (Pagination.nextEl === Pagination.nextOriginEl) && $next.children('a').html(nextSvgDisable);
-            $next.addClass(PAGINATION_ITEM_CLASS_DISABLE);
-          }
-          if ( (index === 1) && (!$prev.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
-            (Pagination.prevEl === Pagination.prevOriginEl) && $prev.children('a').html(prevSvgDisable);
-            $prev.addClass(PAGINATION_ITEM_CLASS_DISABLE);
-          }
-          if ( (index !== 1) && ($prev.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
-            (Pagination.prevEl === Pagination.prevOriginEl) && $prev.children('a').html(prevSvg);
-            $prev.removeClass(PAGINATION_ITEM_CLASS_DISABLE);
-          }
-  
-          isFunction(onChange) && onChange(index);
-        };
-  
-        //click previous button
-        $prev.on('click', function () {
-          const $this = $(this);
-          if (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
-            const $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
-            let current = $pagination.indexOf($active);
-  
-            GlobalCache.paginationChanging(current, current - 1, $pagination, onChange);
-          }
-        });
-  
-        //click next button
-        $next.on('click', function () {
-          const $this = $(this);
-          if (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
-            const $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
-            let current = $pagination.indexOf($active);
-  
-            GlobalCache.paginationChanging(current, current + 1, $pagination, onChange);
-          }
-        });
-  
-        //click paginations
-        $pagination.on('click', function () {
-          const $this = $(this);
-          if (!$this.hasClass(PAGINATION_ITEM_CLASS_ACTIVE)) {
-            const $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
-            const current = $pagination.indexOf($active);
-            const index = $pagination.indexOf($this);
-  
-            if (current !== index) {
-              GlobalCache.paginationChanging(current, index, $pagination, onChange);
-            }
-          }
-        });
-      },
-  
-      /**
-       * @param { Number } index 页码，从1开始
-       */
-      changeTo (index) {
-        const { $pagination, options } = this;
-        const { onChange } = options;
-        const $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
-        const current = $pagination.indexOf($active);
-        if (current !== index) {
-          GlobalCache.paginationChanging(current, index - 1, $pagination, onChange);
-        }
-      },
-  
-      destroy () {
-        removeKeys(this, 'nextEl, nextOriginEl, prevEl, prevOriginEl, totalPage');
+
+        ulInner += pagination;
       }
-    });
-  
-  }(window, jQuery, Component)
+
+      //previous
+      const previous = () => {
+        let klass = current === 1 ? PAGINATION_ITEM_CLASS_DISABLE : '';
+        klass = bordered ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
+
+        const svg = current === 1 ? prevSvgDisable : prevSvg;
+        const originalElement = $.node('a', svg);
+        const element = isFunction(itemRender) ? (
+          itemRender(null, 'prev', originalElement)
+        ) : originalElement;
+        this.isPrevOriginal = element === originalElement;
+
+        return $.node('li', element, appendClass(klass, PAGINATION_ITEM_CLASS_PREV), {
+          title: '上一页'
+        });
+      }
+      var prevItem = previous();
+
+      //next
+      const next = () => {
+        let klass = current === totalPage ? PAGINATION_ITEM_CLASS_DISABLE : '';
+        klass = bordered ? appendClass(klass, PAGINATION_ITEM_CLASS_BORDER) : klass;
+
+        const svg = current === totalPage ? nextSvgDisable : nextSvg;
+        const originalElement = $.node('a', svg);
+
+        const element = isFunction(itemRender) ? (
+          itemRender(null, 'next', originalElement)
+        ) : originalElement;
+        this.isNextOriginal = element === originalElement;
+
+        return $.node('li', element, appendClass(klass, PAGINATION_ITEM_CLASS_NEXT), {
+          title: '下一页'
+        });
+      }
+      var nextItem = next();
+
+      return [{
+        html: $.node('ul', prevItem + ulInner + nextItem, PAGINATION_CONTAINER_CLASS),
+        container: $container,
+        type: 'append'
+      }];
+    },
+
+    componentDidMount () {
+      const { $container } = this;
+
+      this.$next = $container.find(toSelector(PAGINATION_ITEM_CLASS_NEXT));
+      this.$prev = $container.find(toSelector(PAGINATION_ITEM_CLASS_PREV));
+      this.$pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
+    },
+
+    bindEvents () {
+      
+      const { $next, $prev, $pagination } = this;
+      const __this__ = this;
+
+      //click previous button
+      $prev.on('click', function () {
+        const $this = $(this);
+        if (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
+          const $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
+          let current = $pagination.indexOf($active);
+
+          __this__.handlePaginationChange(current, current - 1);
+        }
+      });
+
+      //click next button
+      $next.on('click', function () {
+        const $this = $(this);
+        if (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
+          const $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
+          let current = $pagination.indexOf($active);
+
+          __this__.handlePaginationChange(current, current + 1);
+        }
+      });
+
+      //click paginations
+      $pagination.on('click', function () {
+        const $this = $(this);
+        if (!$this.hasClass(PAGINATION_ITEM_CLASS_ACTIVE)) {
+          const $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
+          const current = $pagination.indexOf($active);
+          const index = $pagination.indexOf($this);
+
+          if (current !== index) {
+            __this__.handlePaginationChange(current, index);
+          }
+        }
+      });
+    },
+
+    /**
+     * @param { Number } index 页码，从1开始
+     */
+    changeTo (index) {
+      const { $pagination } = this;
+      const $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
+      const current = $pagination.indexOf($active);
+      if (current !== index) {
+        this.handlePaginationChange(current, index - 1);
+      }
+    },
+
+    handlePaginationChange (current, index) {
+
+      const { totalPage, $prev, $next, $pagination, isPrevOriginal, isNextOriginal, options: { onChange } } = this;
+      
+      $pagination.eq(current).removeClass(PAGINATION_ITEM_CLASS_ACTIVE);
+      $pagination.eq(index).addClass(PAGINATION_ITEM_CLASS_ACTIVE);
+
+      index += 1; // index 转为 页码
+      if ( (index !== totalPage) && ($next.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
+        isNextOriginal && $next.children('a').html(nextSvg);
+        $next.removeClass(PAGINATION_ITEM_CLASS_DISABLE);
+      }
+      if ( (index === totalPage) && (!$next.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
+        isNextOriginal && $next.children('a').html(nextSvgDisable);
+        $next.addClass(PAGINATION_ITEM_CLASS_DISABLE);
+      }
+      if ( (index === 1) && (!$prev.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
+        isPrevOriginal && $prev.children('a').html(prevSvgDisable);
+        $prev.addClass(PAGINATION_ITEM_CLASS_DISABLE);
+      }
+      if ( (index !== 1) && ($prev.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) ) {
+        isPrevOriginal && $prev.children('a').html(prevSvg);
+        $prev.removeClass(PAGINATION_ITEM_CLASS_DISABLE);
+      }
+
+      isFunction(onChange) && onChange(index);
+    },
+
+    destroy () {
+      // removeKeys(this,);
+    }
+  });
   
   /**
    * Message

@@ -15,29 +15,24 @@
   <script src="../dev/lib/jquery-3.3.1.min.js"></script>
   <script src="../dev/util.js"></script>
   <!-- <script src="../dist/test.js"></script> -->
-  <!-- <script src="../dev/components.base.js"></script> -->
+  <script src="../dev/components.base.js"></script>
   <script>
 
-    // var button = new Button('button', {
-    //   type: 'primary',
-    //   // disabled: true,
-    //   // ghost: true,
-    //   // size: 'small',
-    //   // shape: 'circle',
-    //   // iconType: 'error',
-    //   block: true,
-    //   iconOptions: { theme: 'filled' },
-    //   text: 'forbid',
-    //   onClick () {
-        
-    //     this.setLoading();
-
-    //     setTimeout(() => {
-    //       this.removeLoading();
-    //     }, 5000);
-    //   }
-    // });
-    // console.log(button);
+    var button = new Button('button', {
+      type: 'primary',
+      // disabled: true,
+      // ghost: true,
+      // size: 'small',
+      // shape: 'circle',
+      // iconType: 'error',
+      block: true,
+      iconOptions: { theme: 'filled' },
+      text: 'forbid',
+      onClick () {
+        this.loading = !this.loading;
+      }
+    });
+    console.log(button);
 
   </script>
 </body>

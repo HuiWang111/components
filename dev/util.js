@@ -7,7 +7,7 @@
  * ES8可用方法：Object.entries, Object.values
  */
 
-;!function(win, $) {
+;!function(global, $) {
   
   const emptyArray = [];
   if (!emptyArray.map) {
@@ -384,16 +384,20 @@
     destroy () {}
   });
 
-  win.Component = Component;
+  global.Component = Component;
 
   /**
    * @description 监听器，监听某个对象的某个属性或者所有属性的变化，根据属性值的变化执行响应的操作
    * @param options = {
-   *   setAction: Function, // 在使用‘=’赋值的同时需要执行的操作
-   *   getAction: Function  // 在获取值的同时需要执行的操作
+   *   set: Function, // 在使用‘=’赋值的同时需要执行的操作
+   *   get: Function  // 在获取值的同时需要执行的操作
    * }
-   */  
+   */
   function Observer(object, prop, options) {
+    if (!isObjectLike(object)) {
+      throw new Error(`${object} is not a object`);
+    }
+
     if (isObject(prop) && isNil(options)) {
       options = prop;
       prop = null;
@@ -404,7 +408,6 @@
   }
 
   Object.assign(Observer.prototype, {
-    constructor: Observer,
     watching (object, prop) {
       if (!object || !isObjectLike(object)) return;
 
@@ -420,22 +423,34 @@
     handlePropChange (object, prop, value) {
       this.watching(value);
 
-      const { setAction, getAction } = this.options;
-
-      Object.defineProperty(object, prop, {
-        set (newValue) {
-          isFunction(setAction) && setAction(newValue);
+      const { get, set } = this.options;
+      
+      if (Object.defineProperty) {
+        Object.defineProperty(object, prop, {
+          set (newValue) {
+            isFunction(set) && set(newValue);
+            value = newValue;
+          },
+          get () {
+            isFunction(get) && get();
+            return value;
+          }
+        });
+      } else {
+        object.__defineSetter__(prop, (newValue) => {
+          isFunction(set) && set(newValue);
           value = newValue;
-        },
-        get () {
-          isFunction(getAction) && getAction();
+        });
+
+        object.__defineGetter__(prop, () => {
+          isFunction(get) && get();
           return value;
-        }
-      });
+        });
+      }
     }
   });
 
-  win.Observer = Observer;
+  global.Observer = Observer;
 
 
   /* ======== 私有方法，不添加到Util全局对象 ======== */
@@ -1655,13 +1670,13 @@
     MapMock
 
   }
-  win.Util = Util; //export Util
+  global.Util = Util; //export Util
 
-  ;!function (win) {
+  ;!function (global) {
 
     function mouseWheelListener(callback) {
       addMouseWheelHandler(function (e) {
-        e = e || window.event;
+        e = e || global.event;
         const value = e.wheelDelta || -e.deltaY || -e.detail;
         const delta = Math.max(-1, Math.min(1, value));
         const direction = delta < 0 ? 'down' : 'up';
@@ -1669,7 +1684,7 @@
       });
     }
 
-    win.mouseWheelListener = mouseWheelListener;
+    global.mouseWheelListener = mouseWheelListener;
 
     let g_supportsPassive = false;
     try {
@@ -1678,15 +1693,15 @@
           g_supportsPassive = true;
         }
       });
-      window.addEventListener("testPassive", null, opts);
-      window.removeEventListener("testPassive", null, opts);
+      global.addEventListener("testPassive", null, opts);
+      global.removeEventListener("testPassive", null, opts);
     } catch (e) {}
 
     function addMouseWheelHandler (callback) {
       let prefix = '';
       let _addEventListener;
     
-      if (window.addEventListener) {
+      if (global.addEventListener) {
         _addEventListener = "addEventListener";
       } else {
         _addEventListener = "attachEvent";
@@ -1705,7 +1720,7 @@
         document[_addEventListener](prefix + support, callback, passiveEvent);
       }
     }
-  }(win)
+  }(global)
 
   /* ========jQuery======== */
   /**
@@ -1878,4 +1893,4 @@
     
   });
 
-}(window, window.jQuery)
+}(this, this.jQuery)
