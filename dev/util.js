@@ -1829,6 +1829,33 @@
     }
     return result;
   };
+
+  /**
+   * for $.node, $.imgNode
+   */
+  const handleAttr = (attr) => {
+    let attributes = '';
+    if (attr) {
+      if (isString(attr)) {
+        attributes = ' ' + attr;
+      } else if (isObject(attr)) {
+        forInOwn(attr, (obj, key) => {
+          if ( (key.trim() === 'style') && isObject(obj) ) {
+            attributes += ` ${key}="`;
+            forInOwn(obj, (value, k) => {
+              attributes += `${fromCamelCase(k)}: ${value};`;
+            });
+            attributes += `"`;
+          } else {
+            const thisAttr = `${fromCamelCase(key)}="${obj}"`;
+            attributes += ` ${thisAttr}`;
+          }
+        });
+      }
+    }
+
+    return attributes;
+  }
   
   $.extend({
     
@@ -1859,27 +1886,16 @@
       klass = klass ? ' class="' + klass + '"' : '';
   
       // Check for any attributes
-      let attributes = '';
-      if (attr) {
-        if (isString(attr)) {
-          attributes = ' ' + attr;
-        } else if (isObject(attr)) {
-          forInOwn(attr, (obj, key) => {
-            if ( (key.trim() === 'style') && isObject(obj) && (obj !== null) ) {
-              attributes += ` ${key}="`;
-              forInOwn(obj, (value, k) => {
-                attributes += `${fromCamelCase(k)}: ${value};`;
-              });
-              attributes += `"`;
-            } else {
-              const thisAttr = `${fromCamelCase(key)}="${obj}"`;
-              attributes += ` ${thisAttr}`;
-            }
-          });
-        }
-      }
+      const attributes = handleAttr(attr);
       
       return '<' + wrapper + klass + attributes + '>' + children + '</' + wrapper + '>';
+    },
+
+    closingNode: function (tagName, klass, attr) {
+      klass = klass ? ` class="${klass}"` : '';
+      const attributes = handleAttr(attr);
+
+      return '<' + tagName + klass + attributes + '/>';
     },
 
     /**

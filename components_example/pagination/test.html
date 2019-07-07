@@ -17,21 +17,23 @@
   <script src="../../dev/components.base.js"></script>
   <script>
     var pagination = new Pagination('div', {
-      total: 50,
-      border: true,
-      // themeColor: 'red',
+      total: 500,
+      bordered: false,
+      current: 18,
       itemRender: function (current, type, originalElement) {
-        // if (type === 'prev') {
-        //   return '<a>上一页</a>';
-        // } else if (type === 'next') {
-        //   return '<a>下一页</a>';
-        // }
+        if (type === 'prev') {
+          return '<a>上一页</a>';
+        } else if (type === 'next') {
+          return '<a>下一页</a>';
+        }
         return originalElement;
       },
       onChange: function (current) {
         // console.log(current);
       }
     });
+
+    
 
     
 
