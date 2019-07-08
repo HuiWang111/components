@@ -782,7 +782,7 @@ body {
 /*
  * Message
  */
-.message_contaier {
+.cpts-message-contaier {
   padding: 8px 10px;
   background-color: #fff;
   font-size: 14px;
@@ -806,21 +806,21 @@ body {
   transition: all 1s;
   opacity: 0;
 }
-.message_contaier.comedown {
+.cpts-message-contaier.comedown {
   opacity: 1;
 }
-.message_contaier > .message_text_box {
+.cpts-message-contaier > .cpts-message-text-box {
   color: rgba(0, 0, 0, 0.65);
   vertical-align: top;
   line-height: 1.4;
 }
-.message_contaier > .message_icon {
+.cpts-message-contaier > .cpts-message-icon {
   margin-right: 8px;
 }
 /*
  * Gallery
  */
-.gallery-contaier {
+.cpts-gallery-contaier {
   width: 100%;
   height: 100%;
   position: fixed;
@@ -828,10 +828,10 @@ body {
   top: 0;
   /* swiper */
 }
-.gallery-contaier.gallery-contaier-invisible {
+.cpts-gallery-contaier.cpts-gallery-contaier-invisible {
   display: none;
 }
-.gallery-contaier > .gallery-wrapper {
+.cpts-gallery-contaier > .cpts-gallery-wrapper {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -842,15 +842,15 @@ body {
           transform: translate(-50%, -50%);
   z-index: 1;
 }
-.gallery-contaier > .gallery-wrapper > .gallery-swiper-container {
+.cpts-gallery-contaier > .cpts-gallery-wrapper > .cpts-gallery-swiper-container {
   width: 100%;
   height: 100%;
   margin: 0 auto;
 }
-.gallery-contaier > .gallery-wrapper > .gallery-swiper-container > .swiper-wrapper > .swiper-slide {
+.cpts-gallery-contaier > .cpts-gallery-wrapper > .cpts-gallery-swiper-container > .swiper-wrapper > .swiper-slide {
   position: relative;
 }
-.gallery-contaier > .gallery-wrapper > .gallery-swiper-container > .swiper-wrapper > .swiper-slide > img {
+.cpts-gallery-contaier > .cpts-gallery-wrapper > .cpts-gallery-swiper-container > .swiper-wrapper > .swiper-slide > img {
   width: 100%;
   position: absolute;
   left: 50%;
@@ -861,13 +861,13 @@ body {
        -o-transform: translate(-50%, -50%);
           transform: translate(-50%, -50%);
 }
-.gallery-contaier .swiper-pagination-bullet-active {
+.cpts-gallery-contaier .swiper-pagination-bullet-active {
   background-color: #fff;
 }
-.gallery-contaier .swiper-button-next {
+.cpts-gallery-contaier .swiper-button-next {
   right: 0;
 }
-.gallery-contaier .swiper-button-prev {
+.cpts-gallery-contaier .swiper-button-prev {
   left: 0;
 }
 /*
@@ -887,7 +887,7 @@ body {
 /*
  * Alert
  */
-.alert_container {
+.cpts-alert-container {
   padding: 8px 15px;
   -webkit-box-sizing: border-box;
      -moz-box-sizing: border-box;
@@ -900,17 +900,17 @@ body {
        -o-transform: scaleY(1);
           transform: scaleY(1);
 }
-.alert_container > .alert_icon {
+.cpts-alert-container > .cpts-alert-icon {
   position: absolute;
   top: 11.5px;
   left: 16px;
 }
-.alert_container > .alert_close_icon {
+.cpts-alert-container > .cpts-alert-close-icon {
   position: absolute;
   top: 10px;
   right: 12px;
 }
-.alert_container > .alert_message {
+.cpts-alert-container > .cpts-alert-message {
   color: rgba(0, 0, 0, 0.65);
   line-height: 1.5;
   -webkit-border-radius: 4px;
@@ -918,50 +918,50 @@ body {
           border-radius: 4px;
   font-size: 14px;
 }
-.alert_container.alert_with_icon {
+.cpts-alert-container.cpts-alert-with-icon {
   padding-left: 37px;
 }
-.alert_container.alert_with_desc {
+.cpts-alert-container.cpts-alert-with-desc {
   padding-top: 15px;
   padding-bottom: 15px;
 }
-.alert_container.alert_with_desc > .alert_icon {
+.cpts-alert-container.cpts-alert-with-desc > .cpts-alert-icon {
   top: 16px;
   left: 24px;
 }
-.alert_container.alert_with_desc > .alert_message {
+.cpts-alert-container.cpts-alert-with-desc > .cpts-alert-message {
   margin-bottom: 4px;
   color: rgba(0, 0, 0, 0.85);
   font-size: 16px;
 }
-.alert_container.alert_with_desc > .alert_description {
+.cpts-alert-container.cpts-alert-with-desc > .cpts-alert-description {
   font-size: 14px;
   line-height: 22px;
   color: rgba(0, 0, 0, 0.65);
 }
-.alert_container.alert_with_icon.alert_with_desc {
+.cpts-alert-container.cpts-alert-with-icon.cpts-alert-with-desc {
   padding-left: 64px;
 }
-.alert_container.alert_with_close {
+.cpts-alert-container.cpts-alert-with-close {
   padding-right: 30px;
 }
-.alert_container.alert_warn {
+.cpts-alert-container.cpts-alert-warn {
   background-color: #fffbe6;
   border: 1px solid #ffe58f;
 }
-.alert_container.alert_success {
+.cpts-alert-container.cpts-alert-success {
   background-color: #f6ffed;
   border: 1px solid #b7eb8f;
 }
-.alert_container.alert_info {
+.cpts-alert-container.cpts-alert-info {
   background-color: #e6f7ff;
   border: 1px solid #91d5ff;
 }
-.alert_container.alert_error {
+.cpts-alert-container.cpts-alert-error {
   background-color: #fff1f0;
   border: 1px solid #ffa39e;
 }
-.alert_container.alert_slideUp {
+.cpts-alert-container.cpts-alert-slideUp {
   -webkit-animation: alert_slideUp 200ms linear;
      -moz-animation: alert_slideUp 200ms linear;
        -o-animation: alert_slideUp 200ms linear;
@@ -971,7 +971,7 @@ body {
        -o-animation-fill-mode: forwards;
           animation-fill-mode: forwards;
 }
-.alert_container.alert_slideDown {
+.cpts-alert-container.cpts-alert-slideDown {
   -webkit-animation: alert_slideDown 200ms linear;
      -moz-animation: alert_slideDown 200ms linear;
        -o-animation: alert_slideDown 200ms linear;
@@ -1072,10 +1072,10 @@ body {
 /*
  * Modal
  */
-body.modal_centered {
+body.cpts-modal-centered {
   text-align: center;
 }
-body > .modal_mask {
+body > .cpts-modal-mask {
   width: 100%;
   height: 100%;
   position: fixed;
@@ -1083,13 +1083,13 @@ body > .modal_mask {
   top: 0;
   background-color: rgba(0, 0, 0, 0.65);
 }
-body > .modal_mask.modal_mask_invisible {
+body > .cpts-modal-mask.cpts-modal-mask-invisible {
   display: none;
 }
-body > .modal_mask.modal_centered {
+body > .cpts-modal-mask.cpts-modal-centered {
   text-align: center;
 }
-body .modal_container {
+.cpts-modal-container {
   width: 520px;
   -webkit-box-sizing: border-box;
      -moz-box-sizing: border-box;
@@ -1101,17 +1101,20 @@ body .modal_container {
   -webkit-border-radius: 4px;
      -moz-border-radius: 4px;
           border-radius: 4px;
+  -webkit-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+     -moz-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-body .modal_container.modal_centered {
+.cpts-modal-container.cpts-modal-centered {
   top: 0;
   display: inline-block;
   text-align: left;
   vertical-align: middle;
 }
-body .modal_container.modal_container_invisible {
+.cpts-modal-container.cpts-modal-container-invisible {
   display: none;
 }
-body .modal_container > .modal_header_container {
+.cpts-modal-container > .cpts-modal-header-container {
   -webkit-box-sizing: border-box;
      -moz-box-sizing: border-box;
           box-sizing: border-box;
@@ -1119,21 +1122,31 @@ body .modal_container > .modal_header_container {
   -webkit-border-radius: 4px 4px 0 0;
      -moz-border-radius: 4px 4px 0 0;
           border-radius: 4px 4px 0 0;
-  border: 1px solid #e8e8e8;
+  border-bottom: 1px solid #e8e8e8;
   font-size: 16px;
   color: rgba(0, 0, 0, 0.85);
+  font-weight: 500;
   line-height: 22px;
   word-wrap: break-word;
-  font-weight: 500;
 }
-body .modal_container > .modal_body {
+.cpts-modal-container > .cpts-modal-header-container > .cpts-modal-header-wrapper {
+  color: rgba(0, 0, 0, 0.85);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 22px;
+  word-wrap: break-word;
+}
+.cpts-modal-container > .cpts-modal-header-container > .cpts-modal-header-wrapper > .cpts-modal-close-icon {
+  float: right;
+}
+.cpts-modal-container > .cpts-modal-body {
   padding: 24px;
   font-size: 14px;
   line-height: 1.5;
   word-wrap: break-word;
   color: rgba(0, 0, 0, 0.65);
 }
-body .modal_container > .modal_footer_container {
+.cpts-modal-container > .cpts-modal-footer-container {
   padding: 10px 16px;
   -webkit-border-radius: 0 0 4px 4px;
      -moz-border-radius: 0 0 4px 4px;
@@ -1141,6 +1154,48 @@ body .modal_container > .modal_footer_container {
   border-top: 1px solid #e8e8e8;
   text-align: right;
 }
-body .modal_container > .modal_footer_container > .modal_footer_wrapper > button + button {
+.cpts-modal-container > .cpts-modal-footer-container > .cpts-modal-footer-wrapper > button + button {
   margin-left: 8px;
+}
+.cpts-modal-container.cpts-confirm-modal > .cpts-modal-body,
+.cpts-modal-container.cpts-info-modal > .cpts-modal-body,
+.cpts-modal-container.cpts-error-modal > .cpts-modal-body,
+.cpts-modal-container.cpts-success-modal > .cpts-modal-body,
+.cpts-modal-container.cpts-warn-modal > .cpts-modal-body {
+  padding-bottom: 5px;
+}
+.cpts-modal-container.cpts-confirm-modal > .cpts-modal-body > .cpts-special-modal-title > .cpts-icon,
+.cpts-modal-container.cpts-info-modal > .cpts-modal-body > .cpts-special-modal-title > .cpts-icon,
+.cpts-modal-container.cpts-error-modal > .cpts-modal-body > .cpts-special-modal-title > .cpts-icon,
+.cpts-modal-container.cpts-success-modal > .cpts-modal-body > .cpts-special-modal-title > .cpts-icon,
+.cpts-modal-container.cpts-warn-modal > .cpts-modal-body > .cpts-special-modal-title > .cpts-icon {
+  float: left;
+  margin-right: 16px;
+}
+.cpts-modal-container.cpts-confirm-modal > .cpts-modal-body > .cpts-special-modal-title > span,
+.cpts-modal-container.cpts-info-modal > .cpts-modal-body > .cpts-special-modal-title > span,
+.cpts-modal-container.cpts-error-modal > .cpts-modal-body > .cpts-special-modal-title > span,
+.cpts-modal-container.cpts-success-modal > .cpts-modal-body > .cpts-special-modal-title > span,
+.cpts-modal-container.cpts-warn-modal > .cpts-modal-body > .cpts-special-modal-title > span {
+  display: block;
+  overflow: hidden;
+  color: rgba(0, 0, 0, 0.85);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.4;
+}
+.cpts-modal-container.cpts-confirm-modal > .cpts-modal-body > .cpts-special-modal_content,
+.cpts-modal-container.cpts-info-modal > .cpts-modal-body > .cpts-special-modal_content,
+.cpts-modal-container.cpts-error-modal > .cpts-modal-body > .cpts-special-modal_content,
+.cpts-modal-container.cpts-success-modal > .cpts-modal-body > .cpts-special-modal_content,
+.cpts-modal-container.cpts-warn-modal > .cpts-modal-body > .cpts-special-modal_content {
+  margin-top: 8px;
+  margin-left: 38px;
+}
+.cpts-modal-container.cpts-confirm-modal > .cpts-modal-footer-container,
+.cpts-modal-container.cpts-info-modal > .cpts-modal-footer-container,
+.cpts-modal-container.cpts-error-modal > .cpts-modal-footer-container,
+.cpts-modal-container.cpts-success-modal > .cpts-modal-footer-container,
+.cpts-modal-container.cpts-warn-modal > .cpts-modal-footer-container {
+  border-top: none;
 }

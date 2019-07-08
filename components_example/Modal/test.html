@@ -32,9 +32,14 @@
       });
 
     var modal = new Modal({
-      // title: 'title',
       mask: true,
       bodyContent: bodyContent,
+      // closable: true,
+      // keyboard: false,
+      okText: 'Yes',
+      // cancelText: null,
+      // mask: false,
+      title: 'Basic Modal',
       onOk: function () {
         console.log('onOk');
       },
@@ -49,6 +54,13 @@
     $('.showModal').on('click', function () {
       modal.visible = true;
     });
+
+    
+    Modal.error({
+      title: 'Do you Want to delete these items?',
+      content: 'Some descriptions'
+    })
+    
   </script>
 </body>
 </html>

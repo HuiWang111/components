@@ -26,6 +26,7 @@
     findKey,
     removeKey,
     removeKeys,
+    removeUndef,
     dateFormater,
     buildRandomString,
     toNumber,
@@ -79,11 +80,17 @@
   const getEllipsisSvg = (color) => (
     `<svg t="1562392468332" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2647" width="200" height="200"><path d="M147.01175 430.890704c-44.791136 0-81.108273 36.303834-81.108273 81.109296 0 44.778856 36.316114 81.108273 81.108273 81.108273 44.792159 0 81.109296-36.329417 81.109296-81.108273C228.121046 467.194538 191.804932 430.890704 147.01175 430.890704zM511.999488 430.890704c-44.791136 0-81.108273 36.303834-81.108273 81.109296 0 44.778856 36.316114 81.108273 81.108273 81.108273 44.792159 0 81.109296-36.329417 81.109296-81.108273C593.108784 467.194538 556.791647 430.890704 511.999488 430.890704zM876.987227 430.890704c-44.791136 0-81.108273 36.303834-81.108273 81.109296 0 44.778856 36.316114 81.108273 81.108273 81.108273s81.108273-36.329417 81.108273-81.108273C958.094476 467.194538 921.778362 430.890704 876.987227 430.890704z" p-id="2648" fill="${color}"></path></svg>`
   );
-  const getDoublePrevArrow = (color) => (
+  const getDoublePrevArrowSvg = (color) => (
     `<svg t="1562485665459" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5641" width="200" height="200"><path d="M903.964073 994.632678c-151.216693-151.232949-302.444224-302.449643-453.662724-453.668143-15.992267-16.006717-15.992267-41.934997 0-57.92907 151.216693-151.231143 302.44603-302.449643 453.662724-453.668143 14.988009-15.000653 39.315979-15.000653 54.302182 0 15.000653 14.988009 15.000653 39.303336 0 54.303988-142.77623 142.778036-285.55246 285.543429-428.31424 428.321465 142.763586 142.779842 285.53801 285.557878 428.31424 428.335915 15.000653 14.988009 15.000653 39.301529 0 54.303988-14.988009 15.000653-39.314173 15.000653-54.302182 0z" fill="${color}" p-id="5642"></path><path d="M520.149662 994.632678a11936898.605923 11936898.605923 0 0 1-453.675367-453.668143c-15.992267-15.992267-15.992267-41.934997 0-57.92907C217.703632 331.818771 368.918519 180.585822 520.149662 29.369128c14.986203-15.000653 39.301529-15.000653 54.302182 0 15.002459 15.002459 15.002459 39.303336 0 54.303989A13680304.839723 13680304.839723 0 0 1 146.123155 511.992775l428.328689 428.335915c15.002459 15.002459 15.002459 39.315979 0 54.303988-15.000653 15.000653-39.315979 15.000653-54.302182 0z" fill="${color}" p-id="5643"></path></svg>`
   );
-  const getDoubleNextArrow = (color) => (
+  const getDoubleNextArrowSvg = (color) => (
     `<svg t="1562486271213" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5770" width="200" height="200"><path d="M503.862981 994.632678c151.216693-151.2185 302.444224-302.435193 453.660918-453.668143 15.994073-15.992267 15.994073-41.934997 0-57.92907L503.862981 29.367322c-15.000653-15.000653-39.315979-15.000653-54.303988 0-15.002459 15.002459-15.002459 39.303336 0 54.303988 142.763586 142.778036 285.539816 285.556072 428.316046 428.321465-142.774424 142.779842-285.55246 285.557878-428.316046 428.335915-15.002459 15.002459-15.002459 39.315979 0 54.303988 14.988009 15.000653 39.303336 15.000653 54.303988 0z" fill="${color}" p-id="5771"></path><path d="M120.050377 994.632678c151.216693-151.232949 302.429774-302.449643 453.660917-453.668143 15.994073-16.006717 15.994073-41.934997 0-57.92907L120.050377 29.367322c-15.002459-15.000653-39.315979-15.000653-54.318438 0-14.988009 14.988009-14.988009 39.303336 0 54.303988 142.77623 142.778036 285.554266 285.543429 428.328689 428.321465-142.774424 142.779842-285.55246 285.557878-428.328689 428.335915-14.988009 14.988009-14.988009 39.301529 0 54.303988 15.002459 15.000653 39.315979 15.000653 54.318438 0z" fill="${color}" p-id="5772"></path></svg>`
+  );
+  const getFilledConfirmSvg = (color) => (
+    `<svg t="1562558077535" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6573" width="200" height="200"><path d="M512 64C264.8 64 64 264.8 64 512s200.8 448 448 448 448-200.8 448-448S759.2 64 512 64z m32 704h-64v-64h64v64z m11.2-203.2l-5.6 4.8c-3.2 2.4-5.6 8-5.6 12.8v58.4h-64v-58.4c0-24.8 11.2-48 29.6-63.2l5.6-4.8c56-44.8 83.2-68 83.2-108C598.4 358.4 560 320 512 320c-49.6 0-86.4 36.8-86.4 86.4h-64C361.6 322.4 428 256 512 256c83.2 0 150.4 67.2 150.4 150.4 0 72.8-49.6 112.8-107.2 158.4z" fill="${color}" p-id="6574"></path></svg>`
+  );
+  const getConfirmSvg = (color) => (
+    `<svg t="1562558170969" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6701" width="200" height="200"><path d="M512 128c212 0 384 172 384 384s-172 384-384 384-384-172-384-384 172-384 384-384m0-64C264.8 64 64 264.8 64 512s200.8 448 448 448 448-200.8 448-448S759.2 64 512 64z m32 704h-64v-64h64v64z m11.2-203.2l-5.6 4.8c-3.2 2.4-5.6 8-5.6 12.8v58.4h-64v-58.4c0-24.8 11.2-48 29.6-63.2l5.6-4.8c56-44.8 83.2-68 83.2-108C598.4 358.4 560 320 512 320c-49.6 0-86.4 36.8-86.4 86.4h-64C361.6 322.4 428 256 512 256c83.2 0 150.4 67.2 150.4 150.4 0 72.8-49.6 112.8-107.2 158.4z" fill="${color}" p-id="6702"></path></svg>`
   );
 
   const prevSvg = getPrevSvg();
@@ -101,11 +108,12 @@
    *    className: String,
    *    theme: 'wireframe' | 'filled',
    *    color: String,
-   *    spin: Boolen
+   *    spin: Boolen,
+   *    style: Object
    * }
    */
 
-  const iconTypes = ['warn', 'success', 'info', 'error', 'close', 'loading'];
+  const iconTypes = ['warn', 'success', 'info', 'error', 'close', 'loading', 'confirm'];
   const themes = ['outline', 'filled'];
 
   const ICON_CLASS = 'cpts-icon',
@@ -114,6 +122,7 @@
         SUCCESS_ICON_CLASS = 'cpts-success-icon',
         INFO_ICON_CLASS = 'cpts-info-icon',
         ERROR_ICON_CLASS = 'cpts-error-icon',
+        CONFIRM_ICON_CLASS = 'cpts-confirm-icon',
         CLOSE_ICON_CLASS = 'cpts-close-icon',
         SPIN_ICON_CLASS = 'cpts-spin-icon',
         LOADING_ICON_CLASS = 'cpts-loading-icon';
@@ -134,6 +143,7 @@
       case 'success':
       case 'info':
       case 'error':
+      case 'confirm':
       case 'close': defaultSize = 16;break;
     }
 
@@ -142,7 +152,8 @@
       className: '',
       color: '#cccccc',
       theme: 'outline',
-      spin: false
+      spin: false,
+      style: {}
     }
 
     this.options = Object.assign({}, defaultOptions, options);
@@ -156,7 +167,7 @@
 
   Object.assign(Icon.prototype, {
     render () {
-      const { type, options: { size, className, theme, color, spin } } = this;
+      const { type, options: { size, className, theme, color, spin, style } } = this;
       const isDefaultTheme = theme === 'outline';
 
       let typeClass, svg;
@@ -177,6 +188,10 @@
           typeClass = ERROR_ICON_CLASS;
           svg = isDefaultTheme ? getErrorSvg() : getErrorFilledSvg();
           break;
+        case 'confirm':
+          typeClass = CONFIRM_ICON_CLASS;
+          svg = isDefaultTheme ? getConfirmSvg('#faad14') : getFilledConfirmSvg('#faad14');
+          break;
         case 'close': 
           typeClass = CLOSE_ICON_CLASS;
           svg = getCloseSvg(color);
@@ -196,10 +211,10 @@
       );
 
       const icon = $.node('i', svg, klass, {
-        style: {
+        style: Object.assign({
           width: isNumber(size) ? `${size}px` : size,
           height: isNumber(size) ? `${size}px` : size
-        }
+        }, style)
       });
 
       return icon;
@@ -266,7 +281,10 @@
 
   Object.assign(Button.prototype, {
     render () {
-      const { $el, options: { type, shape, ghost, disabled, iconType, iconOptions, block, className, htmlType, size, text } } = this;
+      const { 
+        $el, 
+        options: { type, shape, ghost, disabled, iconType, iconOptions, block, className, htmlType, size, text }
+      } = this;
 
       let typeClass;
       switch (type) {
@@ -459,7 +477,10 @@
 
   Object.assign(Tabs.prototype, {
     render () {
-      const { $container, options: { tabPanes, renderPaneItem, defaultKey, type, editable } } = this;
+      const { 
+        $container,
+        options: { tabPanes, renderPaneItem, defaultKey, type, editable}
+      } = this;
 
       let tabsDOM = '', panesDOM = '', isDefaultFirst = false, isDefaultLast = false;
       const unRenderPanes = {}, isRenderedRecords = {}, panesCount = tabPanes.length;
@@ -755,7 +776,10 @@
      * @description static为true时不会改变pane和underline的translateX值
      */
     handleTabChange (current, index, isOnClose) {
-      const { unRenderPanes, isRenderedRecords, $underline, $paneWrap, $panes, containerWidth, options: { type, onChange, tabPanes } } = this;
+      const { 
+        unRenderPanes, isRenderedRecords, $underline, $paneWrap, $panes, containerWidth,
+        options: { type, onChange, tabPanes }
+      } = this;
       let { $tabItems } = this;
 
       if (isOnClose) {
@@ -1074,7 +1098,7 @@
       );
 
       const svg = getEllipsisSvg('#aaaaaa');
-      const hoverSvg = isPrev ? getDoublePrevArrow(PRIMARY_COLOR) : getDoubleNextArrow(PRIMARY_COLOR);
+      const hoverSvg = isPrev ? getDoublePrevArrowSvg(PRIMARY_COLOR) : getDoubleNextArrowSvg(PRIMARY_COLOR);
       const element = $.node('a', svg + hoverSvg);
 
       return $.node('li', element, klass, {
@@ -1087,7 +1111,10 @@
     },
 
     handlePaginationChange (current, index) {
-      const { totalPage, $container, $prev, $next, isPrevOriginal, isNextOriginal, currentMode, options: { onChange } } = this;
+      const { 
+        totalPage, $container, $prev, $next, isPrevOriginal, isNextOriginal, currentMode,
+        options: { onChange }
+      } = this;
       const $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
 
       if (currentMode === 'symmetrical') {
@@ -1227,7 +1254,7 @@
       const isPrev = type === 'prev';
       const page = isPrev ? 2 :  totalPage - 1;
       const $currentPage = this.filterByTitle($pagination, page);
-      const hoverSvg = isPrev ? getDoublePrevArrow(PRIMARY_COLOR) : getDoubleNextArrow(PRIMARY_COLOR);
+      const hoverSvg = isPrev ? getDoublePrevArrowSvg(PRIMARY_COLOR) : getDoubleNextArrowSvg(PRIMARY_COLOR);
 
       $currentPage.children('a').html(svg + hoverSvg);
 
@@ -1264,9 +1291,9 @@
    * Message
    */
   // className
-  const TEXTCLASS = 'message_text_box';
-  const CONTAINERCLASS = 'message_contaier';
-  const ICONCLASS = 'message_icon';
+  const TEXTCLASS = 'cpts-message-text-box';
+  const CONTAINERCLASS = 'cpts-message-contaier';
+  const ICONCLASS = 'cpts-message-icon';
 
   // default
   const defaultMessageOptions = {
@@ -1455,13 +1482,13 @@
   }
 
   // className
-  const GALLERY_BUTTON_NEXT_CLASS = 'gallery-swiper-button-next';
-  const GALLERY_BUTTON_PREV_CLASS = 'gallery-swiper-button-prev';
-  const GALLERY_PAGINATION_CLASS = 'gallery-swiper-pagination';
-  const GALLERY_SWIPER_CONTAINER_CLASS = 'gallery-swiper-container';
-  const GALLERY_WRAPPER_CLASS = 'gallery-wrapper';
-  const GALLERY_CONTAINER_CLASS = 'gallery-contaier';
-  const GALLERY_CONTAINER_CLASS_HIDDEN = 'gallery-contaier-invisible';
+  const GALLERY_BUTTON_NEXT_CLASS = 'cpts-gallery-swiper-button-next';
+  const GALLERY_BUTTON_PREV_CLASS = 'cpts-gallery-swiper-button-prev';
+  const GALLERY_PAGINATION_CLASS = 'cpts-gallery-swiper-pagination';
+  const GALLERY_SWIPER_CONTAINER_CLASS = 'cpts-gallery-swiper-container';
+  const GALLERY_WRAPPER_CLASS = 'cpts-gallery-wrapper';
+  const GALLERY_CONTAINER_CLASS = 'cpts-gallery-contaier';
+  const GALLERY_CONTAINER_CLASS_HIDDEN = 'cpts-gallery-contaier-invisible';
   
   /**
    *  @param options: {
@@ -1729,8 +1756,7 @@
     },
 
     style () {
-      const { $container } = this;
-      const { ratio, border } = this.options;
+      const { $container, options: { ratio, border } } = this;
 
       $container.addClass('flex');
 
@@ -1757,21 +1783,21 @@
    * }
    */
 
-  const ALERT_MESSAGE_CLASS = 'alert_message',
-        ALERT_DESCRIPTION_CLASS = 'alert_description',
-        ALERT_ICON_CLASS = 'alert_icon',
-        ALERT_CLOSE_ICON = 'alert_close_icon',
-        ALERT_WARN_CLASS = 'alert_warn',
-        ALERT_SUCCESS_CLASS = 'alert_success',
-        ALERT_ERROR_CLASS = 'alert_error',
-        ALERT_INFO_CLASS = 'alert_info',
-        ALERT_CONTAINER_CLASS = 'alert_container',
-        ALERT_WITH_ICON_CLASS = 'alert_with_icon',
-        ALERT_WITH_DESC_CLASS = 'alert_with_desc',
-        ALERT_WITH_CLOSE_CLASS = 'alert_with_close',
-        ALERT_INVISIBLE_CLASS = 'alert_invisible',
-        ALERT_SLIDEUP_CLASS = 'alert_slideUp',
-        ALERT_SLIDEDOWN_CLASS = 'alert_slideDown';
+  const ALERT_MESSAGE_CLASS = 'cpts-alert-message',
+        ALERT_DESCRIPTION_CLASS = 'cpts-alert-description',
+        ALERT_ICON_CLASS = 'cpts-alert-icon',
+        ALERT_CLOSE_ICON = 'cpts-alert-close-icon',
+        ALERT_WARN_CLASS = 'cpts-alert-warn',
+        ALERT_SUCCESS_CLASS = 'cpts-alert-success',
+        ALERT_ERROR_CLASS = 'cpts-alert-error',
+        ALERT_INFO_CLASS = 'cpts-alert-info',
+        ALERT_CONTAINER_CLASS = 'cpts-alert-container',
+        ALERT_WITH_ICON_CLASS = 'cpts-alert-with-icon',
+        ALERT_WITH_DESC_CLASS = 'cpts-alert-with-desc',
+        ALERT_WITH_CLOSE_CLASS = 'cpts-alert-with-close',
+        ALERT_INVISIBLE_CLASS = 'cpts-alert-invisible',
+        ALERT_SLIDEUP_CLASS = 'cpts-alert-slideUp',
+        ALERT_SLIDEDOWN_CLASS = 'cpts-alert-slideDown';
 
   function Alert(selector, type, options) {
     if (!['warn', 'success', 'error', 'info'].includes(type)) {
@@ -1801,8 +1827,10 @@
 
   Object.assign(Alert.prototype, {
     render () {
-      const { type, $container, options } = this;
-      const { closable, closeText, showIcon, description, message, defaultVisible, style } = options;
+      const { 
+        type, $container,
+        options: { closable, closeText, showIcon, description, message, defaultVisible, style }
+      } = this;
       const withDesc = isString(description) && description !== '';
       const iconOptions = {};
       if (withDesc) {
@@ -1899,258 +1927,331 @@
   });
 
   /**
-     * @param options = {
-     *   bodyStyle: Object,
-     *   defaultVisible: Boolen,
-     *   cancelText: String,
-     *   centered: Boolen,
-     *   centered: Boolen,
-     *   closable: Boolen,
-     *   destroyOnClose: Boolen,
-     *   footer: DOMElement,
-     *   keyboard: Boolen,
-     *   mask: Boolen,
-     *   maskStyle: Object,
-     *   okText: String,
-     *   okType: String,
-     *   okButtonProps: Object,
-     *   cancelButtonProps: Object,
-     *   style: Object,
-     *   title: String,
-     *   wrapClassName: String,
-     *   zIndex: Number,
-     *   bodyContent: String,
-     *   afterClose: Function,
-     *   onCancel: Function,
-     *   onOk: Function
-     * }
-     */
+   * @param options = {
+   *   bodyStyle: Object,
+   *   defaultVisible: Boolen,
+   *   cancelText: String,
+   *   centered: Boolen,
+   *   centered: Boolen,
+   *   closable: Boolen,
+   *   footer: DOMElement,
+   *   keyboard: Boolen,
+   *   mask: Boolen,
+   *   maskStyle: Object,
+   *   okText: String,
+   *   okType: String,
+   *   okButtonProps: Object,
+   *   cancelButtonProps: Object,
+   *   style: Object,
+   *   title: String,
+   *   wrapClassName: String,
+   *   zIndex: Number,
+   *   bodyContent: String,
+   *   afterClose: Function,
+   *   onCancel: Function,
+   *   onOk: Function
+   * }
+   */
 
-    const MODAL_FOOTER_CONTAINER_CLASS = 'modal_footer_container',
-          MODAL_FOOTER_WRAP_CLASS = 'modal_footer_wrapper',
-          MODAL_FOOTER_OK_BTN_CLASS = 'modal_footer_ok_button',
-          MODAL_FOOTER_CANCEL_BTN_CLASS = 'modal_footer_cancel_button',
+  const MODAL_FOOTER_CONTAINER_CLASS = 'cpts-modal-footer-container',
+        MODAL_FOOTER_WRAP_CLASS = 'cpts-modal-footer-wrapper',
+        MODAL_FOOTER_OK_BTN_CLASS = 'cpts-modal-footer-ok-button',
+        MODAL_FOOTER_CANCEL_BTN_CLASS = 'cpts-modal-footer-cancel-button',
 
-          MODAL_HEADER_CONTAINER_CLASS = 'modal_header_container',
-          MODAL_HEADER_WRAP_CLASS = 'modal_header_wrapper',
+        MODAL_HEADER_CONTAINER_CLASS = 'cpts-modal-header-container',
+        MODAL_HEADER_WRAP_CLASS = 'cpts-modal-header-wrapper',
 
-          MODAL_CLOSE_ICON_CLASS = 'modal_close_icon',
+        MODAL_CLOSE_ICON_CLASS = 'cpts-modal-close-icon',
 
-          MODAL_BODY_CLASS = 'modal_body',
+        MODAL_BODY_CLASS = 'cpts-modal-body',
 
-          MODAL_CONTAINER_CLASS = 'modal_container',
-          MODAL_CONTAINER_CENTERED_CLASS = 'modal_centered',
-          MODAL_CONTAINER_INVISIBLE_CLASS = 'modal_container_invisible',
-          
-          MODAL_MASK_CLASS = 'modal_mask',
-          MODAL_MASK_INVISIBLE_CLASS = 'modal_mask_invisible';
-
-    function Modal(options) {
-      const defaultOptions = {
-        bodyStyle: {},
-        defaultVisible: false,
-        cancelText: '取消',
-        centered: false,
-        closable: false,
-        destroyOnClose: false, // 未实现
-        keyboard: true, // 未实现
-        mask: true,
-        maskStyle: {},
-        okText: '确认',
-        okType: 'primary', // 未实现
-        okButtonProps: {},
-        cancelButtonProps: {},
-        style: {},
-        title: '',
-        wrapClassName: '',
-        zIndex: 1000,
-        bodyContent: '',
-        onCancel: null,
-        afterClose: null,
-        onOk: null
-      };
-
-      // 默认 footer
-      const cancelText = isString(options.cancelText) && options.cancelText !== '' ? options.cancelText : defaultOptions.cancelText;
-      const cancelButtonProps = isObject(options.cancelButtonProps) ? options.cancelButtonProps : defaultOptions.cancelButtonProps;
-      const okText = isString(options.okText) && options.okText !== '' ? options.okText : defaultOptions.okText;
-      const okButtonProps = isObject(options.okButtonProps) ? options.okButtonProps : defaultOptions.okButtonProps;
-
-      const cancelBtn = $.node('button', cancelText, appendClass(DEFAULT_BTN_CLASS, MODAL_FOOTER_CANCEL_BTN_CLASS));
-      const okBtn = $.node('button', okText, appendClass(DEFAULT_BTN_CLASS, PRIMARY_BTN_CLASS, MODAL_FOOTER_OK_BTN_CLASS));
-
-      defaultOptions.footer = $.node('div', cancelBtn + okBtn, MODAL_FOOTER_WRAP_CLASS);
-
-      this.options = Object.assign({}, defaultOptions, options);
-      this.super();
-    }
-
-    $.inherit(Component, Modal);
-    win.Modal = Modal;
-
-    Object.assign(Modal.prototype, {
-      render () {
-        const { title, closable, bodyContent, footer, bodyStyle, centered, style, wrapClassName, zIndex, defaultVisible } = this.options;
+        MODAL_CONTAINER_CLASS = 'cpts-modal-container',
+        MODAL_CONTAINER_CENTERED_CLASS = 'cpts-modal-centered',
+        MODAL_CONTAINER_INVISIBLE_CLASS = 'cpts-modal-container-invisible',
         
-        let titleDOM = '';
-        if (isString(title) && title !== '') {
-          const titleWrap = $.node('div', title, MODAL_HEADER_WRAP_CLASS);
-          titleDOM = $.node('div', titleWrap, MODAL_HEADER_CONTAINER_CLASS);
-        }
+        MODAL_MASK_CLASS = 'cpts-modal-mask',
+        MODAL_MASK_INVISIBLE_CLASS = 'cpts-modal-mask-invisible';
 
-        let closeDOM = '';
-        if (closable) {
-          const closeIcon = (new Icon('close')).html;
-          closeDOM = $.node('div', closeIcon, MODAL_CLOSE_ICON_CLASS);
-          this.isModalClosable = true;
-        }
+  function Modal(options) {
+    removeUndef(options);
 
-        const bodyContentDOM = $.node('div', bodyContent, MODAL_BODY_CLASS, {
-          style: isObject(bodyStyle) ? bodyStyle : {}
-        });
+    // 默认 footer
+    const cancelText = isUndefined(options.cancelText) ? '取消': options.cancelText;
+    const cancelButtonProps = {};
+    const cancelButtonClass = appendClass(
+      DEFAULT_BTN_CLASS,
+      MODAL_FOOTER_CANCEL_BTN_CLASS
+    );
 
-        let footerDOM = '';
-        if (isString(footer) && footer !== '') {
-          footerDOM = $.node('div', footer, MODAL_FOOTER_CONTAINER_CLASS);
-        }
+    const okText = isUndefined(options.okText) ? '确认' : options.okText;
+    const okButtonProps = {};
+    const okButtonClass = appendClass(
+      DEFAULT_BTN_CLASS,
+      PRIMARY_BTN_CLASS,
+      MODAL_FOOTER_OK_BTN_CLASS
+    );
+    
+    const cancelBtn = isNull(cancelText) ? '' : $.node('button', cancelText, cancelButtonClass, cancelButtonProps);
+    const okBtn = isNull(okText) ? '' : $.node('button', okText, okButtonClass, okButtonProps);
 
-        const RANDOM_CLASS = getRandomClassName();
-        this.RANDOM_CLASS = RANDOM_CLASS;
-        const klass = appendClass(
-          MODAL_CONTAINER_CLASS, 
-          centered ? MODAL_CONTAINER_CENTERED_CLASS : '',
-          isString(wrapClassName) ? wrapClassName : '',
-          RANDOM_CLASS,
-          defaultVisible ? '' : MODAL_CONTAINER_INVISIBLE_CLASS
-        );
-        
-        const html = $.node('div', titleDOM + closeDOM + bodyContentDOM + footerDOM, klass, {
-          style: Object.assign(isObject(style) ? style : {}, { zIndex })
-        });
+    const defaultOptions = {
+      bodyStyle: {},
+      defaultVisible: false,
+      cancelText,
+      centered: false,
+      closable: false,
+      keyboard: true, // 未实现
+      mask: true,
+      maskStyle: {},
+      okText,
+      okType: 'primary', // 未实现
+      okButtonProps,
+      cancelButtonProps,
+      style: {},
+      title: '',
+      wrapClassName: '',
+      zIndex: 1000,
+      bodyContent: '',
+      footer: $.node('div', cancelBtn + okBtn, MODAL_FOOTER_WRAP_CLASS),
+      onCancel: null,
+      afterClose: null,
+      onOk: null
+    };
 
-        return [{
-          html: this.handleMask(html),
-          container: 'body',
-          type: 'append'
-        }];
-      },
+    this.options = Object.assign({}, defaultOptions, options);
+    this.super();
+  }
 
-      componentDidMount () {
-        const { isIncludeMask, isModalClosable } = this;
+  $.inherit(Component, Modal);
+  win.Modal = Modal;
 
-        if (isIncludeMask) {
-          this.$mask = $(toSelector(`${this.RANDOM_CLASS}_mask`));
-        }
-        isModalClosable && ( this.$modalCloseBtn = this.$container.find(toSelector(MODAL_CLOSE_ICON_CLASS)) );
-        this.$container = $(toSelector(this.RANDOM_CLASS));
-        this.$cancelBtn = this.$container.find(toSelector(MODAL_FOOTER_CANCEL_BTN_CLASS));
-        this.$okBtn = this.$container.find(toSelector(MODAL_FOOTER_OK_BTN_CLASS));
-      },
+  Object.assign(Modal.prototype, {
+    render () {
+      const { 
+        title, closable, bodyContent, footer, bodyStyle, centered, style, wrapClassName, zIndex, defaultVisible
+      } = this.options;
 
-      bindEvents () {
-        const { 
-          isModalClosable, $modalCloseBtn, $cancelBtn, $okBtn,
-          options: { afterClose, onCancel, onOk } 
-        } = this;
+      let closeDOM = '';
+      if (closable) {
+        const closeIcon = (new Icon('close', { size: 20 })).html;
+        closeDOM = $.node('div', closeIcon, MODAL_CLOSE_ICON_CLASS);
+        this.isModalClosable = true;
+      }
+      
+      let titleDOM = '';
+      if (isString(title) && title !== '') {
+        const titleWrap = $.node('div', title + closeDOM, MODAL_HEADER_WRAP_CLASS);
+        titleDOM = $.node('div', titleWrap, MODAL_HEADER_CONTAINER_CLASS);
+      }
 
-        const __this__ = this;
+      const bodyContentDOM = $.node('div', bodyContent, MODAL_BODY_CLASS, {
+        style: isObject(bodyStyle) ? bodyStyle : {}
+      });
 
-        new Observer(this, 'visible', {
-          set (newValue) {
-            if (newValue === true) {
-              __this__.show();
-            } else {
-              __this__.hide();
-            }
+      let footerDOM = '';
+      if (isString(footer) && footer !== '') {
+        footerDOM = $.node('div', footer, MODAL_FOOTER_CONTAINER_CLASS);
+      }
+
+      const RANDOM_CLASS = getRandomClassName();
+      this.RANDOM_CLASS = RANDOM_CLASS;
+      const klass = appendClass(
+        MODAL_CONTAINER_CLASS, 
+        centered ? MODAL_CONTAINER_CENTERED_CLASS : '',
+        isString(wrapClassName) ? wrapClassName : '',
+        RANDOM_CLASS,
+        defaultVisible ? '' : MODAL_CONTAINER_INVISIBLE_CLASS
+      );
+      
+      const html = $.node('div', titleDOM + bodyContentDOM + footerDOM, klass, {
+        style: Object.assign(isObject(style) ? style : {}, { zIndex })
+      });
+
+      return [{
+        html: this.handleMask(html),
+        container: 'body',
+        type: 'append'
+      }];
+    },
+
+    componentDidMount () {
+      const { isIncludeMask, isModalClosable } = this;
+
+      if (isIncludeMask) {
+        this.$mask = $(toSelector(`${this.RANDOM_CLASS}_mask`));
+      }
+      this.$container = $(toSelector(this.RANDOM_CLASS));
+      this.$cancelBtn = this.$container.find(toSelector(MODAL_FOOTER_CANCEL_BTN_CLASS));
+      this.$okBtn = this.$container.find(toSelector(MODAL_FOOTER_OK_BTN_CLASS));
+
+      isModalClosable && ( this.$modalCloseBtn = this.$container.find(toSelector(MODAL_CLOSE_ICON_CLASS)) );
+    },
+
+    bindEvents () {
+      const { 
+        isModalClosable, $modalCloseBtn, $cancelBtn, $okBtn,
+        options: { afterClose, onCancel, onOk, keyboard }
+      } = this;
+
+      const __this__ = this;
+
+      new Observer(this, 'visible', {
+        set (newValue) {
+          if (newValue === true) {
+            __this__.show();
+          } else {
+            __this__.hide();
           }
-        });
+        }
+      });
 
-        const closeModalHandler = function () {
+      const closeModalHandler = function (e) {
+        const { key } = e;
+        
+        if (isUndefined(key) || (key.toLowerCase() === 'escape' && __this__.visible === true)) {
           __this__.visible = false;
 
           const $this = $(this);
           if ($this.hasClass(MODAL_FOOTER_CANCEL_BTN_CLASS)) {
             isFunction(onCancel) && onCancel();
-          }
-          if ($this.hasClass(MODAL_FOOTER_OK_BTN_CLASS)) {
+          } else if ($this.hasClass(MODAL_FOOTER_OK_BTN_CLASS)) {
             isFunction(onOk) && onOk();
           }
 
           isFunction(afterClose) && afterClose();
         }
-
-        if (isModalClosable) {
-          $modalCloseBtn.on('click', closeModalHandler);
-        }
-
-        $cancelBtn.on('click', closeModalHandler);
-        $okBtn.on('click', closeModalHandler);
-
-      },
-
-      show () {
-        const { 
-          isIncludeMask, $mask, $container, $okBtn, visible,
-          options: { defaultVisible }
-        } = this;
-
-        if (visible === false || defaultVisible === false) {
-          $okBtn[0].focus();
-          $container.removeClass(MODAL_CONTAINER_INVISIBLE_CLASS);
-          isIncludeMask && $mask.removeClass(MODAL_MASK_INVISIBLE_CLASS);
-        }
-      },
-
-      hide() {
-        const { 
-          isIncludeMask, $mask, $container, visible,
-          options: { defaultVisible }
-        } = this;
-
-        if (visible === true || defaultVisible === true) {
-          $container.addClass(MODAL_CONTAINER_INVISIBLE_CLASS);
-          isIncludeMask && $mask.addClass(MODAL_MASK_INVISIBLE_CLASS);
-        }
-      },
-
-      handleMask (dom) {
-        const { maskStyle, mask, centered, defaultVisible } = this.options;
-
-        if (!mask) return dom;
-
-        this.isIncludeMask = true;
-
-        const klass = appendClass(
-          MODAL_MASK_CLASS,
-          `${this.RANDOM_CLASS}_mask`,
-          centered ? MODAL_CONTAINER_CENTERED_CLASS : '',
-          defaultVisible ? '' : MODAL_MASK_INVISIBLE_CLASS
-        );
-        return $.node('div', dom, klass, {
-          style: isObject(maskStyle) ? maskStyle : {}
-        });
       }
-    });
 
-    const MODAL_CONFIRM_BODY_CLASS = 'modal_confirm_body',
-          MODAL_CONFIRM_BTNS_CLASS = 'modal_confirm_buttons',
-          MODAL_CONFIRM_TITLE_CLASS = 'modal_confirm_title',
-          MODAL_CONFIRM_CONTENT_CLASS = 'modal_confirm_content';
-
-    Modal.error = function (options) {
-      const defaultOptions = {
-        title: '',
-        content: '',
-        okText: '确定',
-        cancelText: '取消',
-        centered: false,
-        icon: ( new Icon('error', { size:  22 }) ).html,
-        mask: true,
-        width: 500,
-        zIndex: 1000,
-        onOk: null,
-        onCancel: null
+      if (isModalClosable) {
+        $modalCloseBtn.on('click', closeModalHandler);
       }
+      
+      if (keyboard) {
+        $(document).keyup(closeModalHandler);
+      }
+
+      $cancelBtn.on('click', closeModalHandler);
+      $okBtn.on('click', closeModalHandler);
+    },
+
+    show () {
+      const { 
+        isIncludeMask, $mask, $container, $okBtn, visible,
+        options: { defaultVisible }
+      } = this;
+
+      if (visible === false || defaultVisible === false) {
+        $okBtn[0].focus();
+        $container.removeClass(MODAL_CONTAINER_INVISIBLE_CLASS);
+        isIncludeMask && $mask.removeClass(MODAL_MASK_INVISIBLE_CLASS);
+      }
+    },
+
+    hide() {
+      const { 
+        isIncludeMask, $mask, $container, visible,
+        options: { defaultVisible }
+      } = this;
+
+      if (visible === true || defaultVisible === true) {
+        $container.addClass(MODAL_CONTAINER_INVISIBLE_CLASS);
+        isIncludeMask && $mask.addClass(MODAL_MASK_INVISIBLE_CLASS);
+      }
+    },
+
+    handleMask (dom) {
+      const { maskStyle, mask, centered, defaultVisible } = this.options;
+
+      if (!mask) return dom;
+
+      this.isIncludeMask = true;
+
+      const klass = appendClass(
+        MODAL_MASK_CLASS,
+        `${this.RANDOM_CLASS}_mask`,
+        centered ? MODAL_CONTAINER_CENTERED_CLASS : '',
+        defaultVisible ? '' : MODAL_MASK_INVISIBLE_CLASS
+      );
+      return $.node('div', dom, klass, {
+        style: isObject(maskStyle) ? maskStyle : {}
+      });
     }
+  });
+
+  /**
+   * base for Modal.info, Modal.warn, Modal.error, Modal.success, Modal.confirm
+   */
+  const MODAL_CONFIRM_CONTAINER_CLASS = 'cpts-confirm-modal',
+        MODAL_INFO_CONTAINER_CLASS = 'cpts-info-modal',
+        MODAL_ERROR_CONTAINER_CLASS = 'cpts-error-modal',
+        MODAL_SUCCESS_CONTAINER_CLASS = 'cpts-success-modal',
+        MODAL_WARN_CONTAINER_CLASS = 'cpts-warn-modal',
+        
+        SPECIAL_MODAL_TITLE = 'cpts-special-modal-title',
+        SPECIAL_MODAL_CONTENT = 'cpts-special-modal_content';
+
+  const MODAL_TYPE_MAP = ['info', 'warn', 'error', 'success', 'confirm'];
+  const MODAL_COMMON_TYPE_MAP = ['info', 'warn', 'error', 'success'];
+
+  Modal.method = function(type, options) {
+    if (!MODAL_TYPE_MAP.includes(type)) {
+      throw new Error(`${type} is not a correct Modal type`);
+    }
+
+    const { title, content, centered, mask, zIndex, onCancel, onOk } = options;
+    let { okText, cancelText } = options;
+
+    // modal title
+    const icon = new Icon(type, { size: 22 }).html;
+    const titleDOM = $.node('div', icon + $.node('span', title), SPECIAL_MODAL_TITLE);
+
+    // modal content
+    const contentDOM = $.node('div', content, SPECIAL_MODAL_CONTENT);
+
+    // modal footer
+    if (MODAL_COMMON_TYPE_MAP.includes(type)) {
+      cancelText = null;
+      !isString(okText) && (okText = '知道了');
+    }
+
+    let wrapClassName;
+    switch (type) {
+      case 'info':
+        wrapClassName = MODAL_INFO_CONTAINER_CLASS; break;
+      case 'warn':
+        wrapClassName = MODAL_WARN_CONTAINER_CLASS; break;
+      case 'error':
+        wrapClassName = MODAL_ERROR_CONTAINER_CLASS; break;
+      case 'success':
+        wrapClassName = MODAL_SUCCESS_CONTAINER_CLASS; break;
+      case 'confirm':
+        wrapClassName = MODAL_CONFIRM_CONTAINER_CLASS; break;
+    }
+
+    return new Modal({
+      title: null,
+      wrapClassName,
+      defaultVisible: true,
+      okText,
+      cancelText,
+      bodyContent: titleDOM + contentDOM,
+      centered,
+      mask,
+      zIndex,
+      onCancel,
+      onOk,
+      closable: false,
+      keyboard: false,
+    });
+  };
+
+  /**
+   * Modal.info, Modal.warn, Modal.error, Modal.success, Modal.confirm
+   */
+  MODAL_TYPE_MAP.forEach((type) => {
+    Modal[type] = function (options) {
+      return Modal.method(type, options);
+    }
+  });
 
 }(window, window.jQuery, window.Swiper, window.Component, window.Util)

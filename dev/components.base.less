@@ -491,7 +491,7 @@ html, body {
 /*
  * Message
  */
-.message_contaier {
+.cpts-message-contaier {
   padding: 8px 10px;
   background-color: #fff;
   font-size: 14px;
@@ -508,13 +508,13 @@ html, body {
     opacity: 1;
   }
 
-  & > .message_text_box {
+  & > .cpts-message-text-box {
     color: rgba(0,0,0,0.65);
     vertical-align: top;
     line-height: 1.4;
   }
 
-  & > .message_icon {
+  & > .cpts-message-icon {
     margin-right: 8px;
   }
 }
@@ -522,25 +522,25 @@ html, body {
 /*
  * Gallery
  */
-.gallery-contaier {
+.cpts-gallery-contaier {
   width: 100%;
   height: 100%;
   position: fixed;
   left: 0;
   top: 0;
 
-  &.gallery-contaier-invisible {
+  &.cpts-gallery-contaier-invisible {
     display: none;
   }
 
-  & > .gallery-wrapper {
+  & > .cpts-gallery-wrapper {
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
     z-index: 1;
 
-    & > .gallery-swiper-container {
+    & > .cpts-gallery-swiper-container {
       width: 100%;
       height: 100%;
       margin: 0 auto;
@@ -588,85 +588,85 @@ html, body {
 /*
  * Alert
  */
-.alert_container {
+.cpts-alert-container {
   padding: 8px 15px;
   box-sizing: border-box;
   position: relative;
   overflow: hidden;
   transform: scaleY(1);
 
-  & > .alert_icon {
+  & > .cpts-alert-icon {
     position: absolute;
     top: 11.5px;
     left: 16px;
   }
 
-  & > .alert_close_icon {
+  & > .cpts-alert-close-icon {
     position: absolute;
     top: 10px;
     right: 12px;
   }
 
-  & > .alert_message {
+  & > .cpts-alert-message {
     color: rgba(0,0,0,0.65);
     line-height: 1.5;
     border-radius: @base-border-radius;
     font-size: 14px;
   }
 
-  &.alert_with_icon {
+  &.cpts-alert-with-icon {
     padding-left: 37px;
   }
-  &.alert_with_desc {
+  &.cpts-alert-with-desc {
     padding-top: 15px;
     padding-bottom: 15px;
 
-    & > .alert_icon {
+    & > .cpts-alert-icon {
       top: 16px;
       left: 24px;
     }
 
-    & > .alert_message {
+    & > .cpts-alert-message {
       margin-bottom: 4px;
       color: rgba(0,0,0,0.85);
       font-size: 16px;
     }
 
-    & > .alert_description {
+    & > .cpts-alert-description {
       font-size: 14px;
       line-height: 22px;
       color: rgba(0,0,0,0.65);
     }
   }
-  &.alert_with_icon.alert_with_desc {
+  &.cpts-alert-with-icon.cpts-alert-with-desc {
     padding-left: 64px;
   }
-  &.alert_with_close {
+  &.cpts-alert-with-close {
     padding-right: 30px;
   }
 
-  &.alert_warn {
+  &.cpts-alert-warn {
     background-color: @alert-warn-bg;
     border: 1px solid @alert-warn-border;
   }
-  &.alert_success {
+  &.cpts-alert-success {
     background-color: @alert-success-bg;
     border: 1px solid @alert-success-border;
   }
-  &.alert_info {
+  &.cpts-alert-info {
     background-color: @alert-info-bg;
     border: 1px solid @alert-info-border;
   }
-  &.alert_error {
+  &.cpts-alert-error {
     background-color: @alert-error-bg;
     border: 1px solid @alert-error-border;
   }
 
-  &.alert_slideUp {
+  &.cpts-alert-slideUp {
     animation: alert_slideUp 200ms linear;
     animation-fill-mode: forwards;
   }
-  &.alert_slideDown {
+  &.cpts-alert-slideDown {
     animation: alert_slideDown 200ms linear;
     animation-fill-mode: forwards;
   }
@@ -694,11 +694,11 @@ html, body {
  * Modal
  */
 body {
-  &.modal_centered {
+  &.cpts-modal-centered {
     text-align: center;
   }
 
-  & > .modal_mask {
+  & > .cpts-modal-mask {
     width: 100%;
     height: 100%;
     position: fixed;
@@ -706,66 +706,112 @@ body {
     top: 0;
     background-color: rgba(0, 0, 0, .65);
 
-    &.modal_mask_invisible {
+    &.cpts-modal-mask-invisible {
       display: none;
     }
 
-    &.modal_centered {
+    &.cpts-modal-centered {
       text-align: center;
     }
   }
+}
 
-  & .modal_container {
-    width: 520px;
+.cpts-modal-container {
+  width: 520px;
+  box-sizing: border-box;
+  position: relative;
+  top: 100px;
+  margin: 0 auto;
+  background-color: #fff;
+  border-radius: @base-border-radius;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+
+  &.cpts-modal-centered {
+    top: 0;
+    display: inline-block;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  &.cpts-modal-container-invisible {
+    display: none;
+  }
+
+  & > .cpts-modal-header-container {
     box-sizing: border-box;
-    position: relative;
-    top: 100px;
-    margin: 0 auto;
-    background-color: #fff;
-    border-radius: @base-border-radius;
+    padding: 16px 24px;
+    border-radius: @base-border-radius @base-border-radius 0 0;
+    border-bottom: 1px solid @base-border-color;
+    font-size: 16px;
+    color: rgba(0, 0, 0, .85);
+    font-weight: 500;
+    line-height: 22px;
+    word-wrap: break-word;
 
-    &.modal_centered {
-      top: 0;
-      display: inline-block;
-      text-align: left;
-      vertical-align: middle;
-    }
-
-    &.modal_container_invisible {
-      display: none;
-    }
-
-    & > .modal_header_container {
-      box-sizing: border-box;
-      padding: 16px 24px;
-      border-radius: @base-border-radius @base-border-radius 0 0;
-      border: 1px solid @base-border-color;
-      font-size: 16px;
-      color: rgba(0, 0, 0, .85);
+    & > .cpts-modal-header-wrapper {
+      color: rgba(0,0,0,0.85);
       font-weight: 500;
+      font-size: 16px;
       line-height: 22px;
       word-wrap: break-word;
-      font-weight: 500;
-    }
 
-    & > .modal_body {
-      padding: 24px;
-      font-size: 14px;
-      line-height: 1.5;
-      word-wrap: break-word;
-      color: rgba(0, 0, 0, .65);
-    }
-
-    & > .modal_footer_container {
-      padding: 10px 16px;
-      border-radius: 0 0 @base-border-radius @base-border-radius;
-      border-top: 1px solid @base-border-color;
-      text-align: right;
-
-      & > .modal_footer_wrapper > button + button {
-        margin-left: 8px;
+      & > .cpts-modal-close-icon {
+        float: right;
       }
     }
   }
 
+  & > .cpts-modal-body {
+    padding: 24px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+    color: rgba(0, 0, 0, .65);
+  }
+
+  & > .cpts-modal-footer-container {
+    padding: 10px 16px;
+    border-radius: 0 0 @base-border-radius @base-border-radius;
+    border-top: 1px solid @base-border-color;
+    text-align: right;
+
+    & > .cpts-modal-footer-wrapper > button + button {
+      margin-left: 8px;
+    }
+  }
+
+  &.cpts-confirm-modal,
+  &.cpts-info-modal,
+  &.cpts-error-modal,
+  &.cpts-success-modal,
+  &.cpts-warn-modal {
+    & > .cpts-modal-body {
+      padding-bottom: 5px;
+
+      & > .cpts-special-modal-title {
+        & > .cpts-icon {
+          float: left;
+          margin-right: 16px;
+        }
+      
+        & > span {
+          display: block;
+          overflow: hidden;
+          color: rgba(0, 0, 0, .85);
+          font-weight: 500;
+          font-size: 16px;
+          line-height: 1.4;
+        }
+      }
+
+      & > .cpts-special-modal_content {
+        margin-top: 8px;
+        margin-left: 38px;
+      }
+    }
+
+    & > .cpts-modal-footer-container {
+      border-top: none;
+    }
+  }
 }

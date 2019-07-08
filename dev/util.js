@@ -370,7 +370,6 @@
   });
   
   Object.assign(Component.prototype, {
-    constructor: Component,
     render () {
       return [];
     },
@@ -649,9 +648,45 @@
     return result;
   }
 
-  const toString = Object.prototype.toString;
+  const _toString = Object.prototype.toString;
   function getTag(value) {
-    return toString.call(value);
+    return _toString.call(value);
+  }
+
+  /**
+   * Date
+   */
+  function baseNow () {
+    return new Date();
+  }
+
+  function baseHandleYear(year) {
+    year = toNumber(year);
+    const currentYear = baseNow().getFullYear();
+
+    if (year === false) return currentYear;
+    
+    if (year < 1970 || year > currentYear)
+      throw new Error(`year:${year} is not in range`);
+
+    return year;
+  }
+
+  function baseHandleMonth(month) {
+    month = toNumber(month);
+    const currentMonth = baseNow().getMonth() + 1;
+    
+    if (month === false) return currentMonth;
+
+    if (month < 1 || month > 12)
+      throw new Error(`month:${month} is not in range`);
+
+    return month;
+  }
+
+  function baseDateFull(number) {
+    if (!isNumber(number)) throw new Error(number + ' is not a number');
+    return number < 10 ? ('0' + number) : number;
   }
 
   /* ======== Util全局对象中的方法 ======== */
@@ -680,6 +715,8 @@
       return !0;
     } else if (isNumber(value)) {
       return value === 0;
+    } else if (isBoolen(value)) {
+      return !value;
     }
   }
   function isUndefined(value) {
@@ -903,31 +940,31 @@
 
   /**
    * @description 生成规定格式的日期
-   * @param { * } date 时间戳
+   * @param { * } dateStamp 时间戳
    * @param { String } format 格式
    * @returns 日期字符串
    */
-  function dateFormater(date, format = 'yyyy/mm/dd hh:mm:ss') {
-    const full = (number) => {
-      if (!isNumeric(number)) throw new Error(number + ' is not a number');
-      number = parseInt(number);
-      return number < 10 ? ('0' + number) : number;
-    }
-
-    if ( !isNumeric(date) ) {
-      date = new Date();
+  function dateFormater(dateStamp, format = 'yyyy/mm/dd hh:mm:ss') {
+    let date;
+    if (isNil(dateStamp)) {
+      date = baseNow();
     } else {
-      date = parseInt(date);
-      if (String(date).length === 13) {
-        date = new Date(date);
+      if (!isNumber(dateStamp))
+        throw new Error(`${dateStamp} is not a number`);
+
+      if (String(dateStamp).length === 13) {
+        date = new Date(dateStamp);
       } else {
-        date = new Date(date * 1000);
+        date = new Date(dateStamp * 1000);
       }
     }
 
-    const year = date.getFullYear(), month = full(date.getMonth() + 1), day = full(date.getDate()),
-
-    hour = full(date.getHours()), minute = full(date.getMinutes()), second = full(date.getSeconds());
+    const year = date.getFullYear(),
+          month = baseDateFull(date.getMonth() + 1),
+          day = baseDateFull(date.getDate()),
+          hour = baseDateFull(date.getHours()),
+          minute = baseDateFull(date.getMinutes()),
+          second = baseDateFull(date.getSeconds());
 
     let result;
     switch(format) {
@@ -962,17 +999,8 @@
    * @param { Number | String } month 月份
    */
   function getMonthData(year, month) {
-    year = toNumber(year);
-    month = toNumber(month);
-    
-    const today = new Date();
-    if (year === false || month === false) {
-      year === false && (year = today.getFullYear());
-      month === false && (month = today.getMonth() + 1);
-    }
-
-    if (year < 1970 || year > today.getFullYear()) return;
-    if (month < 1 || month > 12) return;
+    year = baseHandleYear(year);
+    month = baseHandleMonth(month);
 
     const days = [];
 
@@ -1025,6 +1053,7 @@
         forbid: isForbid ? 1 : 0
       });
     }
+
     return days;
   }
 
@@ -1409,6 +1438,17 @@
     return object[len - 1];
   }
 
+  function removeUndef(object) {
+    if (!isObjectLike(object))
+      throw new Error(`${object} is not a object`);
+
+    forInOwn(object, (value, key, self) => {
+      if (isUndefined(value)) {
+        delete self[key];
+      }
+    });
+  }
+
   /**
    * @description ES5版Set集合
    */
@@ -1432,7 +1472,7 @@
 
   }
 
-  SetMock.prototype = { //'size,nextKey'
+  SetMock.prototype = {
     constructor: SetMock,
 
     has (item) {
@@ -1656,6 +1696,7 @@
     forInOwn,
     clone,
     cloneDeep,
+    removeUndef,
 
     // String方法
     toCamelCase,
@@ -1893,6 +1934,7 @@
 
     closingNode: function (tagName, klass, attr) {
       klass = klass ? ` class="${klass}"` : '';
+      
       const attributes = handleAttr(attr);
 
       return '<' + tagName + klass + attributes + '/>';
