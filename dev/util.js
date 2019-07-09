@@ -7,7 +7,11 @@
  * ES8可用方法：Object.entries, Object.values
  */
 
-;!function(global, $) {
+;!function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(global, global.jQuery) :
+  typeof define === 'function' && define.amd ? define([global, global.jQuery], factory) :
+  ( global.Util = factory(global, global.jQuery) );
+}(this, function(global, $) {
   
   const emptyArray = [];
   if (!emptyArray.map) {
@@ -318,6 +322,7 @@
   Object.defineProperty(Component.prototype, 'mount', {
     value: function (doms) {
       if (!doms || !isLength(doms.length) || doms.length < 1) return;
+      removeUndef(doms);
     
       doms.forEach((dom) => {
         let { condition, container, html, type } = dom;
@@ -325,7 +330,7 @@
         if (isNil(container)) throw new Error('缺少挂载目标容器');
 
         // condition默认为true
-        typeof condition === 'undefined' && (condition = true);
+        isUndefined(condition) && (condition = true);
         if (condition) {
           if (container === 'body') {
             insertElementToBody($(html));
@@ -337,21 +342,23 @@
         }
       });
 
-      const last = lastOf(doms);
-      const classIndex = last.html.indexOf('class');
-      let selector = '';
-      if (classIndex > -1) {
-        selector = getSelector(last.html);
-      } else {
-        selector = getSelector(last.html, 'id');
+      const last = lastOf(doms.filter(dom => isUndefined(dom.condition) || dom.condition));
+      if (last) {
+        const classIndex = last.html.indexOf('class');
+        let selector = '';
+        if (classIndex > -1) {
+          selector = getSelector(last.html);
+        } else {
+          selector = getSelector(last.html, 'id');
+        }
+        
+        domAfterLoad(selector, () => {
+          this.componentDidMount();
+          this.style();
+          this.bindEvents();
+          this.destroy();
+        });
       }
-      
-      domAfterLoad(selector, () => {
-        this.componentDidMount();
-        this.style();
-        this.bindEvents();
-        this.destroy();
-      });
     },
     writable: false,
     configurable: false,
@@ -1711,7 +1718,6 @@
     MapMock
 
   }
-  global.Util = Util; //export Util
 
   ;!function (global) {
 
@@ -1951,4 +1957,5 @@
     
   });
 
-}(this, this.jQuery)
+  return Util;
+});

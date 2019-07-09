@@ -1,6 +1,6 @@
-'use strict';
-
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -12,13 +12,28 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
  * 
  * ES8可用方法：Object.entries, Object.values
  */
-;!function (win, $) {
+
+;!function (global, factory) {
+  (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory(global, global.jQuery) : typeof define === 'function' && define.amd ? define([global, global.jQuery], factory) : global.Util = factory(global, global.jQuery);
+}(this, function (global, $) {
+  var _Util;
 
   var emptyArray = [];
   if (!emptyArray.map) {
     alert('您的浏览器过旧，请升级浏览器！');
     return;
   }
+
+  var ARRAY_TAG = '[object Array]',
+      OBJECT_TAG = '[object Object]',
+      REGEXP_TAG = '[object RegExp]',
+      DATE_TAG = '[object Date]',
+      STRING_TAG = '[object String]',
+      NUMBER_TAG = '[object Number]',
+      BOOLEN_TAG = '[object Boolean]',
+      FUNCTION_TAG = '[object Function]',
+      UNDEFINED_TAG = '[object Undefined]',
+      NULL_TAG = '[object Null]';
 
   /**
    * @description ES6方法
@@ -160,12 +175,12 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
         var array = this;
         var len = array.length;
-        if (start == null && end == null) {
+        if (isNil(start) && isNil(end)) {
           array = array.map(function () {
             return _fill;
           });
           return array;
-        } else if (start == null && end != null) {
+        } else if (isNil(start) && end != null) {
           if (!isNumeric(end)) throw new Error(end + ' is not a number');
 
           end = parseInt(end);
@@ -178,7 +193,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
             });
             return array;
           }
-        } else if (start != null && end == null) {
+        } else if (start != null && isNil(end)) {
           if (!isNumeric(start)) throw new Error(start + ' is not a number');
 
           start = parseInt(start);
@@ -252,7 +267,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    */
   if (!Object.entries) {
     Object.entries = function (object) {
-      if (object == null) {
+      if (isNil(object)) {
         throw new TypeError('Cannot convert undefined or null to object');
       }
 
@@ -268,7 +283,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     };
 
     Object.values = function (object) {
-      if (object == null) {
+      if (isNil(object)) {
         throw new TypeError('Cannot convert undefined or null to object');
       }
 
@@ -306,6 +321,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       var _this = this;
 
       if (!doms || !isLength(doms.length) || doms.length < 1) return;
+      removeUndef(doms);
 
       doms.forEach(function (dom) {
         var condition = dom.condition,
@@ -313,11 +329,11 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
             html = dom.html,
             type = dom.type;
 
-        if (html == null) throw new Error('缺少需挂载的dom字符串');
-        if (container == null) throw new Error('缺少挂载目标容器');
+        if (isNil(html)) throw new Error('缺少需挂载的dom字符串');
+        if (isNil(container)) throw new Error('缺少挂载目标容器');
 
         // condition默认为true
-        typeof condition === 'undefined' && (condition = true);
+        isUndefined(condition) && (condition = true);
         if (condition) {
           if (container === 'body') {
             insertElementToBody($(html));
@@ -329,21 +345,25 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         }
       });
 
-      var last = lastOf(doms);
-      var classIndex = last.html.indexOf('class');
-      var selector = '';
-      if (classIndex > -1) {
-        selector = getSelector(last.html);
-      } else {
-        selector = getSelector(last.html, 'id');
-      }
+      var last = lastOf(doms.filter(function (dom) {
+        return isUndefined(dom.condition) || dom.condition;
+      }));
+      if (last) {
+        var _classIndex = last.html.indexOf('class');
+        var selector = '';
+        if (_classIndex > -1) {
+          selector = getSelector(last.html);
+        } else {
+          selector = getSelector(last.html, 'id');
+        }
 
-      domAfterLoad(selector, function () {
-        _this.componentDidMount();
-        _this.style();
-        _this.bindEvents();
-        _this.destroy();
-      });
+        domAfterLoad(selector, function () {
+          _this.componentDidMount();
+          _this.style();
+          _this.bindEvents();
+          _this.destroy();
+        });
+      }
     },
     writable: false,
     configurable: false,
@@ -362,7 +382,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   });
 
   Object.assign(Component.prototype, {
-    constructor: Component,
     render: function render() {
       return [];
     },
@@ -377,51 +396,377 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     destroy: function destroy() {}
   });
 
-  win.Component = Component;
+  global.Component = Component;
 
   /**
-   * @private 私有方法，不添加到Util全局对象
+   * @description 监听器，监听某个对象的某个属性或者所有属性的变化，根据属性值的变化执行响应的操作
+   * @param options = {
+   *   set: Function, // 在使用‘=’赋值的同时需要执行的操作
+   *   get: Function  // 在获取值的同时需要执行的操作
+   * }
    */
-  function baseUnion() {
-    var args = arguments;
+  function Observer(object, prop, options) {
+    if (!isObjectLike(object)) {
+      throw new Error(object + ' is not a object');
+    }
+
+    if (isObject(prop) && isNil(options)) {
+      options = prop;
+      prop = null;
+    }
+
+    this.options = options;
+    this.watching(object, prop);
+  }
+
+  Object.assign(Observer.prototype, {
+    watching: function watching(object, prop) {
+      if (!object || !isObjectLike(object)) return;
+
+      if (isNil(prop)) {
+        for (var _key in object) {
+          this.handlePropChange(object, _key, object[_key]);
+        }
+      } else {
+        this.handlePropChange(object, prop, object[prop]);
+      }
+    },
+    handlePropChange: function handlePropChange(object, prop, value) {
+      this.watching(value);
+
+      var _options = this.options,
+          _get = _options.get,
+          _set = _options.set;
+
+
+      if (Object.defineProperty) {
+        Object.defineProperty(object, prop, {
+          set: function set(newValue) {
+            isFunction(_set) && _set(newValue);
+            value = newValue;
+          },
+          get: function get() {
+            isFunction(_get) && _get();
+            return value;
+          }
+        });
+      } else {
+        object.__defineSetter__(prop, function (newValue) {
+          isFunction(_set) && _set(newValue);
+          value = newValue;
+        });
+
+        object.__defineGetter__(prop, function () {
+          isFunction(_get) && _get();
+          return value;
+        });
+      }
+    }
+  });
+
+  global.Observer = Observer;
+
+  /* ======== 私有方法，不添加到Util全局对象 ======== */
+
+  function baseUnion(args, isSample) {
     var array = [];
+    var prop = null;
     for (var i = 0, len = args.length; i < len; i++) {
-      if (Array.isArray(args[i])) {
+      if (isArray(args[i])) {
         array.push.apply(array, _toConsumableArray(args[i]));
+      } else {
+        prop = args[i];
+        break;
       }
     }
 
-    return array;
+    return !isSample ? { array: array, prop: prop } : array;
   }
 
   /**
-   * @public Util全局对象中的方法
+   * @description 在对象中查找需要的key值
+   * @param { Object } object
+   * @param { Boolen } deep 是否第一次查找到后继续遍历查找
    */
-  function isString(target) {
-    return typeof target === 'string';
+  function baseKeyOf(object, iteratee, deep) {
+    if (!isObjectLike(object)) throw new Error(object + ' is not a object');
+
+    var keys = [];
+    for (key in object) {
+      if (isFunction(iteratee)) {
+        var result = iteratee(object[key], key, object);
+        if (result === true) {
+          keys.push(key);
+          if (!deep) break;
+        }
+      } else {
+        if (Object.is(object[key], iteratee)) {
+          keys.push(key);
+          if (!deep) break;
+        }
+      }
+    }
+
+    return keys;
   }
-  function isObject(target) {
-    return (typeof target === 'undefined' ? 'undefined' : _typeof(target)) === 'object';
+
+  /**
+   * @description 删除对象中的键值对
+   * @param iteratee 函数或者需要删除的键值
+   * @param deep 是否删除第一个后继续往下遍历
+   */
+  function baseRemoveKey(object, iteratee, deep) {
+    if (!isObjectLike(object)) throw new Error(object + ' is not a object');
+
+    var isFunc = isFunction(iteratee);
+
+    var obj = {},
+        flag = false;
+    if (isFunc) {
+      for (var _key2 in object) {
+        var result = iteratee(object[_key2], _key2, object);
+        if (result === true) {
+          var value = object[_key2];
+          delete object[_key2];
+          flag = true;
+          Object.assign(obj, _defineProperty({}, _key2, value));
+          if (!deep) break;
+        }
+      }
+    } else {
+      if (iteratee in object) {
+        var _value = object[iteratee];
+        delete object[iteratee];
+        flag = true;
+        Object.assign(obj, _defineProperty({}, iteratee, _value));
+      }
+    }
+
+    return flag ? obj : flag;
   }
-  function isEmptyObject(target) {
-    for (var _ in target) {
-      return !1;
-    }return !0;
+
+  function baseRemoveAt(array, indexes) {
+    var length = array && isLength(array.length) ? array.length : 0;
+    indexes = uniq(indexes);
+
+    for (var i = length - 1; i > -1; i--) {
+      var index = indexes[i];
+      if (isIndex(index)) {
+        emptyArray.splice.call(array, index, 1);
+      } else {
+        if (index in array) delete array[index];
+      }
+    }
+  }
+
+  function baseRemove(array, iteratee) {
+    if (!isArray(array)) throw new TypeError(array + ' is not a Array');
+
+    var isFunc = isFunction(iteratee);
+    var isArr = isArray(iteratee);
+    var indexes = [],
+        result = [];
+
+    for (var i = 0, len = array.length; i < len; i++) {
+      var value = array[i];
+      switch (true) {
+        case isFunc:
+          var ifRemove = iteratee(value, i, array);
+          if (ifRemove === true) {
+            result.push(value);
+            indexes.push(i);
+          }
+          break;
+
+        case isArr:
+          if (iteratee.includes(value)) {
+            result.push(value);
+            indexes.push(i);
+          }
+          break;
+
+        default:
+          if (Object.is(iteratee, value)) {
+            result.push(value);
+            indexes.push(i);
+          }
+      }
+    }
+
+    baseRemoveAt(array, indexes);
+    return result;
+  }
+
+  function getLetters() {
+    var letters = [];
+    for (var i = 65; i < 91; i++) {
+      letters.push(String.fromCharCode(i));
+    }
+    for (var j = 97; j < 123; j++) {
+      letters.push(String.fromCharCode(j));
+    }
+    return letters;
+  }
+
+  function baseRandomLetter(size) {
+    var letters = getLetters();
+
+    var result = letters[Math.floor(Math.random() * letters.length)];
+    size = toInteger(size);
+
+    if (size && size > 1) {
+      for (var i = 1; i < size; i++) {
+        result += letters[Math.floor(Math.random() * letters.length)];
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * @description 创建一个规定长度的随机字符串，默认长度随机
+   * @param { Number } length
+   * @returns 随机字符串
+   */
+  function buildRandomString(length) {
+    var randomString = Math.random().toString(36).substr(2);
+    var letter = baseRandomLetter();
+    randomString = letter + randomString; //保证第一位一定是字母
+
+    length = toInteger(length);
+    if (length) {
+      var size = randomString.length;
+      if (length > size) {
+        var diff = length - size;
+        var letters = baseRandomLetter(diff);
+        randomString += letters;
+      } else if (length < size) {
+        randomString = randomString.substr(0, length);
+      }
+    }
+
+    return randomString;
+  }
+
+  function baseClone(object, deep) {
+    if (!isObjectLike(object)) throw new TypeError(object + ' expect a object');
+
+    var result = isArray(object) ? [] : {};
+    for (var _key3 in object) {
+      var value = object[_key3];
+      if (isObjectLike(value) && deep) {
+        result[_key3] = baseClone(value, true);
+      } else {
+        result[_key3] = value;
+      }
+    }
+
+    return result;
+  }
+
+  var _toString = Object.prototype.toString;
+  function getTag(value) {
+    return _toString.call(value);
+  }
+
+  /**
+   * Date
+   */
+  function baseNow() {
+    return new Date();
+  }
+
+  function baseHandleYear(year) {
+    year = toNumber(year);
+    var currentYear = baseNow().getFullYear();
+
+    if (year === false) return currentYear;
+
+    if (year < 1970 || year > currentYear) throw new Error('year:' + year + ' is not in range');
+
+    return year;
+  }
+
+  function baseHandleMonth(month) {
+    month = toNumber(month);
+    var currentMonth = baseNow().getMonth() + 1;
+
+    if (month === false) return currentMonth;
+
+    if (month < 1 || month > 12) throw new Error('month:' + month + ' is not in range');
+
+    return month;
+  }
+
+  function baseDateFull(number) {
+    if (!isNumber(number)) throw new Error(number + ' is not a number');
+    return number < 10 ? '0' + number : number;
+  }
+
+  /* ======== Util全局对象中的方法 ======== */
+
+  function isString(value) {
+    return getTag(value) === STRING_TAG;
+  }
+  function isObjectLike(value) {
+    return (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && !isNull(value);
+  }
+  function isObject(value) {
+    return getTag(value) === OBJECT_TAG;
+  }
+  function isNil(value) {
+    return value == null;
+  }
+  function isEmpty(value) {
+    if (isNil(value)) {
+      return !0;
+    } else if (isLength(value.length)) {
+      return value.length === 0;
+    } else if (isLength(value.size)) {
+      return value.size === 0;
+    } else if (isObjectLike(value)) {
+      for (var _ in value) {
+        return !1;
+      }return !0;
+    } else if (isNumber(value)) {
+      return value === 0;
+    } else if (isBoolen(value)) {
+      return !value;
+    }
+  }
+  function isUndefined(value) {
+    return getTag(value) === UNDEFINED_TAG;
+  }
+  function isNull(value) {
+    return getTag(value) === NULL_TAG;
   }
   /**
    * @description 判断是否是数字，包括字符串数值
    */
-  function isNumeric(target) {
-    return !isNaN(parseFloat(target));
+  function isNumeric(value) {
+    return !isNaN(parseFloat(value));
   }
   /**
    * @description 判断是否是Number实例
    */
-  function isNumber(target) {
-    return typeof target === 'number';
+  function isNumber(value) {
+    return getTag(value) === NUMBER_TAG;
   }
-  function isFunction(target) {
-    return typeof target === 'function';
+  function isFunction(value) {
+    return getTag(value) === FUNCTION_TAG;
+  }
+  function isBoolen(value) {
+    return getTag(value) === BOOLEN_TAG;
+  }
+  function isDate(value) {
+    return getTag(value) === DATE_TAG;
+  }
+  var nativeIsArray = Array.isArray;
+  function isArray(value) {
+    return nativeIsArray ? nativeIsArray(value) : getTag(value) === ARRAY_TAG;
+  }
+  function isRegExp(value) {
+    return getTag(value) === REGEXP_TAG;
   }
 
   /**
@@ -429,21 +774,28 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * toNumber('5') // 5
    * toNumber('abc') // false
    */
-  function toNumber(target) {
-    var number = parseFloat(target);
+  function toNumber(value) {
+    var number = parseFloat(value);
     return isNaN(number) ? false : number;
+  }
+  function toInteger(value) {
+    var int = parseInt(value);
+    return isNaN(int) ? false : int;
   }
   /**
    * @description 是否为整数
    */
-  function isInteger(target) {
-    return isNumber(target) && target % 1 === 0;
+  function isInteger(value) {
+    return isNumber(value) && value % 1 === 0;
   }
   /**
    * @description 是否为符合规范的length属性值
    */
-  function isLength(target) {
-    return isInteger(target) && target > -1;
+  function isLength(value) {
+    return isInteger(value) && value > -1;
+  }
+  function isIndex(value) {
+    return isInteger(value) && value > -1;
   }
   /**
    * @description 判断是否为dom元素
@@ -489,10 +841,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     if (string.length === 0) return selector;
 
     if (type === 'class') {
-      var _classIndex = string.indexOf('class');
-      if (_classIndex < 0) return selector;
+      var _classIndex2 = string.indexOf('class');
+      if (_classIndex2 < 0) return selector;
 
-      var start = string.indexOf('"', _classIndex + 5);
+      var start = string.indexOf('"', _classIndex2 + 5);
       var end = string.indexOf('"', start + 1);
       var className = string.substring(start + 1, end);
       var klasses = className.split(' ');
@@ -530,7 +882,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   function appendStyle(object) {
     var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'self';
 
-    if (!isObject(object) || isEmptyObject(object) || object === null) {
+    if (!isObject(object) || isEmpty(object)) {
       return;
     }
 
@@ -597,36 +949,32 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
   /**
    * @description 生成规定格式的日期
-   * @param { * } date 时间戳
+   * @param { * } dateStamp 时间戳
    * @param { String } format 格式
    * @returns 日期字符串
    */
-  function dateFormater(date) {
+  function dateFormater(dateStamp) {
     var format = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'yyyy/mm/dd hh:mm:ss';
 
-    var full = function full(number) {
-      if (!isNumeric(number)) throw new Error(number + ' is not a number');
-      number = parseInt(number);
-      return number < 10 ? '0' + number : number;
-    };
-
-    if (!isNumeric(date)) {
-      date = new Date();
+    var date = void 0;
+    if (isNil(dateStamp)) {
+      date = baseNow();
     } else {
-      date = parseInt(date);
-      if (String(date).length === 13) {
-        date = new Date(date);
+      if (!isNumber(dateStamp)) throw new Error(dateStamp + ' is not a number');
+
+      if (String(dateStamp).length === 13) {
+        date = new Date(dateStamp);
       } else {
-        date = new Date(date * 1000);
+        date = new Date(dateStamp * 1000);
       }
     }
 
     var year = date.getFullYear(),
-        month = full(date.getMonth() + 1),
-        day = full(date.getDate()),
-        hour = full(date.getHours()),
-        minute = full(date.getMinutes()),
-        second = full(date.getSeconds());
+        month = baseDateFull(date.getMonth() + 1),
+        day = baseDateFull(date.getDate()),
+        hour = baseDateFull(date.getHours()),
+        minute = baseDateFull(date.getMinutes()),
+        second = baseDateFull(date.getSeconds());
 
     var result = void 0;
     switch (format) {
@@ -662,17 +1010,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @param { Number | String } month 月份
    */
   function getMonthData(year, month) {
-    year = toNumber(year);
-    month = toNumber(month);
-
-    var today = new Date();
-    if (year === false || month === false) {
-      year === false && (year = today.getFullYear());
-      month === false && (month = today.getMonth() + 1);
-    }
-
-    if (year < 1970 || year > today.getFullYear()) return;
-    if (month < 1 || month > 12) return;
+    year = baseHandleYear(year);
+    month = baseHandleMonth(month);
 
     var days = [];
 
@@ -727,52 +1066,28 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         forbid: isForbid ? 1 : 0
       });
     }
+
     return days;
   }
 
-  /**
-   * @description 创建一个规定长度的随机字符串，默认长度随机
-   * @param { Number } length
-   * @returns 随机字符串
-   */
-  function buildRandomString(length) {
-
-    var randomLetter = function randomLetter(size) {
-      var letters = [];
-      for (var i = 65; i < 91; i++) {
-        letters.push(String.fromCharCode(i));
-      }
-      for (var j = 97; j < 123; j++) {
-        letters.push(String.fromCharCode(j));
-      }
-
-      var result = letters[Math.floor(Math.random() * letters.length)];
-      if (isNumeric(size)) {
-        size = parseInt(size);
-        if (size > 1) {
-          for (var _i = 1; _i < size; _i++) {
-            result += letters[Math.floor(Math.random() * letters.length)];
-          }
-        }
-      }
-
-      return result;
-    };
-
-    var randomString = Math.random().toString(36).substr(2);
-    var letter = randomLetter();
-    randomString = letter + randomString; //保证第一位一定是字母
-    if (isNumeric(length)) {
-      length = parseInt(length);
-      if (randomString.length > length) {
-        randomString = randomString.substr(0, length);
-      } else if (randomString.length < length) {
-        var diff = length - randomString.length;
-        var letters = randomLetter(diff);
-        randomString += letters;
-      }
+  var stringSet = new SetMock();
+  function getUniqString() {
+    var string = buildRandomString();
+    if (!stringSet.has(string)) {
+      stringSet.add(string);
+      return string;
     }
-    return randomString;
+
+    getUniqString();
+  }
+
+  function getRandomClassName() {
+    var className = buildRandomString();
+    if (!document.querySelector(toSelector(className))) {
+      return className;
+    }
+
+    getRandomClassName();
   }
 
   /**
@@ -860,68 +1175,45 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     }
   };
 
-  /**
-   * @description 通过value值在对象中查找key
-   * @param { Object } object
-   * @param { * } target
-   * @param { String } excludes 排除不查找的键值，以逗号分割多个键值
-   * @param { Boolen } isOwn 是否使用hasOwnProperty排除原型属性
-   * @returns target对应的key
-   */
-  function keyOf(object, target, excludes, isOwn) {
-    if (!isObject(object)) throw new Error(object + ' is not a object');
-
-    var isNil = excludes == null;
-    if (!isNil && !isString(excludes)) throw new Error(excludes + ' is not a string');
-
-    !isNil && (excludes = excludes.split(','));
-    for (var key in object) {
-      if (isNil) {
-        if (Object.is(object[key], target)) return isOwn ? object.hasOwnProperty(key) ? key : undefined : key;
-      } else {
-        if (!excludes.includes(key)) {
-          if (Object.is(object[key], target)) return isOwn ? object.hasOwnProperty(key) ? key : undefined : key;
-        }
-      }
-    }
-    return undefined;
+  function findKey(object, iteratee) {
+    var keys = baseKeyOf(object, iteratee);
+    return keys.length === 0 ? undefined : keys[0];
   }
 
-  /**
-   * @description 删除对象中的键值
-   * @param { Object } object
-   * @param { String | undefined } keys 需要删除的键值,以逗号分割多个键值
-   * @param { String | undefined } excludes 排除不删的键值,以逗号分割多个键值
-   * keys和excludes同时存在，keys取两者的差集
-   */
-  function deleteKeys(object, keys, excludes) {
-    if (!isObject(object)) throw new Error(object + ' is not a object');
-    if (keys != null && !isString(keys)) throw new Error(keys + ' is not a string');
-    if (excludes != null && !isString(excludes)) throw new Error(excludes + ' is not a string');
+  function removeKey(object, iteratee, deep) {
+    return baseRemoveKey(object, iteratee, deep);
+  }
 
-    var keyList = void 0,
-        excludeList = void 0;
-    if (keys == null) {
-      keyList = null;
-      excludeList = excludes == null ? null : excludes.split(',');
-    } else {
-      if (excludes == null) {
-        keyList = keys.split(',');
-      } else {
-        keyList = remove(keys.split(','), excludes.split(','));
-      }
-      excludeList = null;
+  function removeKeys(object, iteratees) {
+    if (isNil(iteratees)) {
+      forInOwn(object, function (_, key, self) {
+        delete self[key];
+      });
+      return;
     }
 
-    forInOwn(object, function (_, key, self) {
-      if (keyList == null && excludeList == null) {
-        delete self[key];
-      } else if (keyList != null && excludeList == null) {
-        keyList.includes(key) && delete self[key];
-      } else if (keyList == null && excludeList != null) {
-        !excludeList.includes(key) && delete self[key];
+    var isStr = isString(iteratees);
+    if (!isStr && isArray(iteratees)) throw new Error(iteratee + ' is not a function and string');
+
+    iteratees = isStr ? iteratees.split(',') : iteratees;
+    var obj = {},
+        flag = false;
+    iteratees.forEach(function (iteratee) {
+      var result = baseRemoveKey(object, iteratee.trim());
+      if (result) {
+        Object.assign(obj, result);
+        flag = true;
       }
     });
+
+    return flag ? obj : flag;
+  }
+
+  function clone(object) {
+    return baseClone(object);
+  }
+  function cloneDeep(object) {
+    return baseClone(object, true);
   }
 
   /**
@@ -930,17 +1222,17 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   function forIn(object, callback) {
     if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
-    for (var key in object) {
-      var isBreak = callback(object[key], key, object);
+    for (var _key4 in object) {
+      var isBreak = callback(object[_key4], _key4, object);
       if (isBreak === false) break;
     }
   }
   function forInOwn(object, callback) {
     if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
-    for (var key in object) {
-      if (object.hasOwnProperty(key)) {
-        var isBreak = callback(object[key], key, object);
+    for (var _key5 in object) {
+      if (object.hasOwnProperty(_key5)) {
+        var isBreak = callback(object[_key5], _key5, object);
         if (isBreak === false) break;
       }
     }
@@ -968,7 +1260,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    */
   function insert(array, insertSet) {
     [array, insertSet].forEach(function (v) {
-      if (!Array.isArray(v)) throw new Error(v + ' is not a Array');
+      if (!isArray(v)) throw new Error(v + ' is not a Array');
     });
 
     var adder = 0;
@@ -988,7 +1280,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @param { Array } array
    */
   function uniq(array) {
-    if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
+    if (!isArray(array)) throw new Error(array + ' is not a Array');
 
     return array.reduce(function (arr, item) {
       return arr.includes(item) ? arr : [].concat(_toConsumableArray(arr), [item]);
@@ -996,7 +1288,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   function uniqBy(array, prop) {
-    if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
+    if (!isArray(array)) throw new Error(array + ' is not a Array');
 
     return array.reduce(function (arr, item) {
       return includesBy(arr, item, prop) ? arr : [].concat(_toConsumableArray(arr), [item]);
@@ -1007,23 +1299,15 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @description 多个数据的并集
    */
   function union() {
-    return uniq(baseUnion(arguments));
+    return uniq(baseUnion(Array.from(arguments), true));
   }
 
   function unionBy() {
-    var args = arguments;
-    var array = [];
-    var prop = void 0;
-    for (var i = 0, len = args.length; i < len; i++) {
-      if (Array.isArray(args[i])) {
-        array.push.apply(array, _toConsumableArray(args[i]));
-      } else if (isString(args[i])) {
-        prop = args[i];
-        break;
-      }
-    }
+    var _baseUnion = baseUnion(Array.from(arguments)),
+        array = _baseUnion.array,
+        prop = _baseUnion.prop;
 
-    return uniqBy(array, prop);
+    return prop ? uniqBy(array, prop) : uniq(array);
   }
 
   /**
@@ -1032,8 +1316,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    */
   function includesBy(array, target, prop) {
     var result = false;
+    if (!(prop in target)) return result;
+
     for (var i = 0, len = array.length; i < len; i++) {
-      if (Object.is(array[i][prop], target[prop])) {
+      if (prop in array[i] && Object.is(array[i][prop], target[prop])) {
         result = true;
         break;
       }
@@ -1050,31 +1336,15 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * remove([1,2,3,4,5,6], [2,3]); // [1,4,5,6]
    */
   function remove(array, iteratee) {
-    if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
-
-    var result = [];
-    uniq(array).forEach(function (item, index, self) {
-      switch (true) {
-        case Array.isArray(iteratee):
-          !iteratee.includes(item) && result.push(item);
-          break;
-        case isFunction(iteratee):
-          iteratee(item, index, self) === false && result.push(item);
-          break;
-        default:
-          iteratee !== item && result.push(item);
-      }
-    });
-
-    return result;
+    return baseRemove(array, iteratee);
   }
 
   /**
    * @description 两数组的交集
    */
   function ins(array, list) {
-    if (!Array.isArray(array)) throw new Error(array + ' is not a Array');
-    if (!Array.isArray(list)) throw new Error(list + ' is not a Array');
+    if (!isArray(array)) throw new Error(array + ' is not a Array');
+    if (!isArray(list)) throw new Error(list + ' is not a Array');
 
     var result = [];
     array.forEach(function (item) {
@@ -1086,7 +1356,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
   function sum(array) {
     var sum = 0;
-    var len = array == null ? 0 : array.length;
+    var len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 1) return sum;
 
     return array.reduce(function (sum, current) {
@@ -1096,7 +1366,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
   function sumBy(array, iteratee) {
     var sum = 0;
-    var len = array == null ? 0 : array.length;
+    var len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return sum;
 
     if (isString(iteratee)) {
@@ -1112,7 +1382,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   function max(array) {
-    var len = array == null ? 0 : array.length;
+    var len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return;
 
     return array.reduce(function (max, current) {
@@ -1121,7 +1391,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   function maxBy(array, iteratee) {
-    var len = array == null ? 0 : array.length;
+    var len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return;
 
     var initialValue = void 0;
@@ -1143,7 +1413,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   function min(array) {
-    var len = array == null ? 0 : array.length;
+    var len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return;
 
     return array.reduce(function (min, current) {
@@ -1152,7 +1422,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   function minBy(array, iteratee) {
-    var len = array == null ? 0 : array.length;
+    var len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return;
 
     var initialValue = void 0;
@@ -1174,14 +1444,14 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   function mean(array) {
-    var len = array == null ? 0 : array.length;
+    var len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return;
 
     return sum(array) / len;
   }
 
   function meanBy(array, iteratee) {
-    var len = array == null ? 0 : array.length;
+    var len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return;
 
     return sumBy(array, iteratee) / len;
@@ -1195,6 +1465,16 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     if (!object || !isLength(len)) return;
 
     return object[len - 1];
+  }
+
+  function removeUndef(object) {
+    if (!isObjectLike(object)) throw new Error(object + ' is not a object');
+
+    forInOwn(object, function (value, key, self) {
+      if (isUndefined(value)) {
+        delete self[key];
+      }
+    });
   }
 
   /**
@@ -1223,14 +1503,16 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     constructor: SetMock,
 
     has: function has(item) {
-      var key = keyOf(this, item, 'size,nextKey');
+      var key = findKey(this, function (value, key) {
+        return !['size', 'nextKey'].includes(key) && Object.is(value, item);
+      });
       return typeof key !== 'undefined';
     },
     forEach: function forEach(callback, context) {
       if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
       forInOwn(this, function (value, key, self) {
-        isObject(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
+        isObjectLike(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
       });
     },
     add: function add(item) {
@@ -1243,7 +1525,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         }
       };
 
-      if (Array.isArray(item)) {
+      if (isArray(item)) {
         var set = uniq(item);
         set.forEach(function (setItem) {
           addSet(setItem);
@@ -1255,7 +1537,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       return this;
     },
     delete: function _delete(item) {
-      var key = keyOf(this, item);
+      var key = findKey(this, item);
       if (typeof key !== 'undefined') {
         delete this[key];
         this.size--;
@@ -1266,7 +1548,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 
     clear: function clear() {
-      deleteKeys(this);
+      removeKeys(this);
       this.size = 0;
       this.nextKey = 0;
     },
@@ -1312,16 +1594,16 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     });
 
     if (entries != null) {
-      if (!Array.isArray(entries)) {
+      if (!isArray(entries)) {
         throw new Error(entries + ' is not a Array');
       } else {
         entries.forEach(function (entry) {
-          if (!Array.isArray(entry)) {
+          if (!isArray(entry)) {
             throw new Error(entry + ' is not a Array');
           } else {
-            var key = entry[0],
+            var _key6 = entry[0],
                 value = entry[1];
-            _this3[key] = value;
+            _this3[_key6] = value;
             _this3.size++;
           }
         });
@@ -1360,88 +1642,36 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       return false;
     },
     clear: function clear() {
-      deleteKeys(this);
+      removeKeys(this);
       this.size = 0;
     },
     forEach: function forEach(callback, context) {
       if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
       forInOwn(this, function (value, key, self) {
-        isObject(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
+        isObjectLike(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
       });
     }
   };
 
-  var Util = {
+  var Util = (_Util = {
 
-    // 类型方法
+    // 判断
     isString: isString,
+    isObjectLike: isObjectLike,
     isObject: isObject,
-    isEmptyObject: isEmptyObject,
+    isEmpty: isEmpty,
     isFunction: isFunction,
     isNumber: isNumber,
     isNumeric: isNumeric,
     isDom: isDom,
     isInteger: isInteger,
-    isLength: isLength,
-
-    // number方法
-    toNumber: toNumber,
-
-    // dom方法
-    toSelector: toSelector,
-    appendStyle: appendStyle,
-    insertElementToBody: insertElementToBody,
-    domAfterLoad: domAfterLoad,
-    tagOf: tagOf,
-    getSelector: getSelector,
-    appendClass: appendClass,
-
-    // 数组方法
-    uniq: uniq,
-    remove: remove,
-    ins: ins,
-    makeArray: makeArray,
-    sum: sum,
-    sumBy: sumBy,
-    max: max,
-    maxBy: maxBy,
-    min: min,
-    minBy: minBy,
-    mean: mean,
-    meanBy: meanBy,
-    insert: insert,
-    includesBy: includesBy,
-    union: union,
-    unionBy: unionBy,
-
-    // 对象方法
-    deleteKeys: deleteKeys,
-    keyOf: keyOf,
-    lastOf: lastOf,
-    forIn: forIn,
-    forInOwn: forInOwn,
-
-    // String方法
-    toCamelCase: toCamelCase,
-    buildRandomString: buildRandomString,
-    fromCamelCase: fromCamelCase,
-
-    // 其他方法
-    dateFormater: dateFormater,
-    getMonthData: getMonthData,
-
-    SetMock: SetMock,
-    MapMock: MapMock
-
-  };
-  win.Util = Util; //export Util
-
-  ;!function (win) {
+    isLength: isLength
+  }, _defineProperty(_Util, 'isEmpty', isEmpty), _defineProperty(_Util, 'isUndefined', isUndefined), _defineProperty(_Util, 'isNull', isNull), _defineProperty(_Util, 'isNil', isNil), _defineProperty(_Util, 'isBoolen', isBoolen), _defineProperty(_Util, 'isArray', isArray), _defineProperty(_Util, 'isDate', isDate), _defineProperty(_Util, 'isRegExp', isRegExp), _defineProperty(_Util, 'toNumber', toNumber), _defineProperty(_Util, 'toInteger', toInteger), _defineProperty(_Util, 'toSelector', toSelector), _defineProperty(_Util, 'appendStyle', appendStyle), _defineProperty(_Util, 'insertElementToBody', insertElementToBody), _defineProperty(_Util, 'domAfterLoad', domAfterLoad), _defineProperty(_Util, 'tagOf', tagOf), _defineProperty(_Util, 'getSelector', getSelector), _defineProperty(_Util, 'appendClass', appendClass), _defineProperty(_Util, 'getRandomClassName', getRandomClassName), _defineProperty(_Util, 'uniq', uniq), _defineProperty(_Util, 'remove', remove), _defineProperty(_Util, 'ins', ins), _defineProperty(_Util, 'makeArray', makeArray), _defineProperty(_Util, 'sum', sum), _defineProperty(_Util, 'sumBy', sumBy), _defineProperty(_Util, 'max', max), _defineProperty(_Util, 'maxBy', maxBy), _defineProperty(_Util, 'min', min), _defineProperty(_Util, 'minBy', minBy), _defineProperty(_Util, 'mean', mean), _defineProperty(_Util, 'meanBy', meanBy), _defineProperty(_Util, 'insert', insert), _defineProperty(_Util, 'includesBy', includesBy), _defineProperty(_Util, 'union', union), _defineProperty(_Util, 'unionBy', unionBy), _defineProperty(_Util, 'removeKey', removeKey), _defineProperty(_Util, 'removeKeys', removeKeys), _defineProperty(_Util, 'findKey', findKey), _defineProperty(_Util, 'lastOf', lastOf), _defineProperty(_Util, 'forIn', forIn), _defineProperty(_Util, 'forInOwn', forInOwn), _defineProperty(_Util, 'clone', clone), _defineProperty(_Util, 'cloneDeep', cloneDeep), _defineProperty(_Util, 'removeUndef', removeUndef), _defineProperty(_Util, 'toCamelCase', toCamelCase), _defineProperty(_Util, 'fromCamelCase', fromCamelCase), _defineProperty(_Util, 'getUniqString', getUniqString), _defineProperty(_Util, 'dateFormater', dateFormater), _defineProperty(_Util, 'getMonthData', getMonthData), _defineProperty(_Util, 'SetMock', SetMock), _defineProperty(_Util, 'MapMock', MapMock), _Util);!function (global) {
 
     function mouseWheelListener(callback) {
       addMouseWheelHandler(function (e) {
-        e = e || window.event;
+        e = e || global.event;
         var value = e.wheelDelta || -e.deltaY || -e.detail;
         var delta = Math.max(-1, Math.min(1, value));
         var direction = delta < 0 ? 'down' : 'up';
@@ -1449,7 +1679,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       });
     }
 
-    win.mouseWheelListener = mouseWheelListener;
+    global.mouseWheelListener = mouseWheelListener;
 
     var g_supportsPassive = false;
     try {
@@ -1458,15 +1688,15 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           g_supportsPassive = true;
         }
       });
-      window.addEventListener("testPassive", null, opts);
-      window.removeEventListener("testPassive", null, opts);
+      global.addEventListener("testPassive", null, opts);
+      global.removeEventListener("testPassive", null, opts);
     } catch (e) {}
 
     function addMouseWheelHandler(callback) {
       var prefix = '';
       var _addEventListener = void 0;
 
-      if (window.addEventListener) {
+      if (global.addEventListener) {
         _addEventListener = "addEventListener";
       } else {
         _addEventListener = "attachEvent";
@@ -1483,7 +1713,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         document[_addEventListener](prefix + support, callback, passiveEvent);
       }
     }
-  }(win);
+  }(global);
 
   /* ========jQuery======== */
   /**
@@ -1492,13 +1722,15 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @param { Number | Function } y
    */
   $.prototype.translate = function (x, y) {
-    if (x == null && y == null) {
-      return [parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[4]), parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[5])];
+    if (isNil(x) && isNil(y)) {
+      var tx = parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[4]);
+      var ty = parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[5]);
+      return [isNaN(tx) ? 0 : tx, isNaN(ty) ? 0 : ty];
     }
 
     var xValue = void 0,
         yValue = void 0;
-    if (y == null) {
+    if (isNil(y)) {
       xValue = isFunction(x) ? parseFloat(x()) : parseFloat(x);
       if (!isNaN(xValue)) {
         this.css({
@@ -1506,7 +1738,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         });
       }
       return this;
-    } else if (x == null) {
+    } else if (isNil(y)) {
       yValue = isFunction(y) ? parseFloat(y()) : parseFloat(y);
       if (!isNaN(yValue)) {
         this.css({
@@ -1526,16 +1758,16 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     }
   };
   $.prototype.translateX = function (value) {
-    if (value == null) {
-      return parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[4]);
+    if (isNil(value)) {
+      return this.translate()[0];
     }
-    this.translate(value);
+    return this.translate(value);
   };
   $.prototype.translateY = function (value) {
-    if (value == null) {
-      return parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[5]);
+    if (isNil(value)) {
+      return this.translate()[1];
     }
-    this.translate(null, value);
+    return this.translate(null, value);
   };
 
   /**
@@ -1589,6 +1821,33 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     return result;
   };
 
+  /**
+   * for $.node, $.imgNode
+   */
+  var handleAttr = function handleAttr(attr) {
+    var attributes = '';
+    if (attr) {
+      if (isString(attr)) {
+        attributes = ' ' + attr;
+      } else if (isObject(attr)) {
+        forInOwn(attr, function (obj, key) {
+          if (key.trim() === 'style' && isObject(obj)) {
+            attributes += ' ' + key + '="';
+            forInOwn(obj, function (value, k) {
+              attributes += fromCamelCase(k) + ': ' + value + ';';
+            });
+            attributes += '"';
+          } else {
+            var thisAttr = fromCamelCase(key) + '="' + obj + '"';
+            attributes += ' ' + thisAttr;
+          }
+        });
+      }
+    }
+
+    return attributes;
+  };
+
   $.extend({
 
     /**
@@ -1609,36 +1868,26 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
      * // "<div class="test" data-value="1" style="background-color: red;color: #fff;">1234</div>"
      */
     node: function node(wrapper, children, klass, attr) {
-      if (children == null) return '';
+      if (isNil(children)) return '';
 
       // If the children is an array, do a join
-      children = Array.isArray(children) ? children.join('') : children;
+      children = isArray(children) ? children.join('') : children;
 
       // Check for the class
       klass = klass ? ' class="' + klass + '"' : '';
 
       // Check for any attributes
-      var attributes = '';
-      if (attr) {
-        if (isString(attr)) {
-          attributes = ' ' + attr;
-        } else if (isObject(attr)) {
-          forInOwn(attr, function (obj, key) {
-            if (key.trim() === 'style' && isObject(obj) && obj !== null) {
-              attributes += ' ' + key + '="';
-              forInOwn(obj, function (value, k) {
-                attributes += fromCamelCase(k) + ': ' + value + ';';
-              });
-              attributes += '"';
-            } else {
-              var thisAttr = fromCamelCase(key) + '="' + obj + '"';
-              attributes += ' ' + thisAttr;
-            }
-          });
-        }
-      }
+      var attributes = handleAttr(attr);
 
       return '<' + wrapper + klass + attributes + '>' + children + '</' + wrapper + '>';
+    },
+
+    closingNode: function closingNode(tagName, klass, attr) {
+      klass = klass ? ' class="' + klass + '"' : '';
+
+      var attributes = handleAttr(attr);
+
+      return '<' + tagName + klass + attributes + '/>';
     },
 
     /**
@@ -1651,4 +1900,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     }
 
   });
-}(window, jQuery);
+
+  return Util;
+});

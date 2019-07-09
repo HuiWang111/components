@@ -30,7 +30,9 @@ gulp.task('testJS', function () {
   return gulp.src('test/test.js')
   .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
   .pipe(babel({
-    presets: ['es2015']
+    presets: [
+      [ "es2015", { "modules": false } ]
+    ]
   }))
   .pipe(gulp.dest('dist'));
 });
@@ -45,11 +47,13 @@ function compressJS (filesName) {
     return gulp.src(src)
     .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
     .pipe(babel({
-      presets: ['es2015']
+      presets: [
+        [ "es2015", { "modules": false } ]
+      ]
     }))
     .pipe(uglify({
       mangle: {
-        reserved: ['Component']
+        reserved: ['Component', 'require' ,'exports' ,'module' ,'$', 'define']
       }
     }))
     .on('error', function (err) {
@@ -74,7 +78,9 @@ function getES5 (filesName) {
     return gulp.src(src)
     .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
     .pipe(babel({
-      presets: ['es2015']
+      presets: [
+        [ "es2015", { "modules": false } ]
+      ]
     }))
     .pipe(rename({
       suffix: '.es5'
