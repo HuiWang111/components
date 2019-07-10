@@ -23,11 +23,13 @@
       ins = Util.ins,
       makeArray = Util.makeArray,
       findKey = Util.findKey,
+      extend = Util.extend,
       removeKey = Util.removeKey,
       removeKeys = Util.removeKeys,
       removeUndef = Util.removeUndef,
       dateFormater = Util.dateFormater,
       buildRandomString = Util.buildRandomString,
+      toArray = Util.toArray,
       toNumber = Util.toNumber,
       SetMock = Util.SetMock,
       appendClass = Util.appendClass,
@@ -164,7 +166,7 @@
       style: {}
     };
 
-    this.options = Object.assign({}, defaultOptions, options);
+    this.options = extend({}, defaultOptions, options);
 
     this.type = type;
     this.html = this.render();
@@ -173,7 +175,7 @@
 
   win.Icon = Icon;
 
-  Object.assign(Icon.prototype, {
+  extend(Icon.prototype, {
     render: function render() {
       var type = this.type,
           _options = this.options,
@@ -222,7 +224,7 @@
       var klass = appendClass(className, ICON_CLASS, typeClass, isDefaultTheme ? '' : FILLED_CLASS, spin ? SPIN_ICON_CLASS : '');
 
       var icon = $.node('i', svg, klass, {
-        style: Object.assign({
+        style: extend({
           width: isNumber(size) ? size + 'px' : size,
           height: isNumber(size) ? size + 'px' : size
         }, style)
@@ -276,7 +278,7 @@
       text: ''
     };
 
-    this.options = Object.assign({}, defaultOptions, options);
+    this.options = extend({}, defaultOptions, options);
 
     var RANDOM_CLASS = getRandomClassName();
     $(selector).eq(0).addClass(RANDOM_CLASS);
@@ -289,7 +291,7 @@
 
   win.Button = Button;
 
-  Object.assign(Button.prototype, {
+  extend(Button.prototype, {
     render: function render() {
       var $el = this.$el,
           _options2 = this.options,
@@ -353,7 +355,7 @@
       this.iconSize = iconSize;
 
       if (!isEmpty(iconType)) {
-        Object.assign(iconOptions, { size: iconSize });
+        extend(iconOptions, { size: iconSize });
 
         var icon = new Icon(iconType, iconOptions);
         $el.prepend(icon.html);
@@ -486,7 +488,7 @@
       renderPaneItem: null
     };
 
-    this.options = Object.assign({}, defaultOptions, options);
+    this.options = extend({}, defaultOptions, options);
     this.super();
   };
 
@@ -494,7 +496,7 @@
 
   win.Tabs = Tabs;
 
-  Object.assign(Tabs.prototype, {
+  extend(Tabs.prototype, {
     render: function render() {
       var $container = this.$container,
           _options3 = this.options,
@@ -905,7 +907,7 @@
       itemRender: null
     };
 
-    var opts = Object.assign({}, defaultOptions, options);
+    var opts = extend({}, defaultOptions, options);
 
     var mustBeNumber = ['total', 'pageSize', 'current'];
     mustBeNumber.forEach(function (key) {
@@ -922,7 +924,7 @@
 
   win.Pagination = Pagination;
 
-  Object.assign(Pagination.prototype, {
+  extend(Pagination.prototype, {
     render: function render() {
       var selector = this.selector,
           _options5 = this.options,
@@ -1339,7 +1341,7 @@
 
   $.inherit(Component, Message);
 
-  Object.assign(Message.prototype, {
+  extend(Message.prototype, {
     render: function render() {
       var type = this.type;
 
@@ -1423,7 +1425,7 @@
 
   var message = {};
   message.setting = function (options) {
-    Object.assign(defaultMessageOptions, options);
+    extend(defaultMessageOptions, options);
   };
 
   var messageList = new SetMock();
@@ -1538,7 +1540,7 @@
       swiperOptions: {}
     };
 
-    var opts = Object.assign({}, defaultOptions, options);
+    var opts = extend({}, defaultOptions, options);
     if (opts.width === '100%' && opts.navgation) {
       opts.navgation = false; // 宽度100%时不使用导航箭头
     }
@@ -1557,7 +1559,7 @@
 
   win.Gallery = Gallery;
 
-  Object.assign(Gallery.prototype, {
+  extend(Gallery.prototype, {
     componentWillMount: function componentWillMount() {
       // handle swiper options
       this.swiperOptionsHandler();
@@ -1688,7 +1690,7 @@
 
 
     createSrcList: function createSrcList() {
-      var eleList = Array.from(this.$source);
+      var eleList = toArray(this.$source);
 
       //获取【自身为img元素或者子元素中包含img元素, 并且img元素包含src props】的元素
       eleList = eleList.filter(function (item) {
@@ -1769,7 +1771,7 @@
       renderItem: null
     };
 
-    this.options = Object.assign({}, defaultOptions, options);
+    this.options = extend({}, defaultOptions, options);
     this.$container = $(selector);
 
     this.super();
@@ -1779,7 +1781,7 @@
 
   win.CardList = CardList;
 
-  Object.assign(CardList.prototype, {
+  extend(CardList.prototype, {
     render: function render() {
       var _options12 = this.options,
           dataSource = _options12.dataSource,
@@ -1867,7 +1869,7 @@
       afterClose: null
     };
 
-    this.options = Object.assign({}, defaultOptions, options);
+    this.options = extend({}, defaultOptions, options);
     this.type = type;
     this.$container = $(selector);
     this.super();
@@ -1876,7 +1878,7 @@
   $.inherit(Component, Alert);
   win.Alert = Alert;
 
-  Object.assign(Alert.prototype, {
+  extend(Alert.prototype, {
     render: function render() {
       var type = this.type,
           $container = this.$container,
@@ -1898,7 +1900,7 @@
         iconOptions.theme = 'filled';
       }
 
-      var icon = showIcon ? new Icon(type, Object.assign({ className: ALERT_ICON_CLASS }, iconOptions)).html : '';
+      var icon = showIcon ? new Icon(type, extend({ className: ALERT_ICON_CLASS }, iconOptions)).html : '';
       var msg = $.node('p', message, ALERT_MESSAGE_CLASS);
       var desc = $.node('p', description, ALERT_DESCRIPTION_CLASS);
 
@@ -2072,14 +2074,14 @@
       onOk: null
     };
 
-    this.options = Object.assign({}, defaultOptions, options);
+    this.options = extend({}, defaultOptions, options);
     this.super();
   }
 
   $.inherit(Component, Modal);
   win.Modal = Modal;
 
-  Object.assign(Modal.prototype, {
+  extend(Modal.prototype, {
     render: function render() {
       var _options17 = this.options,
           title = _options17.title,
@@ -2121,7 +2123,7 @@
       var klass = appendClass(MODAL_CONTAINER_CLASS, centered ? MODAL_CONTAINER_CENTERED_CLASS : '', isString(wrapClassName) ? wrapClassName : '', RANDOM_CLASS, defaultVisible ? '' : MODAL_CONTAINER_INVISIBLE_CLASS);
 
       var html = $.node('div', titleDOM + bodyContentDOM + footerDOM, klass, {
-        style: Object.assign(isObject(style) ? style : {}, { zIndex: zIndex })
+        style: extend(isObject(style) ? style : {}, { zIndex: zIndex })
       });
 
       return [{

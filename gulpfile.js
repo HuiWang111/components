@@ -53,7 +53,7 @@ function compressJS (filesName) {
     }))
     .pipe(uglify({
       mangle: {
-        reserved: ['Component', 'require' ,'exports' ,'module' ,'$', 'define']
+        reserved: ['Component', 'require' ,'exports' ,'module' ,'$', 'define', 'Observer']
       }
     }))
     .on('error', function (err) {

@@ -1,19 +1,14 @@
-/**
- * ES6可用方法：Object.is, Object.assign, Array.from, String.prototype.repeat, String.prototype.includes,
- *  Array.prototype.find, Array.prototype.findIndex
- * 
- * ES7可用方法：Array.prototype.includes
- * 
- * ES8可用方法：Object.entries, Object.values
- */
-
 ;!function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(global, global.jQuery) :
-  typeof define === 'function' && define.amd ? define([global, global.jQuery], factory) :
-  ( global.Util = factory(global, global.jQuery) );
-}(this, function(global, $) {
-  
-  const emptyArray = [];
+
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  ( global.Util = factory() );
+
+}(this, function() {
+
+  const emptyArray = Object.freeze([]);
+  const _slice = emptyArray.slice;
+
   if (!emptyArray.map) {
     alert('您的浏览器过旧，请升级浏览器！');
     return;
@@ -30,434 +25,73 @@
         UNDEFINED_TAG = '[object Undefined]',
         NULL_TAG = '[object Null]';
 
-
   /**
-   * @description ES6方法
+   * Object.assign
    */
-  if (!emptyArray.find) {
+  const extend = Object.assign || function () {
+    const receiver = _slice.call(arguments, 0, 1)[0],
+          suppliers = _slice.call(arguments, 1);
 
-    Object.is = function (x, y) {
-      if (x === y) { 
-        return x !== 0 || 1 / x === 1 / y; // +0不等于-0
-      } else {
-        return x !== x && y !== y; // NaN === NaN => true
-      }
-    };
-
-    Object.assign = function () {
-      const receiver = emptyArray.slice.call(arguments).slice(0, 1)[0], suppliers = emptyArray.slice.call(arguments).slice(1);
-
-      suppliers.forEach(function (supplier) {
-        Object.keys(supplier).forEach(function (key) {
-          receiver[key] = supplier[key];
-        });
+    suppliers.forEach(function (supplier) {
+      Object.keys(supplier).forEach(function (key) {
+        receiver[key] = supplier[key];
       });
-
-      return receiver;
-    };
-
-    Array.from = function (arrayLike, callback) {
-      const len = arrayLike.length || arrayLike.size;
-      if (typeof len !== 'number') return [];
-
-      const object = {}
-      forInOwn(arrayLike, (__, key) => {
-        object[parseFloat(key)] = arrayLike[key];
-      });
-      
-      const array = [];
-      forInOwn(object, (value, i, self) => {
-        if (isNaN(i)) {
-          array.push(undefined);
-        } else {
-          const item = isFunction(callback) ? callback(value, i, self) : value;
-          array.push(item);
-        }
-      });
-
-      return array;
-    };
-
-    Object.assign(String.prototype, {
-      repeat (count) {
-        count = parseInt(count);
-        if (count < 0) throw new Error('Invalid count value');
-        if (isNaN(count) || count === 0) return '';
-  
-        const string = this;
-        let result = "";
-        for(let i = 0; i < count; i++) {
-          result += string;
-        }
-        
-        return result;
-      },
-
-      startsWith (search, start) {
-        if (search instanceof RegExp) {
-          throw new TypeError('First argument to String.prototype.includes must not be a regular expression');
-        }
-
-        search = String(search);
-        start = isNumeric(start) ? parseInt(start) : 0;
-
-        const len = search.length;
-        if (start + search.length > len) {
-          return false;
-        } else {
-          const str = this.substring(start, start + len);
-          return str === search;
-        }
-      },
-
-      endsWith (search, pos) {
-        if (search instanceof RegExp) {
-          throw new TypeError('First argument to String.prototype.includes must not be a regular expression');
-        }
-        
-        search = String(search);
-        const len = search.length;
-        const length = this.length;
-
-        const start = isNumeric(pos) ? parseInt(pos) - len : length - 1;
-        
-        
-        if (start + len > length) {
-          return false;
-        } else {
-          const str = this.substring(start, start + len);
-          return str === search;
-        }
-      },
-
-      includes (search, start) {
-        if (search instanceof RegExp) {
-          throw new TypeError('First argument to String.prototype.includes must not be a regular expression');
-        }
-
-        start = isNumber(start) ? start : 0;
-        if (start + search.length > this.length) {
-          return false;
-        } else {
-          return this.indexOf(search, indexOf) !== -1;
-        }
-      }
     });
 
-    Object.assign(Array.prototype, {
-      find (callback, context) {
-        if (typeof callback !== 'function') throw new Error(callback + ' is not a function');
-  
-        const array = this;
-        for (let i = 0, len = array.length; i < len; i++) {
-          const found = typeof context === 'undefined' ? 
-            callback(array[i], i, array) : 
-            callback.call(context, array[i], i, array);
-  
-          if (found === true) return array[i];
-        }
-      },
-
-      findIndex (callback, context) {
-        if (typeof callback !== 'function') throw new Error(callback + ' is not a function');
-  
-        const array = this;
-        for (let i = 0, len = array.length; i < len; i++) {
-          const found = typeof context === 'undefined' ? 
-            callback(array[i], i, array) : 
-            callback.call(context, array[i], i, array);
-  
-          if (found === true) return i;
-        }
-  
-        return -1;
-      },
-
-      fill (fill, start, end) {
-        const isNumeric = function (target) {
-          return !isNaN(parseFloat(target));
-        }
-
-        let array = this;
-        const len = array.length;
-        if (isNil(start) && isNil(end)) {
-          array = array.map(function () {
-            return fill;
-          });
-          return array;
-        } else if (isNil(start) && end != null) {
-          if (!isNumeric(end)) throw new Error(end + ' is not a number');
-  
-          end = parseInt(end);
-          end = end < 0 ? len + end : end;
-          if (end < 0) {
-            return array;
-          } else {
-            array = array.map(function (item, index) {
-              return index < end ? fill : item;
-            });
-            return array;
-          }
-        } else if (start != null && isNil(end)) {
-          if (!isNumeric(start)) throw new Error(start + ' is not a number');
-  
-          start = parseInt(start);
-          start = start < 0 ? len + start : start;
-          if (start < 0) {
-            array = array.map(function () {
-              return fill;
-            });
-            return array;
-          } else {
-            array = array.map(function (item, index) {
-              return index >= start ? fill : item;
-            });
-            return array;
-          }
-        } else {
-          if (!isNumeric(start) || !isNumeric(end)) throw new Error(start + ' or ' + end + 'is not a number');
-  
-          start = parseInt(start);
-          end = parseInt(end);
-  
-          start = start < 0 ? len + start : start;
-          end = end < 0 ? len + end : end;
-          if (start < 0 && end < 0) {
-            return array;
-          } else if (start > 0 && end < 0) { //存疑虑
-            return array;
-          } else if (start < 0 && end > 0) {
-            array = array.map(function (item, index) {
-              return index < end ? fill : item;
-            });
-            return array;
-          } else {
-            array = array.map(function (item, index) {
-              return (index >= start) && (index < end) ? fill : item;
-            });
-            return array;
-          }
-        }
-      }
-    });
+    return receiver;
   }
 
   /**
-   * @description ES7方法
+   * Object.is
+   */
+  const _is = Object.is || function (x, y) {
+    if (x === y) { 
+      return x !== 0 || 1 / x === 1 / y;
+    } else {
+      return x !== x && y !== y;
+    }
+  };
+
+  /**
+   * Array.from
+   */
+  const toArray = Array.from || function (arrayLike, callback) {
+    const len = arrayLike.length || arrayLike.size;
+    if (typeof len !== 'number') return [];
+    
+    const array = [];
+    forInOwn(arrayLike, (value, key, self) => {
+      if (isNumeric(key)) {
+        const item = isFunction(callback) ? callback(value, key, self) : value;
+        array.push(item);
+      } else {
+        array.push(undefined);
+      }
+    });
+
+    return array;
+  };
+
+  /**
+   * Array.prototype.includes
    */
   if (!emptyArray.includes) {
-    Object.assign(Array.prototype, {
-      includes (target, start) {
-        const array = this, len = array.length;
-        start = isNumeric(start) ? parseInt(start) : 0;
-        start = start >= 0 ? start : 0;
-  
-        let result = false;
-        for (let i = start; i < len; i++) {
-          if (Object.is(target, array[i])) {
-            result = true;
-            break;
-          }
-        }
-  
-        return result;
-      }
-    });
-  }
+    Array.prototype.includes = function (target, start) {
+      const array = this, len = array.length;
+      start = isNumeric(start) ? parseInt(start) : 0;
+      start = start >= 0 ? start : 0;
 
-  /**
-   * @description ES8方法
-   */
-  if (!Object.entries) {
-    Object.entries = function (object) {
-      if (isNil(object)) {
-        throw new TypeError('Cannot convert undefined or null to object');
-      }
-
-      const entries = [];
-      const keys = Object.keys(object);
-      for (var key in object) {
-        if (keys.includes(key)) {
-          entries.push([ String(key), object[key] ]);
+      let result = false;
+      for (let i = start; i < len; i++) {
+        if (_is(target, array[i])) {
+          result = true;
+          break;
         }
       }
 
-      return entries;
-    }
-
-    Object.values = function (object) {
-      if (isNil(object)) {
-        throw new TypeError('Cannot convert undefined or null to object');
-      }
-
-      const values = [];
-      const keys = Object.keys(object);
-      for (var key in object) {
-        if (keys.includes(key)) {
-          values.push(object[key]);
-        }
-      }
-
-      return values;
+      return result;
     }
   }
-
-  /**
-   * @description 组件的通用父类
-   */
-  function Component() {
-    this.init();
-  }
-
-  /**
-   * @description 将组件元素挂载到dom
-   * @param { Array } doms 需要挂载的dom列表
-   * [{
-   *   html: String, // 需要被挂载的dom字符串
-   *   container: DOMElement | 'body', // 挂载的目标容器
-   *   condition: Boolen, // 挂载的条件，默认挂载
-   *   type: 'html' // 挂载dom的jQuery方法, append | prepend | before | after | html 等, 默认html
-   * }]
-   */
-  Object.defineProperty(Component.prototype, 'mount', {
-    value: function (doms) {
-      if (!doms || !isLength(doms.length) || doms.length < 1) return;
-      removeUndef(doms);
-    
-      doms.forEach((dom) => {
-        let { condition, container, html, type } = dom;
-        if (isNil(html)) throw new Error('缺少需挂载的dom字符串');
-        if (isNil(container)) throw new Error('缺少挂载目标容器');
-
-        // condition默认为true
-        isUndefined(condition) && (condition = true);
-        if (condition) {
-          if (container === 'body') {
-            insertElementToBody($(html));
-          } else {
-            type = type || 'html';
-            !(container instanceof jQuery) && (container = $(container));
-            container[type](html);
-          }
-        }
-      });
-
-      const last = lastOf(doms.filter(dom => isUndefined(dom.condition) || dom.condition));
-      if (last) {
-        const classIndex = last.html.indexOf('class');
-        let selector = '';
-        if (classIndex > -1) {
-          selector = getSelector(last.html);
-        } else {
-          selector = getSelector(last.html, 'id');
-        }
-        
-        domAfterLoad(selector, () => {
-          this.componentDidMount();
-          this.style();
-          this.bindEvents();
-          this.destroy();
-        });
-      }
-    },
-    writable: false,
-    configurable: false,
-    enumerable: true
-  });
-
-  Object.defineProperty(Component.prototype, 'init', {
-    value: function () {
-      const doms = this.render();
-      this.componentWillMount();
-      this.mount(doms);
-    },
-    writable: false,
-    configurable: false,
-    enumerable: true
-  });
-  
-  Object.assign(Component.prototype, {
-    render () {
-      return [];
-    },
-    style () {},
-    componentWillMount () {},
-    componentDidMount () {},
-    bindEvents () {},
-    /**
-     * @description 删除一些无用的实例属性
-     */
-    destroy () {}
-  });
-
-  global.Component = Component;
-
-  /**
-   * @description 监听器，监听某个对象的某个属性或者所有属性的变化，根据属性值的变化执行响应的操作
-   * @param options = {
-   *   set: Function, // 在使用‘=’赋值的同时需要执行的操作
-   *   get: Function  // 在获取值的同时需要执行的操作
-   * }
-   */
-  function Observer(object, prop, options) {
-    if (!isObjectLike(object)) {
-      throw new Error(`${object} is not a object`);
-    }
-
-    if (isObject(prop) && isNil(options)) {
-      options = prop;
-      prop = null;
-    }
-
-    this.options = options;
-    this.watching(object, prop);
-  }
-
-  Object.assign(Observer.prototype, {
-    watching (object, prop) {
-      if (!object || !isObjectLike(object)) return;
-
-      if (isNil(prop)) {
-        for (const key in object) {
-          this.handlePropChange(object, key, object[key]);
-        }
-      } else {
-        this.handlePropChange(object, prop, object[prop]);
-      }
-    },
-
-    handlePropChange (object, prop, value) {
-      this.watching(value);
-
-      const { get, set } = this.options;
-      
-      if (Object.defineProperty) {
-        Object.defineProperty(object, prop, {
-          set (newValue) {
-            isFunction(set) && set(newValue);
-            value = newValue;
-          },
-          get () {
-            isFunction(get) && get();
-            return value;
-          }
-        });
-      } else {
-        object.__defineSetter__(prop, (newValue) => {
-          isFunction(set) && set(newValue);
-          value = newValue;
-        });
-
-        object.__defineGetter__(prop, () => {
-          isFunction(get) && get();
-          return value;
-        });
-      }
-    }
-  });
-
-  global.Observer = Observer;
-
 
   /* ======== 私有方法，不添加到Util全局对象 ======== */
 
@@ -493,7 +127,7 @@
           if (!deep) break;
         }
       } else {
-        if (Object.is(object[key], iteratee)) {
+        if (_is(object[key], iteratee)) {
           keys.push(key);
           if (!deep) break;
         }
@@ -521,7 +155,7 @@
           const value = object[key];
           delete object[key];
           flag = true;
-          Object.assign(obj, { [key]: value });
+          extend(obj, { [key]: value });
           if (!deep) break;
         }
       }
@@ -530,7 +164,7 @@
         const value = object[iteratee];
         delete object[iteratee];
         flag = true;
-        Object.assign(obj, { [iteratee]: value });
+        extend(obj, { [iteratee]: value });
       }
     }
 
@@ -577,7 +211,7 @@
           break;
 
         default: 
-          if (Object.is(iteratee, value)) {
+          if (_is(iteratee, value)) {
             result.push(value);
             indexes.push(i);
           }
@@ -658,6 +292,11 @@
   const _toString = Object.prototype.toString;
   function getTag(value) {
     return _toString.call(value);
+  }
+
+  const _hasOwnProperty = Object.prototype.hasOwnProperty;
+  function hasOwn (obj, key) {
+    return _hasOwnProperty.call(obj, key)
   }
 
   /**
@@ -822,10 +461,6 @@
     if (type !== 'class' && type !== 'id') return string;
     return (type === 'class' ? '.' : '#') + string;
   }
-  
-  function makeArray(arrayLike) {
-    return emptyArray.slice.call(arrayLike);
-  }
 
   /**
    * @description 从dom字符串中获取最外层元素的className或id
@@ -912,7 +547,7 @@
    * appendClass('test1', 'test2', 'test3'); //'test1 test2 test3'
    */
   function appendClass () {
-    return Array.from(arguments).reduce((result, current) => {
+    return toArray(arguments).reduce((result, current) => {
       const willAppend = isString(current) ? current : String(current);
       const division = result === '' || willAppend === '' ? '' : ' ';
       return result += division + willAppend;
@@ -1184,7 +819,7 @@
     iteratees.forEach((iteratee) => {
       const result = baseRemoveKey(object, iteratee.trim());
       if (result) {
-        Object.assign(obj, result);
+        extend(obj, result);
         flag = true;
       }
     });
@@ -1214,7 +849,7 @@
     if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
     for(const key in object) {
-      if (object.hasOwnProperty(key)) {
+      if (hasOwn(object, key)) {
         const isBreak = callback(object[key], key, object);
         if (isBreak === false) break;
       }
@@ -1280,11 +915,11 @@
    * @description 多个数据的并集
    */
   function union() {
-    return uniq(baseUnion(Array.from(arguments), true));
+    return uniq(baseUnion(toArray(arguments), true));
   }
 
   function unionBy() {
-    const { array, prop } = baseUnion(Array.from(arguments));
+    const { array, prop } = baseUnion(toArray(arguments));
     return prop ? uniqBy(array, prop) : uniq(array);
   }
 
@@ -1297,7 +932,7 @@
     if ( !(prop in target) ) return result;
 
     for (let i = 0, len = array.length; i < len; i++) {
-      if ((prop in array[i]) && Object.is(array[i][prop], target[prop])) {
+      if ((prop in array[i]) && _is(array[i][prop], target[prop])) {
         result = true;
         break;
       }
@@ -1484,7 +1119,7 @@
 
     has (item) {
       const key  = findKey(this, (value, key) => {
-        return !['size', 'nextKey'].includes(key) && Object.is(value, item);
+        return !['size', 'nextKey'].includes(key) && _is(value, item);
       });
       return (typeof key !== 'undefined');
     },
@@ -1608,7 +1243,7 @@
     has (key) {
       let has = false;
       forInOwn(this, (_, k) => {
-        if (Object.is(key, k)) {
+        if (_is(key, k)) {
           has = true;
           return false;
         }
@@ -1653,7 +1288,6 @@
     isDom,
     isInteger,
     isLength,
-    isEmpty,
     isUndefined,
     isNull,
     isNil,
@@ -1680,7 +1314,6 @@
     uniq,
     remove,
     ins,
-    makeArray,
     sum,
     sumBy,
     max,
@@ -1704,6 +1337,8 @@
     clone,
     cloneDeep,
     removeUndef,
+    extend,
+    toArray,
 
     // String方法
     toCamelCase,
@@ -1719,57 +1354,261 @@
 
   }
 
-  ;!function (global) {
+  return Util;
+});
 
-    function mouseWheelListener(callback) {
-      addMouseWheelHandler(function (e) {
-        e = e || global.event;
-        const value = e.wheelDelta || -e.deltaY || -e.detail;
-        const delta = Math.max(-1, Math.min(1, value));
-        const direction = delta < 0 ? 'down' : 'up';
-        isFunction(callback) && callback(direction, value, delta);
-      });
-    }
+/**
+ * @description 组件的通用父类
+ */
+;!function (global, factory) {
 
-    global.mouseWheelListener = mouseWheelListener;
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(global) :
+  typeof define === 'function' && define.amd ? define([global], factory) :
+  ( global.Component = factory(global) );
 
-    let g_supportsPassive = false;
-    try {
-      const opts = Object.defineProperty({}, 'passive', {
-        get: function () {
-          g_supportsPassive = true;
+}(this, function (global) {
+  const { 
+    isLength, removeUndef, isNil, isUndefined, insertElementToBody, lastOf, getSelector, domAfterLoad, extend
+  } = global.Util;
+
+  function Component() {
+    this.init();
+  }
+
+  /**
+   * @description 将组件元素挂载到dom
+   * @param { Array } doms 需要挂载的dom列表
+   * [{
+   *   html: String, // 需要被挂载的dom字符串
+   *   container: DOMElement | 'body', // 挂载的目标容器
+   *   condition: Boolen, // 挂载的条件，默认挂载
+   *   type: 'html' // 挂载dom的jQuery方法, append | prepend | before | after | html 等, 默认html
+   * }]
+   */
+  Object.defineProperty(Component.prototype, 'mount', {
+    value: function (doms) {
+      if (!doms || !isLength(doms.length) || doms.length < 1) return;
+      removeUndef(doms);
+    
+      doms.forEach((dom) => {
+        let { condition, container, html, type } = dom;
+        if (isNil(html)) throw new Error('缺少需挂载的dom字符串');
+        if (isNil(container)) throw new Error('缺少挂载目标容器');
+
+        // condition默认为true
+        isUndefined(condition) && (condition = true);
+        if (condition) {
+          if (container === 'body') {
+            insertElementToBody($(html));
+          } else {
+            type = type || 'html';
+            !(container instanceof jQuery) && (container = $(container));
+            container[type](html);
+          }
         }
       });
-      global.addEventListener("testPassive", null, opts);
-      global.removeEventListener("testPassive", null, opts);
-    } catch (e) {}
 
-    function addMouseWheelHandler (callback) {
-      let prefix = '';
-      let _addEventListener;
-    
-      if (global.addEventListener) {
-        _addEventListener = "addEventListener";
-      } else {
-        _addEventListener = "attachEvent";
-        prefix = 'on';
-      }
-      
-      const support = 'onwheel' in document.createElement('div') ? 'wheel' : (
-        document.onmousewheel !== undefined ? 'mousewheel' : 'DOMMouseScroll'
-      );
+      const last = lastOf(doms.filter(dom => isUndefined(dom.condition) || dom.condition));
+      if (last) {
+        const classIndex = last.html.indexOf('class');
+        let selector = '';
+        if (classIndex > -1) {
+          selector = getSelector(last.html);
+        } else {
+          selector = getSelector(last.html, 'id');
+        }
         
-      const passiveEvent = g_supportsPassive ? { passive: false } : false;
-      
-      if (support == 'DOMMouseScroll') {
-        document[_addEventListener](prefix + 'MozMousePixelScroll', callback, passiveEvent);
+        domAfterLoad(selector, () => {
+          this.componentDidMount();
+          this.style();
+          this.bindEvents();
+          this.destroy();
+        });
+      }
+    },
+    writable: false,
+    configurable: false,
+    enumerable: true
+  });
+
+  Object.defineProperty(Component.prototype, 'init', {
+    value: function () {
+      const doms = this.render();
+      this.componentWillMount();
+      this.mount(doms);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: true
+  });
+  
+  extend(Component.prototype, {
+    render () {
+      return [];
+    },
+    style () {},
+    componentWillMount () {},
+    componentDidMount () {},
+    bindEvents () {},
+    /**
+     * @description 删除一些无用的实例属性
+     */
+    destroy () {}
+  });
+
+  return Component;
+});
+
+/**
+ * @description 监听器，监听某个对象的某个属性或者所有属性的变化，根据属性值的变化执行响应的操作
+ * @param options = {
+ *   set: Function, // 在使用‘=’赋值的同时需要执行的操作
+ *   get: Function  // 在获取值的同时需要执行的操作
+ * }
+ */
+;!function (global, factory) {
+
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(global) :
+  typeof define === 'function' && define.amd ? define([global], factory) :
+  ( global.Observer = factory(global) );
+
+}(this, function (global) {
+  const { 
+    isObjectLike, isObject, isNil, extend, isFunction
+   } = global.Util;
+
+  function Observer(object, prop, options) {
+    if (!isObjectLike(object)) {
+      throw new Error(`${object} is not a object`);
+    }
+
+    if (isObject(prop) && isNil(options)) {
+      options = prop;
+      prop = null;
+    }
+
+    this.options = options;
+    this.watching(object, prop);
+  }
+
+  extend(Observer.prototype, {
+    watching (object, prop) {
+      if (!object || !isObjectLike(object)) return;
+
+      if (isNil(prop)) {
+        for (const key in object) {
+          this.handlePropChange(object, key, object[key]);
+        }
       } else {
-        document[_addEventListener](prefix + support, callback, passiveEvent);
+        this.handlePropChange(object, prop, object[prop]);
+      }
+    },
+
+    handlePropChange (object, prop, value) {
+      this.watching(value);
+
+      const { get, set } = this.options;
+      
+      if (Object.defineProperty) {
+        Object.defineProperty(object, prop, {
+          set (newValue) {
+            isFunction(set) && set(newValue);
+            value = newValue;
+          },
+          get () {
+            isFunction(get) && get();
+            return value;
+          }
+        });
+      } else {
+        object.__defineSetter__(prop, (newValue) => {
+          isFunction(set) && set(newValue);
+          value = newValue;
+        });
+
+        object.__defineGetter__(prop, () => {
+          isFunction(get) && get();
+          return value;
+        });
       }
     }
-  }(global)
+  });
 
-  /* ========jQuery======== */
+  return Observer;
+});
+
+/**
+ * 滚轮事件监听
+ */
+;!function (global, factory) {
+
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(global) :
+  typeof define === 'function' && define.amd ? define([global], factory) :
+  ( global.mouseWheelListener = factory(global) );
+
+}(this, function (global) {
+  const {
+    isFunction
+  } = global.Util;
+
+  function mouseWheelListener(callback) {
+    addMouseWheelHandler(function (e) {
+      e = e || global.event;
+      const value = e.wheelDelta || -e.deltaY || -e.detail;
+      const delta = Math.max(-1, Math.min(1, value));
+      const direction = delta < 0 ? 'down' : 'up';
+      isFunction(callback) && callback(direction, value, delta);
+    });
+  }
+
+  let g_supportsPassive = false;
+  try {
+    const opts = Object.defineProperty({}, 'passive', {
+      get: function () {
+        g_supportsPassive = true;
+      }
+    });
+    global.addEventListener("testPassive", null, opts);
+    global.removeEventListener("testPassive", null, opts);
+  } catch (e) {}
+
+  function addMouseWheelHandler (callback) {
+    let prefix = '';
+    let _addEventListener;
+  
+    if (global.addEventListener) {
+      _addEventListener = "addEventListener";
+    } else {
+      _addEventListener = "attachEvent";
+      prefix = 'on';
+    }
+    
+    const support = 'onwheel' in document.createElement('div') ? 'wheel' : (
+      document.onmousewheel !== undefined ? 'mousewheel' : 'DOMMouseScroll'
+    );
+      
+    const passiveEvent = g_supportsPassive ? { passive: false } : false;
+    
+    if (support == 'DOMMouseScroll') {
+      document[_addEventListener](prefix + 'MozMousePixelScroll', callback, passiveEvent);
+    } else {
+      document[_addEventListener](prefix + support, callback, passiveEvent);
+    }
+  }
+
+  return mouseWheelListener;
+});
+
+/**
+ * @description jQuery extend
+ */
+;!function (global) {
+  const {
+    isNil, isFunction, isString, forInOwn, isObject, fromCamelCase, isArray
+  } = global.Util;
+
+  const $ = global.jQuery;
+
   /**
    * @description 设置或获取元素的translate值
    * @param { Number | Function } x
@@ -1956,6 +1795,4 @@
     }
     
   });
-
-  return Util;
-});
+}(this)

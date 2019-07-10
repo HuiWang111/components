@@ -24,11 +24,13 @@
     ins,
     makeArray,
     findKey,
+    extend,
     removeKey,
     removeKeys,
     removeUndef,
     dateFormater,
     buildRandomString,
+    toArray,
     toNumber,
     SetMock,
     appendClass,
@@ -156,7 +158,7 @@
       style: {}
     }
 
-    this.options = Object.assign({}, defaultOptions, options);
+    this.options = extend({}, defaultOptions, options);
     
     this.type = type;
     this.html = this.render();
@@ -165,7 +167,7 @@
 
   win.Icon = Icon;
 
-  Object.assign(Icon.prototype, {
+  extend(Icon.prototype, {
     render () {
       const { type, options: { size, className, theme, color, spin, style } } = this;
       const isDefaultTheme = theme === 'outline';
@@ -211,7 +213,7 @@
       );
 
       const icon = $.node('i', svg, klass, {
-        style: Object.assign({
+        style: extend({
           width: isNumber(size) ? `${size}px` : size,
           height: isNumber(size) ? `${size}px` : size
         }, style)
@@ -266,7 +268,7 @@
       text: ''
     }
 
-    this.options = Object.assign({}, defaultOptions, options);
+    this.options = extend({}, defaultOptions, options);
 
     const RANDOM_CLASS = getRandomClassName();
     $(selector).eq(0).addClass(RANDOM_CLASS);
@@ -279,7 +281,7 @@
 
   win.Button = Button;
 
-  Object.assign(Button.prototype, {
+  extend(Button.prototype, {
     render () {
       const { 
         $el, 
@@ -323,7 +325,7 @@
         this.iconSize = iconSize;
       
       if (!isEmpty(iconType)) {
-        Object.assign(iconOptions, { size: iconSize });
+        extend(iconOptions, { size: iconSize });
 
         const icon = new Icon(iconType, iconOptions);
         $el.prepend(icon.html);
@@ -467,7 +469,7 @@
       renderPaneItem: null
     };
 
-    this.options = Object.assign({}, defaultOptions, options);
+    this.options = extend({}, defaultOptions, options);
     this.super();
   };
 
@@ -475,7 +477,7 @@
 
   win.Tabs = Tabs;
 
-  Object.assign(Tabs.prototype, {
+  extend(Tabs.prototype, {
     render () {
       const { 
         $container,
@@ -867,7 +869,7 @@
       itemRender: null
     };
 
-    const opts = Object.assign({}, defaultOptions, options);
+    const opts = extend({}, defaultOptions, options);
 
     var mustBeNumber = ['total', 'pageSize', 'current'];
     mustBeNumber.forEach(key => {
@@ -884,7 +886,7 @@
 
   win.Pagination = Pagination;
 
-  Object.assign(Pagination.prototype, {
+  extend(Pagination.prototype, {
     render () {
       const { selector, options: { current, total, pageSize } } = this;
 
@@ -1317,7 +1319,7 @@
 
   $.inherit(Component, Message);
 
-  Object.assign(Message.prototype, {
+  extend(Message.prototype, {
     render () {
       const { type } = this;
 
@@ -1397,7 +1399,7 @@
 
   const message = {};
   message.setting = function (options) {
-    Object.assign(defaultMessageOptions, options);
+    extend(defaultMessageOptions, options);
   };
 
   const messageList = new SetMock();
@@ -1512,7 +1514,7 @@
       swiperOptions: {}
     };
 
-    const opts = Object.assign({}, defaultOptions, options);
+    const opts = extend({}, defaultOptions, options);
     if ( (opts.width === '100%') && opts.navgation ) {
       opts.navgation = false; // 宽度100%时不使用导航箭头
     }
@@ -1532,7 +1534,7 @@
 
   win.Gallery = Gallery;
 
-  Object.assign(Gallery.prototype, {
+  extend(Gallery.prototype, {
     componentWillMount () {
       // handle swiper options
       this.swiperOptionsHandler();
@@ -1650,7 +1652,7 @@
     },
 
     createSrcList: function () {
-      let eleList = Array.from(this.$source);
+      let eleList = toArray(this.$source);
 
       //获取【自身为img元素或者子元素中包含img元素, 并且img元素包含src props】的元素
       eleList = eleList.filter(function (item) {
@@ -1725,7 +1727,7 @@
       renderItem: null
     }
 
-    this.options = Object.assign({}, defaultOptions, options);
+    this.options = extend({}, defaultOptions, options);
     this.$container = $(selector);
 
     this.super();
@@ -1735,7 +1737,7 @@
 
   win.CardList = CardList;
 
-  Object.assign(CardList.prototype, {
+  extend(CardList.prototype, {
     render () {
       const { dataSource, renderItem, lineItemNumber } = this.options;
       const { $container } = this;
@@ -1816,7 +1818,7 @@
       afterClose: null
     }
 
-    this.options = Object.assign({}, defaultOptions, options);
+    this.options = extend({}, defaultOptions, options);
     this.type = type;
     this.$container = $(selector);
     this.super();
@@ -1825,7 +1827,7 @@
   $.inherit(Component, Alert);
   win.Alert = Alert;
 
-  Object.assign(Alert.prototype, {
+  extend(Alert.prototype, {
     render () {
       const { 
         type, $container,
@@ -1840,7 +1842,7 @@
         iconOptions.theme = 'filled';
       }
 
-      const icon = showIcon ? ( new Icon(type, Object.assign({ className: ALERT_ICON_CLASS }, iconOptions)) ).html : '';
+      const icon = showIcon ? ( new Icon(type, extend({ className: ALERT_ICON_CLASS }, iconOptions)) ).html : '';
       const msg = $.node('p', message, ALERT_MESSAGE_CLASS);
       const desc = $.node('p', description, ALERT_DESCRIPTION_CLASS);
 
@@ -2018,14 +2020,14 @@
       onOk: null
     };
 
-    this.options = Object.assign({}, defaultOptions, options);
+    this.options = extend({}, defaultOptions, options);
     this.super();
   }
 
   $.inherit(Component, Modal);
   win.Modal = Modal;
 
-  Object.assign(Modal.prototype, {
+  extend(Modal.prototype, {
     render () {
       const { 
         title, closable, bodyContent, footer, bodyStyle, centered, style, wrapClassName, zIndex, defaultVisible
@@ -2064,7 +2066,7 @@
       );
       
       const html = $.node('div', titleDOM + bodyContentDOM + footerDOM, klass, {
-        style: Object.assign(isObject(style) ? style : {}, { zIndex })
+        style: extend(isObject(style) ? style : {}, { zIndex })
       });
 
       return [{

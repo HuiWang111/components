@@ -4,21 +4,14 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-/**
- * ES6可用方法：Object.is, Object.assign, Array.from, String.prototype.repeat, String.prototype.includes,
- *  Array.prototype.find, Array.prototype.findIndex
- * 
- * ES7可用方法：Array.prototype.includes
- * 
- * ES8可用方法：Object.entries, Object.values
- */
-
 ;!function (global, factory) {
-  (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory(global, global.jQuery) : typeof define === 'function' && define.amd ? define([global, global.jQuery], factory) : global.Util = factory(global, global.jQuery);
-}(this, function (global, $) {
-  var _Util;
 
-  var emptyArray = [];
+  (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory() : typeof define === 'function' && define.amd ? define(factory) : global.Util = factory();
+}(this, function () {
+
+  var emptyArray = Object.freeze([]);
+  var _slice = emptyArray.slice;
+
   if (!emptyArray.map) {
     alert('您的浏览器过旧，请升级浏览器！');
     return;
@@ -36,435 +29,73 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       NULL_TAG = '[object Null]';
 
   /**
-   * @description ES6方法
+   * Object.assign
    */
-  if (!emptyArray.find) {
+  var extend = Object.assign || function () {
+    var receiver = _slice.call(arguments, 0, 1)[0],
+        suppliers = _slice.call(arguments, 1);
 
-    Object.is = function (x, y) {
-      if (x === y) {
-        return x !== 0 || 1 / x === 1 / y; // +0不等于-0
-      } else {
-        return x !== x && y !== y; // NaN === NaN => true
-      }
-    };
-
-    Object.assign = function () {
-      var receiver = emptyArray.slice.call(arguments).slice(0, 1)[0],
-          suppliers = emptyArray.slice.call(arguments).slice(1);
-
-      suppliers.forEach(function (supplier) {
-        Object.keys(supplier).forEach(function (key) {
-          receiver[key] = supplier[key];
-        });
+    suppliers.forEach(function (supplier) {
+      Object.keys(supplier).forEach(function (key) {
+        receiver[key] = supplier[key];
       });
-
-      return receiver;
-    };
-
-    Array.from = function (arrayLike, callback) {
-      var len = arrayLike.length || arrayLike.size;
-      if (typeof len !== 'number') return [];
-
-      var object = {};
-      forInOwn(arrayLike, function (__, key) {
-        object[parseFloat(key)] = arrayLike[key];
-      });
-
-      var array = [];
-      forInOwn(object, function (value, i, self) {
-        if (isNaN(i)) {
-          array.push(undefined);
-        } else {
-          var item = isFunction(callback) ? callback(value, i, self) : value;
-          array.push(item);
-        }
-      });
-
-      return array;
-    };
-
-    Object.assign(String.prototype, {
-      repeat: function repeat(count) {
-        count = parseInt(count);
-        if (count < 0) throw new Error('Invalid count value');
-        if (isNaN(count) || count === 0) return '';
-
-        var string = this;
-        var result = "";
-        for (var i = 0; i < count; i++) {
-          result += string;
-        }
-
-        return result;
-      },
-      startsWith: function startsWith(search, start) {
-        if (search instanceof RegExp) {
-          throw new TypeError('First argument to String.prototype.includes must not be a regular expression');
-        }
-
-        search = String(search);
-        start = isNumeric(start) ? parseInt(start) : 0;
-
-        var len = search.length;
-        if (start + search.length > len) {
-          return false;
-        } else {
-          var str = this.substring(start, start + len);
-          return str === search;
-        }
-      },
-      endsWith: function endsWith(search, pos) {
-        if (search instanceof RegExp) {
-          throw new TypeError('First argument to String.prototype.includes must not be a regular expression');
-        }
-
-        search = String(search);
-        var len = search.length;
-        var length = this.length;
-
-        var start = isNumeric(pos) ? parseInt(pos) - len : length - 1;
-
-        if (start + len > length) {
-          return false;
-        } else {
-          var str = this.substring(start, start + len);
-          return str === search;
-        }
-      },
-      includes: function includes(search, start) {
-        if (search instanceof RegExp) {
-          throw new TypeError('First argument to String.prototype.includes must not be a regular expression');
-        }
-
-        start = isNumber(start) ? start : 0;
-        if (start + search.length > this.length) {
-          return false;
-        } else {
-          return this.indexOf(search, indexOf) !== -1;
-        }
-      }
     });
 
-    Object.assign(Array.prototype, {
-      find: function find(callback, context) {
-        if (typeof callback !== 'function') throw new Error(callback + ' is not a function');
-
-        var array = this;
-        for (var i = 0, len = array.length; i < len; i++) {
-          var found = typeof context === 'undefined' ? callback(array[i], i, array) : callback.call(context, array[i], i, array);
-
-          if (found === true) return array[i];
-        }
-      },
-      findIndex: function findIndex(callback, context) {
-        if (typeof callback !== 'function') throw new Error(callback + ' is not a function');
-
-        var array = this;
-        for (var i = 0, len = array.length; i < len; i++) {
-          var found = typeof context === 'undefined' ? callback(array[i], i, array) : callback.call(context, array[i], i, array);
-
-          if (found === true) return i;
-        }
-
-        return -1;
-      },
-      fill: function fill(_fill, start, end) {
-        var isNumeric = function isNumeric(target) {
-          return !isNaN(parseFloat(target));
-        };
-
-        var array = this;
-        var len = array.length;
-        if (isNil(start) && isNil(end)) {
-          array = array.map(function () {
-            return _fill;
-          });
-          return array;
-        } else if (isNil(start) && end != null) {
-          if (!isNumeric(end)) throw new Error(end + ' is not a number');
-
-          end = parseInt(end);
-          end = end < 0 ? len + end : end;
-          if (end < 0) {
-            return array;
-          } else {
-            array = array.map(function (item, index) {
-              return index < end ? _fill : item;
-            });
-            return array;
-          }
-        } else if (start != null && isNil(end)) {
-          if (!isNumeric(start)) throw new Error(start + ' is not a number');
-
-          start = parseInt(start);
-          start = start < 0 ? len + start : start;
-          if (start < 0) {
-            array = array.map(function () {
-              return _fill;
-            });
-            return array;
-          } else {
-            array = array.map(function (item, index) {
-              return index >= start ? _fill : item;
-            });
-            return array;
-          }
-        } else {
-          if (!isNumeric(start) || !isNumeric(end)) throw new Error(start + ' or ' + end + 'is not a number');
-
-          start = parseInt(start);
-          end = parseInt(end);
-
-          start = start < 0 ? len + start : start;
-          end = end < 0 ? len + end : end;
-          if (start < 0 && end < 0) {
-            return array;
-          } else if (start > 0 && end < 0) {
-            //存疑虑
-            return array;
-          } else if (start < 0 && end > 0) {
-            array = array.map(function (item, index) {
-              return index < end ? _fill : item;
-            });
-            return array;
-          } else {
-            array = array.map(function (item, index) {
-              return index >= start && index < end ? _fill : item;
-            });
-            return array;
-          }
-        }
-      }
-    });
-  }
+    return receiver;
+  };
 
   /**
-   * @description ES7方法
+   * Object.is
+   */
+  var _is = Object.is || function (x, y) {
+    if (x === y) {
+      return x !== 0 || 1 / x === 1 / y;
+    } else {
+      return x !== x && y !== y;
+    }
+  };
+
+  /**
+   * Array.from
+   */
+  var toArray = Array.from || function (arrayLike, callback) {
+    var len = arrayLike.length || arrayLike.size;
+    if (typeof len !== 'number') return [];
+
+    var array = [];
+    forInOwn(arrayLike, function (value, key, self) {
+      if (isNumeric(key)) {
+        var item = isFunction(callback) ? callback(value, key, self) : value;
+        array.push(item);
+      } else {
+        array.push(undefined);
+      }
+    });
+
+    return array;
+  };
+
+  /**
+   * Array.prototype.includes
    */
   if (!emptyArray.includes) {
-    Object.assign(Array.prototype, {
-      includes: function includes(target, start) {
-        var array = this,
-            len = array.length;
-        start = isNumeric(start) ? parseInt(start) : 0;
-        start = start >= 0 ? start : 0;
+    Array.prototype.includes = function (target, start) {
+      var array = this,
+          len = array.length;
+      start = isNumeric(start) ? parseInt(start) : 0;
+      start = start >= 0 ? start : 0;
 
-        var result = false;
-        for (var i = start; i < len; i++) {
-          if (Object.is(target, array[i])) {
-            result = true;
-            break;
-          }
-        }
-
-        return result;
-      }
-    });
-  }
-
-  /**
-   * @description ES8方法
-   */
-  if (!Object.entries) {
-    Object.entries = function (object) {
-      if (isNil(object)) {
-        throw new TypeError('Cannot convert undefined or null to object');
-      }
-
-      var entries = [];
-      var keys = Object.keys(object);
-      for (var key in object) {
-        if (keys.includes(key)) {
-          entries.push([String(key), object[key]]);
+      var result = false;
+      for (var i = start; i < len; i++) {
+        if (_is(target, array[i])) {
+          result = true;
+          break;
         }
       }
 
-      return entries;
-    };
-
-    Object.values = function (object) {
-      if (isNil(object)) {
-        throw new TypeError('Cannot convert undefined or null to object');
-      }
-
-      var values = [];
-      var keys = Object.keys(object);
-      for (var key in object) {
-        if (keys.includes(key)) {
-          values.push(object[key]);
-        }
-      }
-
-      return values;
+      return result;
     };
   }
-
-  /**
-   * @description 组件的通用父类
-   */
-  function Component() {
-    this.init();
-  }
-
-  /**
-   * @description 将组件元素挂载到dom
-   * @param { Array } doms 需要挂载的dom列表
-   * [{
-   *   html: String, // 需要被挂载的dom字符串
-   *   container: DOMElement | 'body', // 挂载的目标容器
-   *   condition: Boolen, // 挂载的条件，默认挂载
-   *   type: 'html' // 挂载dom的jQuery方法, append | prepend | before | after | html 等, 默认html
-   * }]
-   */
-  Object.defineProperty(Component.prototype, 'mount', {
-    value: function value(doms) {
-      var _this = this;
-
-      if (!doms || !isLength(doms.length) || doms.length < 1) return;
-      removeUndef(doms);
-
-      doms.forEach(function (dom) {
-        var condition = dom.condition,
-            container = dom.container,
-            html = dom.html,
-            type = dom.type;
-
-        if (isNil(html)) throw new Error('缺少需挂载的dom字符串');
-        if (isNil(container)) throw new Error('缺少挂载目标容器');
-
-        // condition默认为true
-        isUndefined(condition) && (condition = true);
-        if (condition) {
-          if (container === 'body') {
-            insertElementToBody($(html));
-          } else {
-            type = type || 'html';
-            !(container instanceof jQuery) && (container = $(container));
-            container[type](html);
-          }
-        }
-      });
-
-      var last = lastOf(doms.filter(function (dom) {
-        return isUndefined(dom.condition) || dom.condition;
-      }));
-      if (last) {
-        var _classIndex = last.html.indexOf('class');
-        var selector = '';
-        if (_classIndex > -1) {
-          selector = getSelector(last.html);
-        } else {
-          selector = getSelector(last.html, 'id');
-        }
-
-        domAfterLoad(selector, function () {
-          _this.componentDidMount();
-          _this.style();
-          _this.bindEvents();
-          _this.destroy();
-        });
-      }
-    },
-    writable: false,
-    configurable: false,
-    enumerable: true
-  });
-
-  Object.defineProperty(Component.prototype, 'init', {
-    value: function value() {
-      var doms = this.render();
-      this.componentWillMount();
-      this.mount(doms);
-    },
-    writable: false,
-    configurable: false,
-    enumerable: true
-  });
-
-  Object.assign(Component.prototype, {
-    render: function render() {
-      return [];
-    },
-    style: function style() {},
-    componentWillMount: function componentWillMount() {},
-    componentDidMount: function componentDidMount() {},
-    bindEvents: function bindEvents() {},
-
-    /**
-     * @description 删除一些无用的实例属性
-     */
-    destroy: function destroy() {}
-  });
-
-  global.Component = Component;
-
-  /**
-   * @description 监听器，监听某个对象的某个属性或者所有属性的变化，根据属性值的变化执行响应的操作
-   * @param options = {
-   *   set: Function, // 在使用‘=’赋值的同时需要执行的操作
-   *   get: Function  // 在获取值的同时需要执行的操作
-   * }
-   */
-  function Observer(object, prop, options) {
-    if (!isObjectLike(object)) {
-      throw new Error(object + ' is not a object');
-    }
-
-    if (isObject(prop) && isNil(options)) {
-      options = prop;
-      prop = null;
-    }
-
-    this.options = options;
-    this.watching(object, prop);
-  }
-
-  Object.assign(Observer.prototype, {
-    watching: function watching(object, prop) {
-      if (!object || !isObjectLike(object)) return;
-
-      if (isNil(prop)) {
-        for (var _key in object) {
-          this.handlePropChange(object, _key, object[_key]);
-        }
-      } else {
-        this.handlePropChange(object, prop, object[prop]);
-      }
-    },
-    handlePropChange: function handlePropChange(object, prop, value) {
-      this.watching(value);
-
-      var _options = this.options,
-          _get = _options.get,
-          _set = _options.set;
-
-
-      if (Object.defineProperty) {
-        Object.defineProperty(object, prop, {
-          set: function set(newValue) {
-            isFunction(_set) && _set(newValue);
-            value = newValue;
-          },
-          get: function get() {
-            isFunction(_get) && _get();
-            return value;
-          }
-        });
-      } else {
-        object.__defineSetter__(prop, function (newValue) {
-          isFunction(_set) && _set(newValue);
-          value = newValue;
-        });
-
-        object.__defineGetter__(prop, function () {
-          isFunction(_get) && _get();
-          return value;
-        });
-      }
-    }
-  });
-
-  global.Observer = Observer;
 
   /* ======== 私有方法，不添加到Util全局对象 ======== */
 
@@ -500,7 +131,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           if (!deep) break;
         }
       } else {
-        if (Object.is(object[key], iteratee)) {
+        if (_is(object[key], iteratee)) {
           keys.push(key);
           if (!deep) break;
         }
@@ -523,13 +154,13 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     var obj = {},
         flag = false;
     if (isFunc) {
-      for (var _key2 in object) {
-        var result = iteratee(object[_key2], _key2, object);
+      for (var _key in object) {
+        var result = iteratee(object[_key], _key, object);
         if (result === true) {
-          var value = object[_key2];
-          delete object[_key2];
+          var value = object[_key];
+          delete object[_key];
           flag = true;
-          Object.assign(obj, _defineProperty({}, _key2, value));
+          extend(obj, _defineProperty({}, _key, value));
           if (!deep) break;
         }
       }
@@ -538,7 +169,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         var _value = object[iteratee];
         delete object[iteratee];
         flag = true;
-        Object.assign(obj, _defineProperty({}, iteratee, _value));
+        extend(obj, _defineProperty({}, iteratee, _value));
       }
     }
 
@@ -586,7 +217,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           break;
 
         default:
-          if (Object.is(iteratee, value)) {
+          if (_is(iteratee, value)) {
             result.push(value);
             indexes.push(i);
           }
@@ -652,12 +283,12 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     if (!isObjectLike(object)) throw new TypeError(object + ' expect a object');
 
     var result = isArray(object) ? [] : {};
-    for (var _key3 in object) {
-      var value = object[_key3];
+    for (var _key2 in object) {
+      var value = object[_key2];
       if (isObjectLike(value) && deep) {
-        result[_key3] = baseClone(value, true);
+        result[_key2] = baseClone(value, true);
       } else {
-        result[_key3] = value;
+        result[_key2] = value;
       }
     }
 
@@ -667,6 +298,11 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   var _toString = Object.prototype.toString;
   function getTag(value) {
     return _toString.call(value);
+  }
+
+  var _hasOwnProperty = Object.prototype.hasOwnProperty;
+  function hasOwn(obj, key) {
+    return _hasOwnProperty.call(obj, key);
   }
 
   /**
@@ -821,10 +457,6 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     return (type === 'class' ? '.' : '#') + string;
   }
 
-  function makeArray(arrayLike) {
-    return emptyArray.slice.call(arrayLike);
-  }
-
   /**
    * @description 从dom字符串中获取最外层元素的className或id
    * @example
@@ -841,10 +473,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     if (string.length === 0) return selector;
 
     if (type === 'class') {
-      var _classIndex2 = string.indexOf('class');
-      if (_classIndex2 < 0) return selector;
+      var _classIndex = string.indexOf('class');
+      if (_classIndex < 0) return selector;
 
-      var start = string.indexOf('"', _classIndex2 + 5);
+      var start = string.indexOf('"', _classIndex + 5);
       var end = string.indexOf('"', start + 1);
       var className = string.substring(start + 1, end);
       var klasses = className.split(' ');
@@ -914,7 +546,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * appendClass('test1', 'test2', 'test3'); //'test1 test2 test3'
    */
   function appendClass() {
-    return Array.from(arguments).reduce(function (result, current) {
+    return toArray(arguments).reduce(function (result, current) {
       var willAppend = isString(current) ? current : String(current);
       var division = result === '' || willAppend === '' ? '' : ' ';
       return result += division + willAppend;
@@ -1201,7 +833,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     iteratees.forEach(function (iteratee) {
       var result = baseRemoveKey(object, iteratee.trim());
       if (result) {
-        Object.assign(obj, result);
+        extend(obj, result);
         flag = true;
       }
     });
@@ -1222,17 +854,17 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   function forIn(object, callback) {
     if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
-    for (var _key4 in object) {
-      var isBreak = callback(object[_key4], _key4, object);
+    for (var _key3 in object) {
+      var isBreak = callback(object[_key3], _key3, object);
       if (isBreak === false) break;
     }
   }
   function forInOwn(object, callback) {
     if (!isFunction(callback)) throw new Error(callback + ' is not a function');
 
-    for (var _key5 in object) {
-      if (object.hasOwnProperty(_key5)) {
-        var isBreak = callback(object[_key5], _key5, object);
+    for (var _key4 in object) {
+      if (hasOwn(object, _key4)) {
+        var isBreak = callback(object[_key4], _key4, object);
         if (isBreak === false) break;
       }
     }
@@ -1299,11 +931,11 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @description 多个数据的并集
    */
   function union() {
-    return uniq(baseUnion(Array.from(arguments), true));
+    return uniq(baseUnion(toArray(arguments), true));
   }
 
   function unionBy() {
-    var _baseUnion = baseUnion(Array.from(arguments)),
+    var _baseUnion = baseUnion(toArray(arguments)),
         array = _baseUnion.array,
         prop = _baseUnion.prop;
 
@@ -1319,7 +951,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     if (!(prop in target)) return result;
 
     for (var i = 0, len = array.length; i < len; i++) {
-      if (prop in array[i] && Object.is(array[i][prop], target[prop])) {
+      if (prop in array[i] && _is(array[i][prop], target[prop])) {
         result = true;
         break;
       }
@@ -1504,7 +1136,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
     has: function has(item) {
       var key = findKey(this, function (value, key) {
-        return !['size', 'nextKey'].includes(key) && Object.is(value, item);
+        return !['size', 'nextKey'].includes(key) && _is(value, item);
       });
       return typeof key !== 'undefined';
     },
@@ -1516,12 +1148,12 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       });
     },
     add: function add(item) {
-      var _this2 = this;
+      var _this = this;
 
       var addSet = function addSet(target) {
-        if (!_this2.has(target)) {
-          _this2[_this2.nextKey++] = target;
-          _this2.size++;
+        if (!_this.has(target)) {
+          _this[_this.nextKey++] = target;
+          _this.size++;
         }
       };
 
@@ -1584,7 +1216,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @description ES5版Map集合
    */
   function MapMock(entries) {
-    var _this3 = this;
+    var _this2 = this;
 
     Object.defineProperty(this, 'size', {
       configurable: false,
@@ -1601,10 +1233,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           if (!isArray(entry)) {
             throw new Error(entry + ' is not a Array');
           } else {
-            var _key6 = entry[0],
+            var _key5 = entry[0],
                 value = entry[1];
-            _this3[_key6] = value;
-            _this3.size++;
+            _this2[_key5] = value;
+            _this2.size++;
           }
         });
       }
@@ -1625,7 +1257,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     has: function has(key) {
       var has = false;
       forInOwn(this, function (_, k) {
-        if (Object.is(key, k)) {
+        if (_is(key, k)) {
           has = true;
           return false;
         }
@@ -1654,7 +1286,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     }
   };
 
-  var Util = (_Util = {
+  var Util = {
 
     // 判断
     isString: isString,
@@ -1666,56 +1298,345 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     isNumeric: isNumeric,
     isDom: isDom,
     isInteger: isInteger,
-    isLength: isLength
-  }, _defineProperty(_Util, 'isEmpty', isEmpty), _defineProperty(_Util, 'isUndefined', isUndefined), _defineProperty(_Util, 'isNull', isNull), _defineProperty(_Util, 'isNil', isNil), _defineProperty(_Util, 'isBoolen', isBoolen), _defineProperty(_Util, 'isArray', isArray), _defineProperty(_Util, 'isDate', isDate), _defineProperty(_Util, 'isRegExp', isRegExp), _defineProperty(_Util, 'toNumber', toNumber), _defineProperty(_Util, 'toInteger', toInteger), _defineProperty(_Util, 'toSelector', toSelector), _defineProperty(_Util, 'appendStyle', appendStyle), _defineProperty(_Util, 'insertElementToBody', insertElementToBody), _defineProperty(_Util, 'domAfterLoad', domAfterLoad), _defineProperty(_Util, 'tagOf', tagOf), _defineProperty(_Util, 'getSelector', getSelector), _defineProperty(_Util, 'appendClass', appendClass), _defineProperty(_Util, 'getRandomClassName', getRandomClassName), _defineProperty(_Util, 'uniq', uniq), _defineProperty(_Util, 'remove', remove), _defineProperty(_Util, 'ins', ins), _defineProperty(_Util, 'makeArray', makeArray), _defineProperty(_Util, 'sum', sum), _defineProperty(_Util, 'sumBy', sumBy), _defineProperty(_Util, 'max', max), _defineProperty(_Util, 'maxBy', maxBy), _defineProperty(_Util, 'min', min), _defineProperty(_Util, 'minBy', minBy), _defineProperty(_Util, 'mean', mean), _defineProperty(_Util, 'meanBy', meanBy), _defineProperty(_Util, 'insert', insert), _defineProperty(_Util, 'includesBy', includesBy), _defineProperty(_Util, 'union', union), _defineProperty(_Util, 'unionBy', unionBy), _defineProperty(_Util, 'removeKey', removeKey), _defineProperty(_Util, 'removeKeys', removeKeys), _defineProperty(_Util, 'findKey', findKey), _defineProperty(_Util, 'lastOf', lastOf), _defineProperty(_Util, 'forIn', forIn), _defineProperty(_Util, 'forInOwn', forInOwn), _defineProperty(_Util, 'clone', clone), _defineProperty(_Util, 'cloneDeep', cloneDeep), _defineProperty(_Util, 'removeUndef', removeUndef), _defineProperty(_Util, 'toCamelCase', toCamelCase), _defineProperty(_Util, 'fromCamelCase', fromCamelCase), _defineProperty(_Util, 'getUniqString', getUniqString), _defineProperty(_Util, 'dateFormater', dateFormater), _defineProperty(_Util, 'getMonthData', getMonthData), _defineProperty(_Util, 'SetMock', SetMock), _defineProperty(_Util, 'MapMock', MapMock), _Util);!function (global) {
+    isLength: isLength,
+    isUndefined: isUndefined,
+    isNull: isNull,
+    isNil: isNil,
+    isBoolen: isBoolen,
+    isArray: isArray,
+    isDate: isDate,
+    isRegExp: isRegExp,
 
-    function mouseWheelListener(callback) {
-      addMouseWheelHandler(function (e) {
-        e = e || global.event;
-        var value = e.wheelDelta || -e.deltaY || -e.detail;
-        var delta = Math.max(-1, Math.min(1, value));
-        var direction = delta < 0 ? 'down' : 'up';
-        isFunction(callback) && callback(direction, value, delta);
-      });
-    }
+    // number方法
+    toNumber: toNumber,
+    toInteger: toInteger,
 
-    global.mouseWheelListener = mouseWheelListener;
+    // dom方法
+    toSelector: toSelector,
+    appendStyle: appendStyle,
+    insertElementToBody: insertElementToBody,
+    domAfterLoad: domAfterLoad,
+    tagOf: tagOf,
+    getSelector: getSelector,
+    appendClass: appendClass,
+    getRandomClassName: getRandomClassName,
 
-    var g_supportsPassive = false;
-    try {
-      var opts = Object.defineProperty({}, 'passive', {
-        get: function get() {
-          g_supportsPassive = true;
+    // 数组方法
+    uniq: uniq,
+    remove: remove,
+    ins: ins,
+    sum: sum,
+    sumBy: sumBy,
+    max: max,
+    maxBy: maxBy,
+    min: min,
+    minBy: minBy,
+    mean: mean,
+    meanBy: meanBy,
+    insert: insert,
+    includesBy: includesBy,
+    union: union,
+    unionBy: unionBy,
+
+    // 对象方法
+    removeKey: removeKey,
+    removeKeys: removeKeys,
+    findKey: findKey,
+    lastOf: lastOf,
+    forIn: forIn,
+    forInOwn: forInOwn,
+    clone: clone,
+    cloneDeep: cloneDeep,
+    removeUndef: removeUndef,
+    extend: extend,
+    toArray: toArray,
+
+    // String方法
+    toCamelCase: toCamelCase,
+    fromCamelCase: fromCamelCase,
+    getUniqString: getUniqString,
+
+    // 其他方法
+    dateFormater: dateFormater,
+    getMonthData: getMonthData,
+
+    SetMock: SetMock,
+    MapMock: MapMock
+
+  };
+
+  return Util;
+});
+
+/**
+ * @description 组件的通用父类
+ */
+;!function (global, factory) {
+
+  (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory(global) : typeof define === 'function' && define.amd ? define([global], factory) : global.Component = factory(global);
+}(this, function (global) {
+  var _global$Util = global.Util,
+      isLength = _global$Util.isLength,
+      removeUndef = _global$Util.removeUndef,
+      isNil = _global$Util.isNil,
+      isUndefined = _global$Util.isUndefined,
+      insertElementToBody = _global$Util.insertElementToBody,
+      lastOf = _global$Util.lastOf,
+      getSelector = _global$Util.getSelector,
+      domAfterLoad = _global$Util.domAfterLoad,
+      extend = _global$Util.extend;
+
+
+  function Component() {
+    this.init();
+  }
+
+  /**
+   * @description 将组件元素挂载到dom
+   * @param { Array } doms 需要挂载的dom列表
+   * [{
+   *   html: String, // 需要被挂载的dom字符串
+   *   container: DOMElement | 'body', // 挂载的目标容器
+   *   condition: Boolen, // 挂载的条件，默认挂载
+   *   type: 'html' // 挂载dom的jQuery方法, append | prepend | before | after | html 等, 默认html
+   * }]
+   */
+  Object.defineProperty(Component.prototype, 'mount', {
+    value: function value(doms) {
+      var _this3 = this;
+
+      if (!doms || !isLength(doms.length) || doms.length < 1) return;
+      removeUndef(doms);
+
+      doms.forEach(function (dom) {
+        var condition = dom.condition,
+            container = dom.container,
+            html = dom.html,
+            type = dom.type;
+
+        if (isNil(html)) throw new Error('缺少需挂载的dom字符串');
+        if (isNil(container)) throw new Error('缺少挂载目标容器');
+
+        // condition默认为true
+        isUndefined(condition) && (condition = true);
+        if (condition) {
+          if (container === 'body') {
+            insertElementToBody($(html));
+          } else {
+            type = type || 'html';
+            !(container instanceof jQuery) && (container = $(container));
+            container[type](html);
+          }
         }
       });
-      global.addEventListener("testPassive", null, opts);
-      global.removeEventListener("testPassive", null, opts);
-    } catch (e) {}
 
-    function addMouseWheelHandler(callback) {
-      var prefix = '';
-      var _addEventListener = void 0;
+      var last = lastOf(doms.filter(function (dom) {
+        return isUndefined(dom.condition) || dom.condition;
+      }));
+      if (last) {
+        var _classIndex2 = last.html.indexOf('class');
+        var selector = '';
+        if (_classIndex2 > -1) {
+          selector = getSelector(last.html);
+        } else {
+          selector = getSelector(last.html, 'id');
+        }
 
-      if (global.addEventListener) {
-        _addEventListener = "addEventListener";
-      } else {
-        _addEventListener = "attachEvent";
-        prefix = 'on';
+        domAfterLoad(selector, function () {
+          _this3.componentDidMount();
+          _this3.style();
+          _this3.bindEvents();
+          _this3.destroy();
+        });
       }
+    },
+    writable: false,
+    configurable: false,
+    enumerable: true
+  });
 
-      var support = 'onwheel' in document.createElement('div') ? 'wheel' : document.onmousewheel !== undefined ? 'mousewheel' : 'DOMMouseScroll';
+  Object.defineProperty(Component.prototype, 'init', {
+    value: function value() {
+      var doms = this.render();
+      this.componentWillMount();
+      this.mount(doms);
+    },
+    writable: false,
+    configurable: false,
+    enumerable: true
+  });
 
-      var passiveEvent = g_supportsPassive ? { passive: false } : false;
+  extend(Component.prototype, {
+    render: function render() {
+      return [];
+    },
+    style: function style() {},
+    componentWillMount: function componentWillMount() {},
+    componentDidMount: function componentDidMount() {},
+    bindEvents: function bindEvents() {},
 
-      if (support == 'DOMMouseScroll') {
-        document[_addEventListener](prefix + 'MozMousePixelScroll', callback, passiveEvent);
+    /**
+     * @description 删除一些无用的实例属性
+     */
+    destroy: function destroy() {}
+  });
+
+  return Component;
+});
+
+/**
+ * @description 监听器，监听某个对象的某个属性或者所有属性的变化，根据属性值的变化执行响应的操作
+ * @param options = {
+ *   set: Function, // 在使用‘=’赋值的同时需要执行的操作
+ *   get: Function  // 在获取值的同时需要执行的操作
+ * }
+ */
+;!function (global, factory) {
+
+  (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory(global) : typeof define === 'function' && define.amd ? define([global], factory) : global.Observer = factory(global);
+}(this, function (global) {
+  var _global$Util2 = global.Util,
+      isObjectLike = _global$Util2.isObjectLike,
+      isObject = _global$Util2.isObject,
+      isNil = _global$Util2.isNil,
+      extend = _global$Util2.extend,
+      isFunction = _global$Util2.isFunction;
+
+
+  function Observer(object, prop, options) {
+    if (!isObjectLike(object)) {
+      throw new Error(object + ' is not a object');
+    }
+
+    if (isObject(prop) && isNil(options)) {
+      options = prop;
+      prop = null;
+    }
+
+    this.options = options;
+    this.watching(object, prop);
+  }
+
+  extend(Observer.prototype, {
+    watching: function watching(object, prop) {
+      if (!object || !isObjectLike(object)) return;
+
+      if (isNil(prop)) {
+        for (var _key6 in object) {
+          this.handlePropChange(object, _key6, object[_key6]);
+        }
       } else {
-        document[_addEventListener](prefix + support, callback, passiveEvent);
+        this.handlePropChange(object, prop, object[prop]);
+      }
+    },
+    handlePropChange: function handlePropChange(object, prop, value) {
+      this.watching(value);
+
+      var _options = this.options,
+          _get = _options.get,
+          _set = _options.set;
+
+
+      if (Object.defineProperty) {
+        Object.defineProperty(object, prop, {
+          set: function set(newValue) {
+            isFunction(_set) && _set(newValue);
+            value = newValue;
+          },
+          get: function get() {
+            isFunction(_get) && _get();
+            return value;
+          }
+        });
+      } else {
+        object.__defineSetter__(prop, function (newValue) {
+          isFunction(_set) && _set(newValue);
+          value = newValue;
+        });
+
+        object.__defineGetter__(prop, function () {
+          isFunction(_get) && _get();
+          return value;
+        });
       }
     }
-  }(global);
+  });
 
-  /* ========jQuery======== */
+  return Observer;
+});
+
+/**
+ * 滚轮事件监听
+ */
+;!function (global, factory) {
+
+  (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory(global) : typeof define === 'function' && define.amd ? define([global], factory) : global.mouseWheelListener = factory(global);
+}(this, function (global) {
+  var isFunction = global.Util.isFunction;
+
+
+  function mouseWheelListener(callback) {
+    addMouseWheelHandler(function (e) {
+      e = e || global.event;
+      var value = e.wheelDelta || -e.deltaY || -e.detail;
+      var delta = Math.max(-1, Math.min(1, value));
+      var direction = delta < 0 ? 'down' : 'up';
+      isFunction(callback) && callback(direction, value, delta);
+    });
+  }
+
+  var g_supportsPassive = false;
+  try {
+    var opts = Object.defineProperty({}, 'passive', {
+      get: function get() {
+        g_supportsPassive = true;
+      }
+    });
+    global.addEventListener("testPassive", null, opts);
+    global.removeEventListener("testPassive", null, opts);
+  } catch (e) {}
+
+  function addMouseWheelHandler(callback) {
+    var prefix = '';
+    var _addEventListener = void 0;
+
+    if (global.addEventListener) {
+      _addEventListener = "addEventListener";
+    } else {
+      _addEventListener = "attachEvent";
+      prefix = 'on';
+    }
+
+    var support = 'onwheel' in document.createElement('div') ? 'wheel' : document.onmousewheel !== undefined ? 'mousewheel' : 'DOMMouseScroll';
+
+    var passiveEvent = g_supportsPassive ? { passive: false } : false;
+
+    if (support == 'DOMMouseScroll') {
+      document[_addEventListener](prefix + 'MozMousePixelScroll', callback, passiveEvent);
+    } else {
+      document[_addEventListener](prefix + support, callback, passiveEvent);
+    }
+  }
+
+  return mouseWheelListener;
+});
+
+/**
+ * @description jQuery extend
+ */
+;!function (global) {
+  var _global$Util3 = global.Util,
+      isNil = _global$Util3.isNil,
+      isFunction = _global$Util3.isFunction,
+      isString = _global$Util3.isString,
+      forInOwn = _global$Util3.forInOwn,
+      isObject = _global$Util3.isObject,
+      fromCamelCase = _global$Util3.fromCamelCase,
+      isArray = _global$Util3.isArray;
+
+
+  var $ = global.jQuery;
+
   /**
    * @description 设置或获取元素的translate值
    * @param { Number | Function } x
@@ -1900,6 +1821,4 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     }
 
   });
-
-  return Util;
-});
+}(this);
