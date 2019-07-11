@@ -1,0 +1,132 @@
+.cpts-tabs-container {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  /* tab */
+  & > .cpts-tabs-tab-container {
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #e8e8e8;
+    position: relative;
+    box-sizing: border-box;
+
+    &.cpts-tabs-tab-with-arrow-container {
+      padding: 0 30px;
+    }
+  
+    & > .cpts-tabs-tab-wrapper {
+      flex: 1;
+      overflow: hidden;
+      white-space: nowrap;
+    
+      & > .cpts-tabs-tab-inner {
+        display: inline-block;
+        transition: all .5s;
+    
+        & > .cpts-tabs-tab-item {
+          display: inline-block;
+          padding: 12px 16px;
+          cursor: pointer;
+          color: @tabs-base-color;
+          margin-right: @tabs-base-margin-right;
+          box-sizing: border-box;
+          transition: color .5s;
+  
+          &.cpts-tabs-tab-item-active {
+            color: @primary-color;
+          }
+  
+          &.cpts-tabs-tab-card-item {
+            background-color: @tabs-card-bg;
+            border-color: @tabs-card-border-color;
+            margin-right: @tabs-card-margin-right;
+            border: @tabs-card-border;
+            border-radius: @tabs-card-border-radius;
+            height: 45px;
+            padding: 0 16px;
+            line-height: 45px;
+            position: relative;
+            z-index: 1;
+            border-bottom: none;
+  
+            &.cpts-tabs-tab-item-active {
+              background-color: #fff;
+              border-bottom-color: #fff;
+            }
+
+            & > .cpts-close-icon {
+              margin-left: 5px;
+              vertical-align: middle;
+            }
+          }
+    
+          &:hover {
+            color: @primary-color;
+          }
+        }
+    
+        & > .cpts-tabs-underline {
+          height: 2px;
+          transition: all .5s;
+          background-color: @primary-color;
+        }
+  
+        &.cpts-tabs-tab-card-inner > .cpts-tabs-underline {
+          display: none;
+        }
+      }
+    }
+    
+    .cpts-tabs-arrow {
+      width: 30px;
+      height: 100%;
+      position: relative;
+      position: absolute;
+      top: 0;
+      z-index: 2;
+
+      &.cpts-tabs-prev-arrow {
+        left: 0;
+      }
+      &.cpts-tabs-next-arrow {
+        right: 0;
+      }
+    
+      & > svg {
+        width: 15px;
+        height: 15px;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        cursor: pointer;
+      }
+    
+      &.cpts-tabs-arrow-disable > svg {
+        cursor: not-allowed;
+      }
+    
+      &.cpts-tabs-arrow-invisible {
+        display: none;
+      }
+    }
+  }
+
+  /* pane */
+  & > .cpts-tabs-pane-wrapper {
+    display: inline-block;
+    transition: transform .3s;
+    overflow: hidden;
+    flex: 1;
+  
+    & > .cpts-tabs-pane-item {
+      display: inline-block;
+      height: 100%;
+  
+      vertical-align: top;
+    }
+  }
+}

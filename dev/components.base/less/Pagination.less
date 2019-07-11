@@ -1,0 +1,103 @@
+.cpts-pagination-container {
+
+  & > .cpts-pagination-item,
+  & > .cpts-pagination-item-previous,
+  & > .cpts-pagination-item-next,
+  & > .cpts-pagination-item-more {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    border-radius: 4px;
+    cursor: pointer;
+    vertical-align: top;
+    box-sizing: border-box;
+
+    & > a {
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      color: rgba(0, 0, 0, 0.65);
+      font-weight: 100;
+      position: relative;
+    }
+  }
+
+  & > .cpts-pagination-item-previous, 
+  & > .cpts-pagination-item-next,
+  & > .cpts-pagination-item-more {
+    width: auto;
+    min-width: 30px;
+
+    & > a > svg {
+      width: 12px;
+      height: 12px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    &.cpts-pagination-item-disable > a {
+      color: #d9d9d9;
+      cursor: not-allowed;
+    }
+  }
+
+  & > .cpts-pagination-item-border {
+    border: solid #d9d9d9 1px;
+  }
+
+  & > .cpts-pagination-item {
+    & + .cpts-pagination-item,
+    & + .cpts-pagination-item-more {
+      margin-left: 8px;
+    }
+
+    &.cpts-pagination-item-active {
+
+      & > a {
+        color: @primary-color;
+      }
+
+      &.cpts-pagination-item-border {
+        border-color: @primary-color;
+      }
+    }
+
+    &:hover {
+      color: @primary-color;
+    }
+  }
+
+  & > .cpts-pagination-item-next {
+    margin-left: 8px;
+    padding: 0 7px;
+  }
+  & > .cpts-pagination-item-previous {
+    margin-right: 8px;
+    padding: 0 7px;
+  }
+
+  & > .cpts-pagination-item-more {
+    & + .cpts-pagination-item {
+      margin-left: 8px;
+    }
+
+    & > a > svg:last-child {
+      display: none;
+    }
+
+    &:hover > a > svg {
+      &:first-child {
+        display: none;
+      }
+
+      &:last-child {
+        display: block;
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
-;!function (win, $, Swiper, Component, Util) {
-
-  /* utils */
+;!function (win) {
+  const $ = win.jQuery;
+  const { Swiper, Component, util } = win;
   const {
     isString,
     isObject,
@@ -35,7 +35,7 @@
     SetMock,
     appendClass,
     getRandomClassName
-  } = Util;
+  } = util;
 
   /* color */
   const PRIMARY_COLOR = '#1890ff';
@@ -2256,4 +2256,4 @@
     }
   });
 
-}(window, window.jQuery, window.Swiper, window.Component, window.Util)
+}(window)

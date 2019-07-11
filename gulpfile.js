@@ -9,8 +9,9 @@ const cleanCSS = require('gulp-clean-css');
 const autoprefixer = require('gulp-autoprefixer');
 const gutil = require('gulp-util');
 
-function getSrc(filesName, fileType) {
+function getSrc(filesName, fileType, path) {
   fileType = fileType ? fileType.trim() : 'js';
+  path = path ? path : '';
 
   if ( (filesName == null) || (filesName.trim && (filesName.trim() === '*')) ) {
     return 'dev/*.' + fileType;
@@ -19,7 +20,7 @@ function getSrc(filesName, fileType) {
   const files = Array.isArray(filesName) ? filesName : filesName.split(',');
 
   return files.map((file) => {
-    return 'dev/' + file.trim() + '.' + fileType;
+    return 'dev/' + path + file.trim() + '.' + fileType;
   });
 }
 
@@ -94,8 +95,9 @@ getES5('util, components.base');
 /**
  * @description less => css, 监听less变化自动更新css
  */
-function toCSS (filesName) {
-  const src = getSrc(filesName, 'less');
+function toCSS (filesName, path) {
+  path = path ? path : '';
+  const src = getSrc(filesName, 'less', path);console.log('dev/' + path + 'less/*.less');
 
   gulp.task('less',function(){
     return (
@@ -105,18 +107,19 @@ function toCSS (filesName) {
       .pipe(autoprefixer({
         browsers: ['>0%']
       }))
-      .pipe(gulp.dest('dev'))
+      .pipe(gulp.dest('dev/' + path))
     );
   });
   gulp.task('watchLess',function(){
     gulp.watch(src,['less']);
+    gulp.watch('dev/' + path + 'less/CardList.less', ['less']);
   });
   gulp.task('taskList', ['less', 'watchLess']);
   gulp.task('toCSS', function() {
     gulp.start('taskList');
   });
 }
-toCSS('components.base');
+toCSS('components.base', 'components.base/');
 
 /**
  * @description 压缩dev下的css文件

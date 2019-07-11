@@ -2,7 +2,7 @@
 
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
-  ( global.Util = factory() );
+  ( global.util = factory() );
 
 }(this, function() {
 
@@ -307,22 +307,16 @@
   }
 
   function baseHandleYear(year) {
-    year = toNumber(year);
-    const currentYear = baseNow().getFullYear();
-
-    if (year === false) return currentYear;
+    year = toNumber(year) || baseNow().getFullYear();
     
-    if (year < 1970 || year > currentYear)
+    if (year < 1970)
       throw new Error(`year:${year} is not in range`);
 
     return year;
   }
 
   function baseHandleMonth(month) {
-    month = toNumber(month);
-    const currentMonth = baseNow().getMonth() + 1;
-    
-    if (month === false) return currentMonth;
+    month = toNumber(month) || (baseNow().getMonth() + 1);
 
     if (month < 1 || month > 12)
       throw new Error(`month:${month} is not in range`);
@@ -331,8 +325,10 @@
   }
 
   function baseDateFull(number) {
-    if (!isNumber(number)) throw new Error(number + ' is not a number');
-    return number < 10 ? ('0' + number) : number;
+    if (!isNumber(number))
+      throw new Error(`${number} is not a number`);
+
+    return number < 10 ? `0${number}` : number;
   }
 
   /* ======== Util全局对象中的方法 ======== */
@@ -1275,7 +1271,7 @@
     }
   };
 
-  const Util = {
+  const util = {
 
     // 判断
     isString,
@@ -1354,7 +1350,7 @@
 
   }
 
-  return Util;
+  return util;
 });
 
 /**
@@ -1369,7 +1365,7 @@
 }(this, function (global) {
   const { 
     isLength, removeUndef, isNil, isUndefined, insertElementToBody, lastOf, getSelector, domAfterLoad, extend
-  } = global.Util;
+  } = global.util;
 
   function Component() {
     this.init();
@@ -1475,7 +1471,7 @@
 }(this, function (global) {
   const { 
     isObjectLike, isObject, isNil, extend, isFunction
-   } = global.Util;
+   } = global.util;
 
   function Observer(object, prop, options) {
     if (!isObjectLike(object)) {
@@ -1520,7 +1516,7 @@
             return value;
           }
         });
-      } else {
+      } else if (object.__defineSetter__) {
         object.__defineSetter__(prop, (newValue) => {
           isFunction(set) && set(newValue);
           value = newValue;
@@ -1530,6 +1526,8 @@
           isFunction(get) && get();
           return value;
         });
+      } else {
+        throw new Error(`not support defineProperty`);
       }
     }
   });
@@ -1549,7 +1547,7 @@
 }(this, function (global) {
   const {
     isFunction
-  } = global.Util;
+  } = global.util;
 
   function mouseWheelListener(callback) {
     addMouseWheelHandler(function (e) {
@@ -1605,7 +1603,7 @@
 ;!function (global) {
   const {
     isNil, isFunction, isString, forInOwn, isObject, fromCamelCase, isArray
-  } = global.Util;
+  } = global.util;
 
   const $ = global.jQuery;
 
@@ -1717,7 +1715,7 @@
   };
 
   /**
-   * for $.node, $.imgNode
+   * for $.node, $.closingNode
    */
   const handleAttr = (attr) => {
     let attributes = '';
@@ -1742,57 +1740,60 @@
 
     return attributes;
   }
+
+  /**
+   * @description 生成html字符串
+   * @param {String} wrapper tagName
+   * @param {String} item 元素子集
+   * @param {String} klass className
+   * @param {String | Object} attributes
+   * @example
+   * var node = $.node('div', 1234, 'test', {
+   *    dataValue: 1,
+   *    style: {
+   *      backgroundColor: red,
+   *      color: '#fff'
+   *    }
+   * });
+   * 
+   * // "<div class="test" data-value="1" style="background-color: red;color: #fff;">1234</div>"
+   */
+  const node = function (wrapper, children, klass, attr) {
+    if (isNil(children)) return '';
+  
+    // If the children is an array, do a join
+    children = isArray(children) ? children.join('') : children;
+
+    // Check for the class
+    klass = klass ? ' class="' + klass + '"' : '';
+
+    // Check for any attributes
+    const attributes = handleAttr(attr);
+    
+    return '<' + wrapper + klass + attributes + '>' + children + '</' + wrapper + '>';
+  };
+
+  const closingNode = function (tagName, klass, attr) {
+    klass = klass ? ` class="${klass}"` : '';
+      
+    const attributes = handleAttr(attr);
+
+    return '<' + tagName + klass + attributes + '/>';
+  };
+
+  /**
+   * @description 子类使用this.super()继承父类
+   */
+  const inherit = function (SuperClass, SubClass) {
+    SubClass.prototype = new SuperClass();
+    SubClass.prototype.constructor = SubClass;
+    SubClass.prototype.super = SuperClass;
+  };
   
   $.extend({
-    
-    /**
-     * @description 生成html字符串
-     * @param {String} wrapper tagName
-     * @param {String} item 元素子集
-     * @param {String} klass className
-     * @param {String | Object} attributes
-     * @example
-     * var node = $.node('div', 1234, 'test', {
-     *    dataValue: 1,
-     *    style: {
-     *      backgroundColor: red,
-     *      color: '#fff'
-     *    }
-     * });
-     * 
-     * // "<div class="test" data-value="1" style="background-color: red;color: #fff;">1234</div>"
-     */
-    node: function (wrapper, children, klass, attr) {
-      if (isNil(children)) return '';
-  
-      // If the children is an array, do a join
-      children = isArray(children) ? children.join('') : children;
-  
-      // Check for the class
-      klass = klass ? ' class="' + klass + '"' : '';
-  
-      // Check for any attributes
-      const attributes = handleAttr(attr);
-      
-      return '<' + wrapper + klass + attributes + '>' + children + '</' + wrapper + '>';
-    },
-
-    closingNode: function (tagName, klass, attr) {
-      klass = klass ? ` class="${klass}"` : '';
-      
-      const attributes = handleAttr(attr);
-
-      return '<' + tagName + klass + attributes + '/>';
-    },
-
-    /**
-     * @description 子类使用this.super()继承父类
-     */
-    inherit: function (SuperClass, SubClass) {
-      SubClass.prototype = new SuperClass();
-      SubClass.prototype.constructor = SubClass;
-      SubClass.prototype.super = SuperClass;
-    }
-    
+    node,
+    closingNode,
+    inherit
   });
+  
 }(this)
