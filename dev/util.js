@@ -2,7 +2,7 @@
 
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
-  ( global.util = factory() );
+  ( typeof global._ === 'undefined' ? global._ = global.util = factory() : global.util = factory() );
 
 }(this, function() {
 
@@ -57,7 +57,7 @@
    */
   const toArray = Array.from || function (arrayLike, callback) {
     const len = arrayLike.length || arrayLike.size;
-    if (typeof len !== 'number') return [];
+    if (!isLength(len)) return [];
     
     const array = [];
     forInOwn(arrayLike, (value, key, self) => {
@@ -116,7 +116,7 @@
    * @param { Boolen } deep 是否第一次查找到后继续遍历查找
    */
   function baseKeyOf(object, iteratee, deep) {
-    if (!isObjectLike(object)) throw new Error( `${object} is not a object`);
+    checkObjectLike(object);
 
     const keys = [];
     for (key in object) {
@@ -143,7 +143,7 @@
    * @param deep 是否删除第一个后继续往下遍历
    */
   function baseRemoveKey(object, iteratee, deep) {
-    if (!isObjectLike(object)) throw new Error( `${object} is not a object`);
+    checkObjectLike(object);
 
     const isFunc = isFunction(iteratee);
 
@@ -186,7 +186,7 @@
   }
 
   function baseRemove(array, iteratee) {
-    if (!isArray(array)) throw new TypeError(`${array} is not a Array`);
+    checkType(array, 'array');
 
     const isFunc = isFunction(iteratee);
     const isArr = isArray(iteratee);
@@ -274,7 +274,7 @@
   }
 
   function baseClone(object, deep) {
-    if (!isObjectLike(object)) throw new TypeError(`${object} expect a object`);
+    checkObjectLike(object);
 
     const result = isArray(object) ? [] : {};
     for (let key in object) {
@@ -299,6 +299,17 @@
     return _hasOwnProperty.call(obj, key)
   }
 
+  function getType (value) {
+    const tag = getTag(value);
+    
+    return tag.slice(8, tag.length - 1).toLowerCase();
+  }
+
+  function checkObjectLike(value) {
+    if (!isObjectLike(value))
+      throw new TypeError(`Excepted a 'objectLike', You given a ${getType(value)}`);
+  }
+  
   /**
    * Date
    */
@@ -325,8 +336,7 @@
   }
 
   function baseDateFull(number) {
-    if (!isNumber(number))
-      throw new Error(`${number} is not a number`);
+    checkType(number, 'number');
 
     return number < 10 ? `0${number}` : number;
   }
@@ -445,6 +455,42 @@
   }
 
   /**
+   * 类型检测
+   * @param { * } value 被检测变量
+   * @param { Array | String } 目标类型，类型全部为小写，如 'number'
+   * 不符合要求的类型会抛出TypeError
+   */
+  function checkType (value, types) {
+    const promise = Promise ? new Promise(() => {}) : undefined;
+    const typeList = uniq([
+      1, true, emptyArray, {}, /a-z/, baseNow(), '', new Function, undefined,  null, promise, '*',
+      Set ? new Set : undefined, WeakSet ? new WeakSet : undefined, Map ? new Map : undefined,
+      WeakMap ? new WeakMap : undefined, Symbol ? Symbol('') : undefined, ArrayBuffer ? new ArrayBuffer : undefined,
+    ]).map(instance => _is(instance, '*') ? instance : getType(instance));
+    
+    const valueType = getType(value);
+    if (isArray(types)) {
+      types.forEach(type => {
+        if (!typeList.includes(type)) {
+          console.warn(`${type} is not a correct javaScript data type`);
+          return;
+        }
+
+        if (!typeList.includes(valueType))
+          throw new TypeError(`Expected a '${types.join(',')}', You given a '${valueType}'`);
+      });
+    } else {
+      if (!typeList.includes(types)) {
+        console.warn(`${types} is not a correct javaScript data type`);
+        return;
+      }
+
+      if (!_is(valueType, '*') && !_is(valueType, types))
+        throw new TypeError(`Expected a '${types}', You given a '${valueType}'`);
+    }
+  }
+
+  /**
    * @description 将普通类名变为选择器
    * @param { String } string
    * @param { String } type 'class' || 'id'
@@ -465,10 +511,10 @@
    * getSelector('<div class="wrapper wrap" id="main"><span class="inner"></span></div>', 'id') // #main
    */
   function getSelector(string, type = 'class') {
+    checkType(string, 'string');
     let selector = '';
 
     if (type !== 'class' && type !== 'id') return selector;
-    if (!isString(string)) throw new Error(string + ' is not a string');
     if (string.length === 0) return selector;
     
     if (type === 'class') {
@@ -587,8 +633,7 @@
     if (isNil(dateStamp)) {
       date = baseNow();
     } else {
-      if (!isNumber(dateStamp))
-        throw new Error(`${dateStamp} is not a number`);
+      checkType(dateStamp, 'number');
 
       if (String(dateStamp).length === 13) {
         date = new Date(dateStamp);
@@ -729,8 +774,10 @@
       }
     }
     
-    string = string.split('').map((str, ii) => index.includes(ii) ? str.toUpperCase() : str).join('');
-    return string.replace(/[-_]/g, '');
+    return (
+      string.split('').map((str, ii) => index.includes(ii)
+      ? str.toUpperCase() : str).join('')
+    ).replace(/[-_]/g, '');
   }
 
   /**
@@ -769,9 +816,7 @@
    */
   const domAfterLoad = (function fn(selector, loadedCallback, maxTimes = 500, times = 0) {
     if (!isNumber(maxTimes)) return;
-    if (!isString(selector)) {
-      throw new Error('`' + selector + '` is not a string');
-    }
+    checkType(selector, 'string');
     if (selector.length < 1) return;
 
     let timer = null;
@@ -806,11 +851,10 @@
       forInOwn(object, (_, key, self) => { delete self[key] });
       return;
     }
+    
+    checkType(iteratees, ['string', 'array']);
 
-    const isStr = isString(iteratees);
-    if (!isStr && isArray(iteratees)) throw new Error(`${iteratee} is not a function and string`);
-
-    iteratees = isStr ? iteratees.split(',') : iteratees;
+    iteratees = isString(iteratees) ? iteratees.split(',') : iteratees;
     let obj = {}, flag = false;
     iteratees.forEach((iteratee) => {
       const result = baseRemoveKey(object, iteratee.trim());
@@ -834,7 +878,7 @@
    * @description for-in循环
    */
   function forIn(object, callback) {
-    if (!isFunction(callback)) throw new Error( `${callback} is not a function`);
+    checkType(callback, 'function');
 
     for (const key in object) {
       const isBreak = callback(object[key], key, object);
@@ -842,7 +886,7 @@
     }
   }
   function forInOwn(object, callback) {
-    if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+    checkType(callback, 'function');
 
     for(const key in object) {
       if (hasOwn(object, key)) {
@@ -874,7 +918,7 @@
    */
   function insert(array, insertSet) {
     [array, insertSet].forEach((v) => {
-      if (!isArray(v)) throw new Error( `${v} is not a Array`);
+      checkType(v, 'array');
     });
 
     let adder = 0;
@@ -892,7 +936,7 @@
    * @param { Array } array
    */
   function uniq(array) {
-    if (!isArray(array)) throw new Error(array + ' is not a Array');
+    checkType(array, 'array');
 
     return array.reduce((arr, item) => {
       return arr.includes(item) ? arr : [...arr, item];
@@ -900,7 +944,7 @@
   }
 
   function uniqBy(array, prop) {
-    if (!isArray(array)) throw new Error(array + ' is not a Array');
+    checkType(array, 'array');
 
     return array.reduce((arr, item) => {
       return includesBy(arr, item, prop) ? arr : [...arr, item];
@@ -952,8 +996,8 @@
    * @description 两数组的交集
    */
   function ins(array, list) {
-    if (!isArray(array)) throw new Error(array + ' is not a Array');
-    if (!isArray(list)) throw new Error(list + ' is not a Array');
+    checkType(array, 'array');
+    checkType(list, 'array');
 
     const result = [];
     array.forEach(function (item) {
@@ -1077,8 +1121,7 @@
   }
 
   function removeUndef(object) {
-    if (!isObjectLike(object))
-      throw new Error(`${object} is not a object`);
+    checkObjectLike(object);
 
     forInOwn(object, (value, key, self) => {
       if (isUndefined(value)) {
@@ -1121,10 +1164,12 @@
     },
 
     forEach (callback, context) {
-      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+      checkType(callback, 'array');
 
       forInOwn(this, (value, key, self) => {
-        isObjectLike(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
+        isObjectLike(context) && context !== null 
+        ? callback.call(context, value, key, self)
+        : callback(value, key, self);
       });
     },
 
@@ -1168,7 +1213,7 @@
      * 额外的，不同于ES6 Set集合的方法
      */
     filter (callback) {
-      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+      checkType(callback, 'function');
 
       const result  = new SetMock();
       forInOwn(this, (value, key, self) => {
@@ -1207,11 +1252,11 @@
 
     if (entries != null) {
       if (!isArray(entries)) {
-        throw new Error(entries + ' is not a Array');
+        throw new TypeError(entries + ' is not a Array');
       } else {
         entries.forEach((entry) => {
           if (!isArray(entry)) {
-            throw new Error(entry + ' is not a Array');
+            throw new TypeError(entry + ' is not a Array');
           } else {
             const key = entry[0], value = entry[1];
             this[key] = value;
@@ -1263,10 +1308,12 @@
     },
 
     forEach (callback, context) {
-      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+      checkType(callback, 'function');
 
       forInOwn(this, (value, key, self) => {
-        isObjectLike(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
+        isObjectLike(context) && context !== null
+        ? callback.call(context, value, key, self)
+        : callback(value, key, self);
       });
     }
   };
@@ -1291,6 +1338,7 @@
     isArray,
     isDate,
     isRegExp,
+    checkType,
 
     // number方法
     toNumber,
@@ -1474,9 +1522,7 @@
    } = global.util;
 
   function Observer(object, prop, options) {
-    if (!isObjectLike(object)) {
-      throw new Error(`${object} is not a object`);
-    }
+    checkObjectLike(object);
 
     if (isObject(prop) && isNil(options)) {
       options = prop;
@@ -1668,7 +1714,7 @@
    * @param { Function } callback
    */
   $.prototype.findIndex = function (callback) {
-    if (!isFunction(callback)) throw new Error('`callback` must be a function');
+    checkType(callback, 'function');
 
     const $el = this;
     for (let i = 0, len = $el.length; i < len; i++) {
@@ -1695,9 +1741,9 @@
   };
   
   $.prototype.reduce = function (callback, initialValue) {
-    if (!isFunction(callback)) throw new Error('`' + callback + '` is not a function');
+    checkType(callback, 'function');
     if ( (this.length === 0) && (typeof initialValue === 'undefined') ) {
-      throw new Error('TypeError: Reduce of empty jQuery with no initial value');
+      throw new TypeError('Reduce of empty jQuery with no initial value');
     }
 
     const $el = this;

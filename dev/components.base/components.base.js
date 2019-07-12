@@ -14,6 +14,7 @@
     isNull,
     isNil,
     isArray,
+    checkType,
     toSelector,
     appendStyle,
     insertElementToBody,
@@ -873,7 +874,7 @@
 
     var mustBeNumber = ['total', 'pageSize', 'current'];
     mustBeNumber.forEach(key => {
-      if (!isNumber(opts[key])) throw new TypeError(`${key} is not a number`);
+      checkType(opts[key], 'number');
     });
 
     this.options = opts;
