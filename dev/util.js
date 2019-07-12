@@ -1339,6 +1339,7 @@
     isDate,
     isRegExp,
     checkType,
+    getType,
 
     // number方法
     toNumber,
@@ -1518,11 +1519,12 @@
 
 }(this, function (global) {
   const { 
-    isObjectLike, isObject, isNil, extend, isFunction
+    isObjectLike, isObject, isNil, extend, isFunction, getType
    } = global.util;
 
   function Observer(object, prop, options) {
-    checkObjectLike(object);
+    if (!isObjectLike(object))
+      throw new TypeError(`Excepted a objectLike, You given a ${getType(object)}`);
 
     if (isObject(prop) && isNil(options)) {
       options = prop;
