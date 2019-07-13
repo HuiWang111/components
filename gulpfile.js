@@ -120,8 +120,8 @@ toCSS('components', 'components/');
 /**
  * @description 压缩css文件
  */
-function compressCSS (filesName) {
-  const src = getSrc(filesName, 'css');
+function compressCSS (filesName, path) {
+  const src = getSrc(filesName, 'css', path);
 
   gulp.task('css-min',function() {
     return (
@@ -136,7 +136,7 @@ function compressCSS (filesName) {
   });
 }
 
-compressCSS('components');
+compressCSS('components', 'components/');
 
 /* 合并js文件 */
 const cptsBaseFiles = getSrc(

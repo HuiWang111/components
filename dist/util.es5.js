@@ -5,8 +5,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 ;!function (global, factory) {
-
-  (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory() : typeof define === 'function' && define.amd ? define(factory) : global.Util = factory();
+  (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory() : typeof define === 'function' && define.amd ? define(factory) : typeof global._ === 'undefined' ? global._ = global.util = factory() : global.util = factory();
 }(this, function () {
 
   var emptyArray = Object.freeze([]);
@@ -60,7 +59,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    */
   var toArray = Array.from || function (arrayLike, callback) {
     var len = arrayLike.length || arrayLike.size;
-    if (typeof len !== 'number') return [];
+    if (!isLength(len)) return [];
 
     var array = [];
     forInOwn(arrayLike, function (value, key, self) {
@@ -120,7 +119,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @param { Boolen } deep 是否第一次查找到后继续遍历查找
    */
   function baseKeyOf(object, iteratee, deep) {
-    if (!isObjectLike(object)) throw new Error(object + ' is not a object');
+    checkObjectLike(object);
 
     var keys = [];
     for (key in object) {
@@ -147,7 +146,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @param deep 是否删除第一个后继续往下遍历
    */
   function baseRemoveKey(object, iteratee, deep) {
-    if (!isObjectLike(object)) throw new Error(object + ' is not a object');
+    checkObjectLike(object);
 
     var isFunc = isFunction(iteratee);
 
@@ -191,7 +190,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   function baseRemove(array, iteratee) {
-    if (!isArray(array)) throw new TypeError(array + ' is not a Array');
+    checkType(array, 'array');
 
     var isFunc = isFunction(iteratee);
     var isArr = isArray(iteratee);
@@ -280,7 +279,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   function baseClone(object, deep) {
-    if (!isObjectLike(object)) throw new TypeError(object + ' expect a object');
+    checkObjectLike(object);
 
     var result = isArray(object) ? [] : {};
     for (var _key2 in object) {
@@ -305,6 +304,16 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     return _hasOwnProperty.call(obj, key);
   }
 
+  function getType(value) {
+    var tag = getTag(value);
+
+    return tag.slice(8, tag.length - 1).toLowerCase();
+  }
+
+  function checkObjectLike(value) {
+    if (!isObjectLike(value)) throw new TypeError('Excepted a \'objectLike\', You given a ' + getType(value));
+  }
+
   /**
    * Date
    */
@@ -313,21 +322,15 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   function baseHandleYear(year) {
-    year = toNumber(year);
-    var currentYear = baseNow().getFullYear();
+    year = toNumber(year) || baseNow().getFullYear();
 
-    if (year === false) return currentYear;
-
-    if (year < 1970 || year > currentYear) throw new Error('year:' + year + ' is not in range');
+    if (year < 1970) throw new Error('year:' + year + ' is not in range');
 
     return year;
   }
 
   function baseHandleMonth(month) {
-    month = toNumber(month);
-    var currentMonth = baseNow().getMonth() + 1;
-
-    if (month === false) return currentMonth;
+    month = toNumber(month) || baseNow().getMonth() + 1;
 
     if (month < 1 || month > 12) throw new Error('month:' + month + ' is not in range');
 
@@ -335,7 +338,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   function baseDateFull(number) {
-    if (!isNumber(number)) throw new Error(number + ' is not a number');
+    checkType(number, 'number');
+
     return number < 10 ? '0' + number : number;
   }
 
@@ -442,6 +446,38 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   /**
+   * 类型检测
+   * @param { * } value 被检测变量
+   * @param { Array | String } 目标类型，类型全部为小写，如 'number'
+   * 不符合要求的类型会抛出TypeError
+   */
+  var promise = Promise ? new Promise(function () {}) : undefined;
+  var typeList = uniq([1, true, emptyArray, {}, /a-z/, baseNow(), '', new Function(), undefined, null, promise, '*', Set ? new Set() : undefined, WeakSet ? new WeakSet() : undefined, Map ? new Map() : undefined, WeakMap ? new WeakMap() : undefined, Symbol ? Symbol('') : undefined, ArrayBuffer ? new ArrayBuffer() : undefined].map(function (instance) {
+    return _is(instance, '*') ? instance : getType(instance);
+  }));
+
+  function checkType(value, types) {
+    var valueType = getType(value);
+    if (isArray(types)) {
+      types.forEach(function (type) {
+        if (!typeList.includes(type)) {
+          console.warn(type + ' is not a correct javaScript data type');
+          return;
+        }
+
+        if (!typeList.includes(valueType)) throw new TypeError('Expected a \'' + types.join(',') + '\', You given a \'' + valueType + '\'');
+      });
+    } else {
+      if (!typeList.includes(types)) {
+        console.warn(types + ' is not a correct javaScript data type');
+        return;
+      }
+
+      if (!_is(valueType, '*') && !_is(valueType, types)) throw new TypeError('Expected a \'' + types + '\', You given a \'' + valueType + '\'');
+    }
+  }
+
+  /**
    * @description 将普通类名变为选择器
    * @param { String } string
    * @param { String } type 'class' || 'id'
@@ -466,10 +502,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   function getSelector(string) {
     var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'class';
 
+    checkType(string, 'string');
     var selector = '';
 
     if (type !== 'class' && type !== 'id') return selector;
-    if (!isString(string)) throw new Error(string + ' is not a string');
     if (string.length === 0) return selector;
 
     if (type === 'class') {
@@ -592,7 +628,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     if (isNil(dateStamp)) {
       date = baseNow();
     } else {
-      if (!isNumber(dateStamp)) throw new Error(dateStamp + ' is not a number');
+      checkType(dateStamp, 'number');
 
       if (String(dateStamp).length === 13) {
         date = new Date(dateStamp);
@@ -736,10 +772,9 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       }
     }
 
-    string = string.split('').map(function (str, ii) {
+    return string.split('').map(function (str, ii) {
       return index.includes(ii) ? str.toUpperCase() : str;
-    }).join('');
-    return string.replace(/[-_]/g, '');
+    }).join('').replace(/[-_]/g, '');
   }
 
   /**
@@ -783,9 +818,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     var times = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
 
     if (!isNumber(maxTimes)) return;
-    if (!isString(selector)) {
-      throw new Error('`' + selector + '` is not a string');
-    }
+    checkType(selector, 'string');
     if (selector.length < 1) return;
 
     var timer = null;
@@ -824,10 +857,9 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       return;
     }
 
-    var isStr = isString(iteratees);
-    if (!isStr && isArray(iteratees)) throw new Error(iteratee + ' is not a function and string');
+    checkType(iteratees, ['string', 'array']);
 
-    iteratees = isStr ? iteratees.split(',') : iteratees;
+    iteratees = isString(iteratees) ? iteratees.split(',') : iteratees;
     var obj = {},
         flag = false;
     iteratees.forEach(function (iteratee) {
@@ -852,7 +884,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @description for-in循环
    */
   function forIn(object, callback) {
-    if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+    checkType(callback, 'function');
 
     for (var _key3 in object) {
       var isBreak = callback(object[_key3], _key3, object);
@@ -860,7 +892,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     }
   }
   function forInOwn(object, callback) {
-    if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+    checkType(callback, 'function');
 
     for (var _key4 in object) {
       if (hasOwn(object, _key4)) {
@@ -892,7 +924,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    */
   function insert(array, insertSet) {
     [array, insertSet].forEach(function (v) {
-      if (!isArray(v)) throw new Error(v + ' is not a Array');
+      checkType(v, 'array');
     });
 
     var adder = 0;
@@ -912,7 +944,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @param { Array } array
    */
   function uniq(array) {
-    if (!isArray(array)) throw new Error(array + ' is not a Array');
+    var type = getType(array);
+    if (type !== 'array') throw new Error('Excepted a array, You given a ' + type);
 
     return array.reduce(function (arr, item) {
       return arr.includes(item) ? arr : [].concat(_toConsumableArray(arr), [item]);
@@ -920,7 +953,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   function uniqBy(array, prop) {
-    if (!isArray(array)) throw new Error(array + ' is not a Array');
+    checkType(array, 'array');
 
     return array.reduce(function (arr, item) {
       return includesBy(arr, item, prop) ? arr : [].concat(_toConsumableArray(arr), [item]);
@@ -975,8 +1008,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @description 两数组的交集
    */
   function ins(array, list) {
-    if (!isArray(array)) throw new Error(array + ' is not a Array');
-    if (!isArray(list)) throw new Error(list + ' is not a Array');
+    checkType(array, 'array');
+    checkType(list, 'array');
 
     var result = [];
     array.forEach(function (item) {
@@ -1100,7 +1133,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   }
 
   function removeUndef(object) {
-    if (!isObjectLike(object)) throw new Error(object + ' is not a object');
+    checkObjectLike(object);
 
     forInOwn(object, function (value, key, self) {
       if (isUndefined(value)) {
@@ -1141,7 +1174,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       return typeof key !== 'undefined';
     },
     forEach: function forEach(callback, context) {
-      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+      checkType(callback, 'array');
 
       forInOwn(this, function (value, key, self) {
         isObjectLike(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
@@ -1189,7 +1222,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
      * 额外的，不同于ES6 Set集合的方法
      */
     filter: function filter(callback) {
-      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+      checkType(callback, 'function');
 
       var result = new SetMock();
       forInOwn(this, function (value, key, self) {
@@ -1227,11 +1260,11 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
     if (entries != null) {
       if (!isArray(entries)) {
-        throw new Error(entries + ' is not a Array');
+        throw new TypeError(entries + ' is not a Array');
       } else {
         entries.forEach(function (entry) {
           if (!isArray(entry)) {
-            throw new Error(entry + ' is not a Array');
+            throw new TypeError(entry + ' is not a Array');
           } else {
             var _key5 = entry[0],
                 value = entry[1];
@@ -1278,7 +1311,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       this.size = 0;
     },
     forEach: function forEach(callback, context) {
-      if (!isFunction(callback)) throw new Error(callback + ' is not a function');
+      checkType(callback, 'function');
 
       forInOwn(this, function (value, key, self) {
         isObjectLike(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
@@ -1286,7 +1319,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     }
   };
 
-  var Util = {
+  var util = {
 
     // 判断
     isString: isString,
@@ -1306,6 +1339,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     isArray: isArray,
     isDate: isDate,
     isRegExp: isRegExp,
+    checkType: checkType,
+    getType: getType,
 
     // number方法
     toNumber: toNumber,
@@ -1365,26 +1400,25 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
   };
 
-  return Util;
+  return util;
 });
 
 /**
  * @description 组件的通用父类
  */
 ;!function (global, factory) {
-
   (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory(global) : typeof define === 'function' && define.amd ? define([global], factory) : global.Component = factory(global);
 }(this, function (global) {
-  var _global$Util = global.Util,
-      isLength = _global$Util.isLength,
-      removeUndef = _global$Util.removeUndef,
-      isNil = _global$Util.isNil,
-      isUndefined = _global$Util.isUndefined,
-      insertElementToBody = _global$Util.insertElementToBody,
-      lastOf = _global$Util.lastOf,
-      getSelector = _global$Util.getSelector,
-      domAfterLoad = _global$Util.domAfterLoad,
-      extend = _global$Util.extend;
+  var _global$util = global.util,
+      isLength = _global$util.isLength,
+      removeUndef = _global$util.removeUndef,
+      isNil = _global$util.isNil,
+      isUndefined = _global$util.isUndefined,
+      insertElementToBody = _global$util.insertElementToBody,
+      lastOf = _global$util.lastOf,
+      getSelector = _global$util.getSelector,
+      domAfterLoad = _global$util.domAfterLoad,
+      extend = _global$util.extend;
 
 
   function Component() {
@@ -1492,21 +1526,19 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
  * }
  */
 ;!function (global, factory) {
-
   (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory(global) : typeof define === 'function' && define.amd ? define([global], factory) : global.Observer = factory(global);
 }(this, function (global) {
-  var _global$Util2 = global.Util,
-      isObjectLike = _global$Util2.isObjectLike,
-      isObject = _global$Util2.isObject,
-      isNil = _global$Util2.isNil,
-      extend = _global$Util2.extend,
-      isFunction = _global$Util2.isFunction;
+  var _global$util2 = global.util,
+      isObjectLike = _global$util2.isObjectLike,
+      isObject = _global$util2.isObject,
+      isNil = _global$util2.isNil,
+      extend = _global$util2.extend,
+      isFunction = _global$util2.isFunction,
+      getType = _global$util2.getType;
 
 
   function Observer(object, prop, options) {
-    if (!isObjectLike(object)) {
-      throw new Error(object + ' is not a object');
-    }
+    if (!isObjectLike(object)) throw new TypeError('Excepted a objectLike, You given a ' + getType(object));
 
     if (isObject(prop) && isNil(options)) {
       options = prop;
@@ -1548,7 +1580,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
             return value;
           }
         });
-      } else {
+      } else if (object.__defineSetter__) {
         object.__defineSetter__(prop, function (newValue) {
           isFunction(_set) && _set(newValue);
           value = newValue;
@@ -1558,6 +1590,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           isFunction(_get) && _get();
           return value;
         });
+      } else {
+        throw new Error('not support defineProperty');
       }
     }
   });
@@ -1569,10 +1603,9 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
  * 滚轮事件监听
  */
 ;!function (global, factory) {
-
   (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory(global) : typeof define === 'function' && define.amd ? define([global], factory) : global.mouseWheelListener = factory(global);
 }(this, function (global) {
-  var isFunction = global.Util.isFunction;
+  var isFunction = global.util.isFunction;
 
 
   function mouseWheelListener(callback) {
@@ -1625,14 +1658,15 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
  * @description jQuery extend
  */
 ;!function (global) {
-  var _global$Util3 = global.Util,
-      isNil = _global$Util3.isNil,
-      isFunction = _global$Util3.isFunction,
-      isString = _global$Util3.isString,
-      forInOwn = _global$Util3.forInOwn,
-      isObject = _global$Util3.isObject,
-      fromCamelCase = _global$Util3.fromCamelCase,
-      isArray = _global$Util3.isArray;
+  var _global$util3 = global.util,
+      isNil = _global$util3.isNil,
+      isFunction = _global$util3.isFunction,
+      isString = _global$util3.isString,
+      forInOwn = _global$util3.forInOwn,
+      isObject = _global$util3.isObject,
+      fromCamelCase = _global$util3.fromCamelCase,
+      isArray = _global$util3.isArray,
+      checkType = _global$util3.checkType;
 
 
   var $ = global.jQuery;
@@ -1696,7 +1730,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @param { Function } callback
    */
   $.prototype.findIndex = function (callback) {
-    if (!isFunction(callback)) throw new Error('`callback` must be a function');
+    checkType(callback, 'function');
 
     var $el = this;
     for (var i = 0, len = $el.length; i < len; i++) {
@@ -1723,9 +1757,9 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   };
 
   $.prototype.reduce = function (callback, initialValue) {
-    if (!isFunction(callback)) throw new Error('`' + callback + '` is not a function');
+    checkType(callback, 'function');
     if (this.length === 0 && typeof initialValue === 'undefined') {
-      throw new Error('TypeError: Reduce of empty jQuery with no initial value');
+      throw new TypeError('Reduce of empty jQuery with no initial value');
     }
 
     var $el = this;
@@ -1743,7 +1777,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   };
 
   /**
-   * for $.node, $.imgNode
+   * for $.node, $.closingNode
    */
   var handleAttr = function handleAttr(attr) {
     var attributes = '';
@@ -1769,56 +1803,58 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     return attributes;
   };
 
+  /**
+   * @description 生成html字符串
+   * @param {String} wrapper tagName
+   * @param {String} item 元素子集
+   * @param {String} klass className
+   * @param {String | Object} attributes
+   * @example
+   * var node = $.node('div', 1234, 'test', {
+   *    dataValue: 1,
+   *    style: {
+   *      backgroundColor: red,
+   *      color: '#fff'
+   *    }
+   * });
+   * 
+   * // "<div class="test" data-value="1" style="background-color: red;color: #fff;">1234</div>"
+   */
+  var node = function node(wrapper, children, klass, attr) {
+    if (isNil(children)) return '';
+
+    // If the children is an array, do a join
+    children = isArray(children) ? children.join('') : children;
+
+    // Check for the class
+    klass = klass ? ' class="' + klass + '"' : '';
+
+    // Check for any attributes
+    var attributes = handleAttr(attr);
+
+    return '<' + wrapper + klass + attributes + '>' + children + '</' + wrapper + '>';
+  };
+
+  var closingNode = function closingNode(tagName, klass, attr) {
+    klass = klass ? ' class="' + klass + '"' : '';
+
+    var attributes = handleAttr(attr);
+
+    return '<' + tagName + klass + attributes + '/>';
+  };
+
+  /**
+   * @description 子类使用this.super()继承父类
+   */
+  var inherit = function inherit(SuperClass, SubClass) {
+    SubClass.prototype = new SuperClass();
+    SubClass.prototype.constructor = SubClass;
+    SubClass.prototype.super = SuperClass;
+  };
+
   $.extend({
-
-    /**
-     * @description 生成html字符串
-     * @param {String} wrapper tagName
-     * @param {String} item 元素子集
-     * @param {String} klass className
-     * @param {String | Object} attributes
-     * @example
-     * var node = $.node('div', 1234, 'test', {
-     *    dataValue: 1,
-     *    style: {
-     *      backgroundColor: red,
-     *      color: '#fff'
-     *    }
-     * });
-     * 
-     * // "<div class="test" data-value="1" style="background-color: red;color: #fff;">1234</div>"
-     */
-    node: function node(wrapper, children, klass, attr) {
-      if (isNil(children)) return '';
-
-      // If the children is an array, do a join
-      children = isArray(children) ? children.join('') : children;
-
-      // Check for the class
-      klass = klass ? ' class="' + klass + '"' : '';
-
-      // Check for any attributes
-      var attributes = handleAttr(attr);
-
-      return '<' + wrapper + klass + attributes + '>' + children + '</' + wrapper + '>';
-    },
-
-    closingNode: function closingNode(tagName, klass, attr) {
-      klass = klass ? ' class="' + klass + '"' : '';
-
-      var attributes = handleAttr(attr);
-
-      return '<' + tagName + klass + attributes + '/>';
-    },
-
-    /**
-     * @description 子类使用this.super()继承父类
-     */
-    inherit: function inherit(SuperClass, SubClass) {
-      SubClass.prototype = new SuperClass();
-      SubClass.prototype.constructor = SubClass;
-      SubClass.prototype.super = SuperClass;
-    }
-
+    node: node,
+    closingNode: closingNode,
+    inherit: inherit
   });
 }(this);
