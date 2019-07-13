@@ -17,6 +17,7 @@
     "gulp-plumber": "^1.2.1",
     "gulp-uglify": "^3.0.2",
     "gulp-util": "^3.0.8",
+    "pump": "^3.0.0",
     "uglify-js": "^3.5.10"
   },
   "devDependencies": {

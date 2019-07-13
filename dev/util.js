@@ -1,9 +1,8 @@
 ;!function (global, factory) {
-
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-  typeof define === 'function' && define.amd ? define(factory) :
-  ( typeof global._ === 'undefined' ? global._ = global.util = factory() : global.util = factory() );
-
+  typeof exports === 'object' && typeof module !== 'undefined'
+  ? module.exports = factory() : typeof define === 'function' && define.amd
+  ? define(factory) : typeof global._ === 'undefined'
+  ? global._ = global.util = factory() : global.util = factory();
 }(this, function() {
 
   const emptyArray = Object.freeze([]);
@@ -460,14 +459,15 @@
    * @param { Array | String } 目标类型，类型全部为小写，如 'number'
    * 不符合要求的类型会抛出TypeError
    */
+  const promise = Promise ? new Promise(() => {}) : undefined;
+  const typeList = uniq(
+    [1, true, emptyArray, {}, /a-z/, baseNow(), '', new Function, undefined,  null, promise, '*',
+    Set ? new Set : undefined, WeakSet ? new WeakSet : undefined, Map ? new Map : undefined,
+    WeakMap ? new WeakMap : undefined, Symbol ? Symbol('') : undefined, ArrayBuffer ? new ArrayBuffer : undefined,
+    ].map(instance => _is(instance, '*') ? instance : getType(instance))
+  );
+
   function checkType (value, types) {
-    const promise = Promise ? new Promise(() => {}) : undefined;
-    const typeList = uniq([
-      1, true, emptyArray, {}, /a-z/, baseNow(), '', new Function, undefined,  null, promise, '*',
-      Set ? new Set : undefined, WeakSet ? new WeakSet : undefined, Map ? new Map : undefined,
-      WeakMap ? new WeakMap : undefined, Symbol ? Symbol('') : undefined, ArrayBuffer ? new ArrayBuffer : undefined,
-    ]).map(instance => _is(instance, '*') ? instance : getType(instance));
-    
     const valueType = getType(value);
     if (isArray(types)) {
       types.forEach(type => {
@@ -936,7 +936,9 @@
    * @param { Array } array
    */
   function uniq(array) {
-    checkType(array, 'array');
+    const type = getType(array);
+    if (type !== 'array')
+      throw new Error(`Excepted a array, You given a ${type}`);
 
     return array.reduce((arr, item) => {
       return arr.includes(item) ? arr : [...arr, item];
@@ -1406,11 +1408,9 @@
  * @description 组件的通用父类
  */
 ;!function (global, factory) {
-
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(global) :
-  typeof define === 'function' && define.amd ? define([global], factory) :
-  ( global.Component = factory(global) );
-
+  typeof exports === 'object' && typeof module !== 'undefined'
+  ? module.exports = factory(global) : typeof define === 'function' && define.amd
+  ? define([global], factory) : global.Component = factory(global);
 }(this, function (global) {
   const { 
     isLength, removeUndef, isNil, isUndefined, insertElementToBody, lastOf, getSelector, domAfterLoad, extend
@@ -1512,11 +1512,9 @@
  * }
  */
 ;!function (global, factory) {
-
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(global) :
-  typeof define === 'function' && define.amd ? define([global], factory) :
-  ( global.Observer = factory(global) );
-
+  typeof exports === 'object' && typeof module !== 'undefined'
+  ? module.exports = factory(global) : typeof define === 'function' && define.amd
+  ? define([global], factory) : global.Observer = factory(global);
 }(this, function (global) {
   const { 
     isObjectLike, isObject, isNil, extend, isFunction, getType
@@ -1587,11 +1585,9 @@
  * 滚轮事件监听
  */
 ;!function (global, factory) {
-
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(global) :
-  typeof define === 'function' && define.amd ? define([global], factory) :
-  ( global.mouseWheelListener = factory(global) );
-
+  typeof exports === 'object' && typeof module !== 'undefined'
+  ? module.exports = factory(global) : typeof define === 'function' && define.amd
+  ? define([global], factory) : global.mouseWheelListener = factory(global);
 }(this, function (global) {
   const {
     isFunction
@@ -1650,7 +1646,7 @@
  */
 ;!function (global) {
   const {
-    isNil, isFunction, isString, forInOwn, isObject, fromCamelCase, isArray
+    isNil, isFunction, isString, forInOwn, isObject, fromCamelCase, isArray, checkType
   } = global.util;
 
   const $ = global.jQuery;

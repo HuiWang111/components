@@ -8,6 +8,7 @@ const rename = require('gulp-rename');
 const cleanCSS = require('gulp-clean-css');
 const autoprefixer = require('gulp-autoprefixer');
 const gutil = require('gulp-util');
+const concat = require('gulp-concat');
 
 function getSrc(filesName, fileType, path) {
   fileType = fileType ? fileType.trim() : 'js';
@@ -39,67 +40,62 @@ gulp.task('testJS', function () {
 });
 
 /**
- * @description 压缩dev下的js文件
+ * @description 压缩下的js文件
  */
-function compressJS (filesName) {
-  const src = getSrc(filesName);
-
-  gulp.task('compressJS',function(){
-    return gulp.src(src)
-    .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
-    .pipe(babel({
-      presets: [
-        [ "es2015", { "modules": false } ]
-      ]
-    }))
-    .pipe(uglify({
-      mangle: {
-        reserved: ['Component', 'require' ,'exports' ,'module' ,'$', 'define', 'Observer']
-      }
-    }))
-    .on('error', function (err) {
-      gutil.log(gutil.colors.red('[Error]'), err.toString());
-    })
-    .pipe(rename({
-      suffix: '.min'
-    }))
-    .pipe(gulp.dest('dist'));
-  });
-}
-
-compressJS();
+const utilJSFile = getSrc(
+  'util'
+);
+const cptsJSFile = getSrc(
+  'components',
+  'js',
+  'components/'
+);
+gulp.task('js-min',function() {
+  return gulp.src(utilJSFile.concat(cptsJSFile))
+  .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
+  .pipe(babel({
+    presets: [
+      [ "es2015", { "modules": false } ]
+    ]
+  }))
+  .pipe(uglify({
+    mangle: {
+      reserved: ['Component', 'require' ,'exports' ,'module' ,'$', 'define', 'Observer']
+    }
+  }))
+  .on('error', function (err) {
+    gutil.log(gutil.colors.red('[Error]'), err.toString());
+  })
+  .pipe(rename({
+    suffix: '.min'
+  }))
+  .pipe(gulp.dest('dist'));
+});
 
 /**
- * @description 输出es5未压缩版的js文件
+ * @description 输出es5未压缩的js文件
  */
-function getES5 (filesName) {
-  const src = getSrc(filesName);
-
-  gulp.task('getES5',function(){
-    return gulp.src(src)
-    .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
-    .pipe(babel({
-      presets: [
-        [ "es2015", { "modules": false } ]
-      ]
-    }))
-    .pipe(rename({
-      suffix: '.es5'
-    }))
-    .pipe(gulp.dest('dist'));
-  });
-}
-
-getES5('util, components.base');
+gulp.task('toES5',function(){
+  return gulp.src(utilJSFile.concat(cptsJSFile))
+  .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
+  .pipe(babel({
+    presets: [
+      [ "es2015", { "modules": false } ]
+    ]
+  }))
+  .pipe(rename({
+    suffix: '.es5'
+  }))
+  .pipe(gulp.dest('dist'));
+});
 
 /**
  * @description less => css, 监听less变化自动更新css
  */
 function toCSS (filesName, path) {
-  path = path ? path : '';
-  const src = getSrc(filesName, 'less', path);console.log('dev/' + path + 'less/*.less');
+  const src = getSrc(filesName, 'less', path);
 
-  gulp.task('less',function(){
+  gulp.task('less',function() {
     return (
       gulp.src(src)
       .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
@@ -119,15 +115,15 @@ function toCSS (filesName, path) {
     gulp.start('taskList');
   });
 }
-toCSS('components.base', 'components.base/');
+toCSS('components', 'components/');
 
 /**
- * @description 压缩dev下的css文件
+ * @description 压缩css文件
  */
 function compressCSS (filesName) {
   const src = getSrc(filesName, 'css');
 
-  gulp.task('compressCSS',function(){
+  gulp.task('css-min',function() {
     return (
       gulp.src(src)
       .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
@@ -140,4 +136,23 @@ function compressCSS (filesName) {
   });
 }
 
-compressCSS();
+compressCSS('components');
+
+/* 合并js文件 */
+const cptsBaseFiles = getSrc(
+  'Icon, Alert, Button, CardList, Gallery, Message, Modal, Pagination, Tabs',
+  'js',
+  'components/js/'
+);
+const cptsBaseCommonFile = getSrc(
+  'color, svg, className',
+  'js',
+  'components/js/common/'
+);
+gulp.task('combineCptsBase', function () {
+  console.log()
+  return gulp.src(cptsBaseCommonFile.concat(cptsBaseFiles))
+  .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
+  .pipe(concat('components.js'))
+  .pipe(gulp.dest('dev/components/'))
+});
