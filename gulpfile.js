@@ -150,7 +150,6 @@ const cptsBaseCommonFile = getSrc(
   'components/js/common/'
 );
 gulp.task('combineCptsBase', function () {
-  console.log()
   return gulp.src(cptsBaseCommonFile.concat(cptsBaseFiles))
   .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
   .pipe(concat('components.js'))

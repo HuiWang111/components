@@ -35,4 +35,10 @@ function test() {
   testinner();
 }
 
+function testArg(name, value, { aa, bb, cc }) {
+  console.log(arguments);
+}
+
+testArg('a', 'b', { aa: 1, bb: 2, cc: 3 });
+
 

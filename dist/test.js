@@ -1,5 +1,3 @@
-'use strict';
-
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 var obj = { a: 1, b: 2, c: 3 };
@@ -47,3 +45,13 @@ function test() {
 
   testinner();
 }
+
+function testArg(name, value, _ref) {
+  var aa = _ref.aa,
+      bb = _ref.bb,
+      cc = _ref.cc;
+
+  console.log(arguments);
+}
+
+testArg('a', 'b', { aa: 1, bb: 2, cc: 3 });

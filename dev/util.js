@@ -61,7 +61,7 @@
     const array = [];
     forInOwn(arrayLike, (value, key, self) => {
       if (isNumeric(key)) {
-        const item = isFunction(callback) ? callback(value, key, self) : value;
+        const item = isFunction(callback) ? callback(value, parseInt(key), self) : value;
         array.push(item);
       } else {
         array.push(undefined);
@@ -475,10 +475,9 @@
           console.warn(`${type} is not a correct javaScript data type`);
           return;
         }
-
-        if (!typeList.includes(valueType))
-          throw new TypeError(`Expected a '${types.join(',')}', You given a '${valueType}'`);
       });
+      if (!types.includes(valueType))
+        throw new TypeError(`Expected one of '${types.join(',')}', You given a '${valueType}'`);
     } else {
       if (!typeList.includes(types)) {
         console.warn(`${types} is not a correct javaScript data type`);
@@ -732,7 +731,9 @@
         year: thisYear,
         month: thisMonth,
         showDate,
-        dateStr: dateFormater( (new Date(thisYear, thisMonth-1, showDate)).getTime(), 'yyyy-mm-dd' ),
+        dateStr: dateFormater( 
+          (new Date(thisYear, thisMonth-1, showDate)).getTime(), 'yyyy-mm-dd'
+        ),
         forbid: isForbid ? 1 : 0
       });
     }
@@ -760,16 +761,26 @@
     getRandomClassName();
   }
 
+  /* function debounce(func, wait) {
+    wait = isNumber(wait) ? wait : 0;
+    let timerId = null;
+    return function (...args) {
+      timerId && clearTimeout(timerId);
+      timerId = setTimeout(() => {
+        func(...args);
+      }, wait);
+    }
+  } */
+
   /**
    * @description 下划线或中划线命名法转驼峰命名法
    * @example
    * toCamelCase('my-name') // 'myName'
    */
-  function toCamelCase(string) {
-    const match = ['-', '_'];
+  function toCamelCase(string, spliter = '-') {
     const index = [];
     for (let i = 0, len = string.length; i < len; i++) {
-      if ( match.includes(string[i]) ) {
+      if ( _is(spliter, string[i]) ) {
         index.push(i + 1);
       }
     }
@@ -777,7 +788,7 @@
     return (
       string.split('').map((str, ii) => index.includes(ii)
       ? str.toUpperCase() : str).join('')
-    ).replace(/[-_]/g, '');
+    ).replace(new RegExp(spliter, 'g'), '');
   }
 
   /**
@@ -1112,6 +1123,25 @@
     return sumBy(array, iteratee) / len;
   }
 
+  function groupBy(array, iteratee) {
+    checkType(array, 'array');
+
+    const len = array.length,
+          isFunc = isFunction(iteratee),
+          result = {};
+    
+    for (let i = 0; i < len; i++) {
+      const value = array[i];
+      const key = isFunc ? iteratee(value) : value[iteratee];
+      if (!hasOwn(result, key))
+        result[key] = [];
+      
+      result[key].push(value);
+    }
+
+    return result;
+  }
+
   /**
    * @description 获取元素(带有length属性的对象都可以)的最后一个元素
    */
@@ -1373,6 +1403,7 @@
     includesBy,
     union,
     unionBy,
+    groupBy,
 
     // 对象方法
     removeKey,
