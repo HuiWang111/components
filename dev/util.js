@@ -1129,6 +1129,8 @@
     const len = array.length,
           isFunc = isFunction(iteratee),
           result = {};
+
+    if (isNil(iteratee)) return result;
     
     for (let i = 0; i < len; i++) {
       const value = array[i];
