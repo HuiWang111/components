@@ -1144,6 +1144,64 @@
     return result;
   }
 
+  function pick(object, path) {
+    checkObjectLike(object);
+
+    if (isArray(path)) {
+      const result = {};
+      path.forEach(property => {
+        if (property in object)
+          result[property] = object[property];
+      });
+      return result;
+    } else {
+      return path in object ? object[path] : {};
+    }
+  }
+
+  function pickBy(object, predicate) {
+    checkObjectLike(object);
+    checkType(predicate, 'function');
+
+    const result = {};
+    for(const key in object) {
+      const value = object[key];
+      const isPick = predicate(value, key, object);
+      if (isPick === true)
+        result[key] = value;
+    }
+
+    return result;
+  }
+
+  function omit(object, path) {
+    checkObjectLike(object);
+
+    const keys = isArray(path) ? path : [path],
+          result = {};
+    for(const key in object) {
+      if (!keys.includes(key))
+        result[key] = object[key];
+    }
+
+    return result;
+  }
+
+  function omitBy(object, predicate) {
+    checkObjectLike(object);
+    checkType(predicate, 'function');
+
+    const result = {};
+    for(const key in object) {
+      const value = object[key];
+      const isPick = predicate(value, key, object);
+      if (isPick === false)
+        result[key] = value;
+    }
+
+    return result;
+  }
+
   /**
    * @description 获取元素(带有length属性的对象都可以)的最后一个元素
    */
@@ -1419,6 +1477,10 @@
     removeUndef,
     extend,
     toArray,
+    pick,
+    pickBy,
+    omit,
+    omitBy,
 
     // String方法
     toCamelCase,
