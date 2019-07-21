@@ -1,0 +1,85 @@
+.cpts-menu {
+  width: 256px;
+  box-sizing: border-box;
+  font-size: 14px;
+  color: rgba(0, 0, 0, .65);
+  background: #fff;
+  outline: none;
+  // box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+
+  & > .cpts-menu-item,
+  & > .cpts-menu-submenu {
+    position: relative;
+    display: block;
+    padding: 0 20px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color .3s cubic-bezier(.645, .045, .355, 1),
+    border-color .3s cubic-bezier(.645, .045, .355, 1),
+    background .3s cubic-bezier(.645, .045, .355, 1),
+    padding .15s cubic-bezier(.645, .045, .355, 1);
+  }
+
+  &.cpts-menu-vertical {
+
+    & > .cpts-menu-item,
+    & > .cpts-menu-submenu {
+      height: 40px;
+      line-height: 40px;
+      padding: 0 24px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      &.cpts-menu-active-item {
+        background-color: @menu-active-item-bg;
+      }
+    }
+
+    & > .cpts-menu-submenu {
+      overflow: auto;
+      padding: 0;
+
+      &.cpts-menu-open > .cpts-menu-title > .cpts-menu-arrow {
+        transform: rotateX(180deg);
+      }
+      &.cpts-menu-close > .cpts-menu-title > .cpts-menu-arrow {
+        transform: rotateX(0);
+      }
+
+      & > .cpts-menu-title {
+        padding-left: 24px;
+        padding-right: 34px;
+
+        & > .cpts-menu-arrow {
+          position: absolute;
+          right: 16px;
+          top: 50%;
+          width: 10px;
+          transition: transform .3s cubic-bezier(.645, .045, .355, 1);
+  
+          &::before,
+          &::after {
+            content: ' ';
+            position: absolute;
+            width: 6px;
+            height: 1.5px;
+            background-color: #fff;
+            // 不是很理解为什么使用linear-gradient，而不是直接使用background-color
+            background-image: linear-gradient(to right, rgba(0, 0, 0, .65), rgba(0, 0, 0, .65));
+          }
+
+          &::before {
+            transform: rotate(-45deg) translate(2.5px);
+          }
+          &::after {
+            transform: rotate(45deg) translate(-2.5px);
+          }
+        }
+      }
+    }
+  }
+
+  &.cpts-menu-light {
+    border-right: 1px solid #e8e8e8;
+  }
+}

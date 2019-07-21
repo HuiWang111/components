@@ -83,9 +83,6 @@ gulp.task('toES5',function(){
       [ "es2015", { "modules": false } ]
     ]
   }))
-  .pipe(rename({
-    suffix: '.es5'
-  }))
   .pipe(gulp.dest('dist'));
 });
 
@@ -107,7 +104,7 @@ function toCSS (filesName, path) {
     );
   });
   gulp.task('watchLess',function(){
-    gulp.watch(src,['less']);
+    gulp.watch('dev/components/less/Menu.less',['less']);
     gulp.watch('dev/' + path + 'less/CardList.less', ['less']);
   });
   gulp.task('taskList', ['less', 'watchLess']);
@@ -140,7 +137,7 @@ compressCSS('components', 'components/');
 
 /* 合并js文件 */
 const cptsBaseFiles = getSrc(
-  'Icon, Alert, Button, CardList, Gallery, Message, Modal, Pagination, Tabs',
+  'Icon, Alert, Button, Gallery, Message, Modal, Pagination, Tabs',
   'js',
   'components/js/'
 );

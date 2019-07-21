@@ -467,7 +467,9 @@
     ].map(instance => _is(instance, '*') ? instance : getType(instance))
   );
 
-  function checkType (value, types) {
+  function checkType (value, types, message) {
+    message = message || '';
+
     const valueType = getType(value);
     if (isArray(types)) {
       types.forEach(type => {
@@ -477,7 +479,7 @@
         }
       });
       if (!types.includes(valueType))
-        throw new TypeError(`Expected one of '${types.join(',')}', You given a '${valueType}'`);
+        throw new TypeError(`${message} Expected one of '${types.join(',')}', You given a '${valueType}'`);
     } else {
       if (!typeList.includes(types)) {
         console.warn(`${types} is not a correct javaScript data type`);
@@ -485,8 +487,33 @@
       }
 
       if (!_is(valueType, '*') && !_is(valueType, types))
-        throw new TypeError(`Expected a '${types}', You given a '${valueType}'`);
+        throw new TypeError(`${message} Expected a '${types}', You given a '${valueType}'`);
     }
+  }
+
+  function propsChecker(props, checker) {
+    checkType(props, 'object');
+    checkType(checker, 'object');
+
+    forInOwn(checker, (value, key) => {
+      const toChecks = value.split('.');
+      toChecks.forEach(toCheck => {
+        const isRequire = toCheck === 'require';
+
+        if (!typeList.includes(toCheck) && !isRequire) {
+          throw new Error(`'${toCheck}' is not a correct checker type in propsChecker`);
+        }
+
+        if (isRequire) {
+          if (isNil(props[key])) throw new Error(`the props '${key}' is required`);
+        } else {
+          if (!isUndefined(props[key])) {
+            const message = `the props '${key}' is`;
+            checkType(props[key], toCheck, message);
+          }
+        }
+      });
+    });
   }
 
   /**
@@ -1202,6 +1229,33 @@
     return result;
   }
 
+  function mapKeys(object, iteratee) {
+    checkObjectLike(object);
+    checkType(iteratee, 'function');
+
+    const result = {};
+    for(const key in object) {
+      const value = object[key];
+      const newKey = iteratee(value, key, object);
+      result[newKey] = value;
+    }
+
+    return result;
+  }
+
+  function mapValues(object, iteratee) {
+    checkObjectLike(object);
+    checkType(iteratee, 'function');
+
+    const result = {};
+    for(const key in object) {
+      const newValue = iteratee(object[key], key, object);
+      result[key] = newValue;
+    }
+
+    return result;
+  }
+
   /**
    * @description 获取元素(带有length属性的对象都可以)的最后一个元素
    */
@@ -1432,6 +1486,7 @@
     isRegExp,
     checkType,
     getType,
+    propsChecker,
 
     // number方法
     toNumber,
@@ -1481,6 +1536,8 @@
     pickBy,
     omit,
     omitBy,
+    mapKeys,
+    mapValues,
 
     // String方法
     toCamelCase,
@@ -1741,7 +1798,8 @@
  */
 ;!function (global) {
   const {
-    isNil, isFunction, isString, forInOwn, isObject, fromCamelCase, isArray, checkType
+    isNil, isFunction, isString, forInOwn, isObject, fromCamelCase, isArray, checkType,
+    extend
   } = global.util;
 
   const $ = global.jQuery;

@@ -33,6 +33,21 @@
         this.loading = !this.loading;
       }
     });
+    
+    var Menu = {};
+    Menu.Item = function (props) {
+      _.propsChecker(props, {
+        key: 'function'
+      });
+
+      const defaultProps = {
+        disabled: false,
+      }
+    };
+
+    Menu.Item({
+      key: function () {}
+    });
 
   </script>
 </body>

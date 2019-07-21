@@ -64,7 +64,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     var array = [];
     forInOwn(arrayLike, function (value, key, self) {
       if (isNumeric(key)) {
-        var item = isFunction(callback) ? callback(value, key, self) : value;
+        var item = isFunction(callback) ? callback(value, parseInt(key), self) : value;
         array.push(item);
       } else {
         array.push(undefined);
@@ -464,9 +464,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           console.warn(type + ' is not a correct javaScript data type');
           return;
         }
-
-        if (!typeList.includes(valueType)) throw new TypeError('Expected a \'' + types.join(',') + '\', You given a \'' + valueType + '\'');
       });
+      if (!types.includes(valueType)) throw new TypeError('Expected one of \'' + types.join(',') + '\', You given a \'' + valueType + '\'');
     } else {
       if (!typeList.includes(types)) {
         console.warn(types + ' is not a correct javaScript data type');
@@ -758,23 +757,35 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     getRandomClassName();
   }
 
+  /* function debounce(func, wait) {
+    wait = isNumber(wait) ? wait : 0;
+    let timerId = null;
+    return function (...args) {
+      timerId && clearTimeout(timerId);
+      timerId = setTimeout(() => {
+        func(...args);
+      }, wait);
+    }
+  } */
+
   /**
    * @description 下划线或中划线命名法转驼峰命名法
    * @example
    * toCamelCase('my-name') // 'myName'
    */
   function toCamelCase(string) {
-    var match = ['-', '_'];
+    var spliter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '-';
+
     var index = [];
     for (var i = 0, len = string.length; i < len; i++) {
-      if (match.includes(string[i])) {
+      if (_is(spliter, string[i])) {
         index.push(i + 1);
       }
     }
 
     return string.split('').map(function (str, ii) {
       return index.includes(ii) ? str.toUpperCase() : str;
-    }).join('').replace(/[-_]/g, '');
+    }).join('').replace(new RegExp(spliter, 'g'), '');
   }
 
   /**
@@ -1122,6 +1133,107 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     return sumBy(array, iteratee) / len;
   }
 
+  function groupBy(array, iteratee) {
+    checkType(array, 'array');
+
+    var len = array.length,
+        isFunc = isFunction(iteratee),
+        result = {};
+
+    if (isNil(iteratee)) return result;
+
+    for (var i = 0; i < len; i++) {
+      var value = array[i];
+      var _key5 = isFunc ? iteratee(value) : value[iteratee];
+      if (!hasOwn(result, _key5)) result[_key5] = [];
+
+      result[_key5].push(value);
+    }
+
+    return result;
+  }
+
+  function pick(object, path) {
+    checkObjectLike(object);
+
+    if (isArray(path)) {
+      var result = {};
+      path.forEach(function (property) {
+        if (property in object) result[property] = object[property];
+      });
+      return result;
+    } else {
+      return path in object ? object[path] : {};
+    }
+  }
+
+  function pickBy(object, predicate) {
+    checkObjectLike(object);
+    checkType(predicate, 'function');
+
+    var result = {};
+    for (var _key6 in object) {
+      var value = object[_key6];
+      var isPick = predicate(value, _key6, object);
+      if (isPick === true) result[_key6] = value;
+    }
+
+    return result;
+  }
+
+  function omit(object, path) {
+    checkObjectLike(object);
+
+    var keys = isArray(path) ? path : [path],
+        result = {};
+    for (var _key7 in object) {
+      if (!keys.includes(_key7)) result[_key7] = object[_key7];
+    }
+
+    return result;
+  }
+
+  function omitBy(object, predicate) {
+    checkObjectLike(object);
+    checkType(predicate, 'function');
+
+    var result = {};
+    for (var _key8 in object) {
+      var value = object[_key8];
+      var isPick = predicate(value, _key8, object);
+      if (isPick === false) result[_key8] = value;
+    }
+
+    return result;
+  }
+
+  function mapKeys(object, iteratee) {
+    checkObjectLike(object);
+    checkType(iteratee, 'function');
+
+    var result = {};
+    for (var _key9 in object) {
+      var value = object[_key9];
+      var newKey = iteratee(value, _key9, object);
+      result[newKey] = value;
+    }
+
+    return result;
+  }
+
+  function mapValues(object, iteratee) {
+    checkObjectLike(object);
+    checkType(iteratee, 'function');
+
+    var result = {};
+    for (var _key10 in object) {
+      var newValue = iteratee(object[_key10], _key10, object);
+      result[_key10] = newValue;
+    }
+
+    return result;
+  }
+
   /**
    * @description 获取元素(带有length属性的对象都可以)的最后一个元素
    */
@@ -1266,9 +1378,9 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           if (!isArray(entry)) {
             throw new TypeError(entry + ' is not a Array');
           } else {
-            var _key5 = entry[0],
+            var _key11 = entry[0],
                 value = entry[1];
-            _this2[_key5] = value;
+            _this2[_key11] = value;
             _this2.size++;
           }
         });
@@ -1372,6 +1484,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     includesBy: includesBy,
     union: union,
     unionBy: unionBy,
+    groupBy: groupBy,
 
     // 对象方法
     removeKey: removeKey,
@@ -1385,6 +1498,12 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     removeUndef: removeUndef,
     extend: extend,
     toArray: toArray,
+    pick: pick,
+    pickBy: pickBy,
+    omit: omit,
+    omitBy: omitBy,
+    mapKeys: mapKeys,
+    mapValues: mapValues,
 
     // String方法
     toCamelCase: toCamelCase,
@@ -1554,8 +1673,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       if (!object || !isObjectLike(object)) return;
 
       if (isNil(prop)) {
-        for (var _key6 in object) {
-          this.handlePropChange(object, _key6, object[_key6]);
+        for (var _key12 in object) {
+          this.handlePropChange(object, _key12, object[_key12]);
         }
       } else {
         this.handlePropChange(object, prop, object[prop]);

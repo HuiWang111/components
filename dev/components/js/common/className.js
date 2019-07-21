@@ -121,6 +121,30 @@
         SPECIAL_MODAL_TITLE = 'cpts-special-modal-title',
         SPECIAL_MODAL_CONTENT = 'cpts-special-modal_content';
 
+  const MENU_CONTAINER_CLASS = 'cpts-menu',
+        MENU_ITEM_CLASS = 'cpts-menu-item',
+        MENU_SUBMENU_CLASS = 'cpts-menu-submenu',
+        MENU_SUBMENU_TITLE_CLASS = 'cpts-menu-title',
+        MENU_SUBMENU_TITLE_WRAP_CLASS = 'cpts-menu-title-wrapper',
+        MENU_SUBMENU_ARROW_CLASS = 'cpts-menu-arrow',
+        MENU_SUB_CLASS = 'cpts-menu-sub',
+
+        // mode
+        MENU_VERTICAL_CLASS = 'cpts-menu-vertical',
+        MENU_HORIZONTAL_CLASS = 'cpts-menu-horizontal',
+
+        // theme
+        MENU_DARK_CLASS = 'cpts-menu-dark',
+        MENU_LIGHT_CLASS = 'cpts-menu-light',
+
+        // status
+        MENU_DISABLED_CLASS = 'cpts-menu-disabled',
+        MENU_HIDDEN_CLASS = 'cpts-menu-hidden',
+        MENU_SUBMENU_OPEN_CLASS = 'cpts-menu-open',
+        MENU_SUBMENU_CLOSE_CLASS = 'cpts-menu-close';
+
+
+
   return Object.freeze({
     /* Icon */
     ICON_CLASS, FILLED_ICON_CLASS, WARNING_ICON_CLASS, SUCCESS_ICON_CLASS, INFO_ICON_CLASS, ERROR_ICON_CLASS,
@@ -163,8 +187,13 @@
     MODAL_HEADER_CONTAINER_CLASS, MODAL_HEADER_WRAP_CLASS, MODAL_CLOSE_ICON_CLASS, MODAL_BODY_CLASS,
     MODAL_CONTAINER_CLASS, MODAL_CONTAINER_CENTERED_CLASS, MODAL_CONTAINER_INVISIBLE_CLASS,
     MODAL_MASK_CLASS, MODAL_MASK_INVISIBLE_CLASS,
-
-    /* for Modal info/error/success/warn/confirm */
+    // for Modal info/error/success/warn/confirm
     MODAL_CONFIRM_CONTAINER_CLASS, MODAL_INFO_CONTAINER_CLASS, MODAL_ERROR_CONTAINER_CLASS,MODAL_SUCCESS_CONTAINER_CLASS, MODAL_WARN_CONTAINER_CLASS, SPECIAL_MODAL_TITLE, SPECIAL_MODAL_CONTENT,
+
+    // menu
+    MENU_CONTAINER_CLASS , MENU_ITEM_CLASS, MENU_SUBMENU_CLASS, MENU_VERTICAL_CLASS,
+    MENU_HORIZONTAL_CLASS, MENU_DARK_CLASS, MENU_LIGHT_CLASS, MENU_DISABLED_CLASS,
+    MENU_SUBMENU_TITLE_CLASS, MENU_SUBMENU_TITLE_WRAP_CLASS, MENU_SUBMENU_ARROW_CLASS,
+    MENU_SUB_CLASS, MENU_HIDDEN_CLASS, MENU_SUBMENU_OPEN_CLASS, MENU_SUBMENU_CLOSE_CLASS
   });
 });
