@@ -1184,7 +1184,8 @@ body > .cpts-modal-mask.cpts-modal-centered {
   transition: color 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), border-color 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), background 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), padding 0.15s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
 .cpts-menu.cpts-menu-vertical > .cpts-menu-item,
-.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu {
+.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu,
+.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu > .cpts-menu-sub > .cpts-menu-item {
   height: 40px;
   line-height: 40px;
   padding: 0 24px;
@@ -1193,12 +1194,15 @@ body > .cpts-modal-mask.cpts-modal-centered {
      text-overflow: ellipsis;
 }
 .cpts-menu.cpts-menu-vertical > .cpts-menu-item.cpts-menu-active-item,
-.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu.cpts-menu-active-item {
+.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu.cpts-menu-active-item,
+.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu > .cpts-menu-sub > .cpts-menu-item.cpts-menu-active-item {
   background-color: #e6f7ff;
 }
 .cpts-menu.cpts-menu-vertical > .cpts-menu-submenu {
-  overflow: auto;
+  overflow: visible;
   padding: 0;
+  height: auto;
+  min-height: 40px;
 }
 .cpts-menu.cpts-menu-vertical > .cpts-menu-submenu.cpts-menu-open > .cpts-menu-title > .cpts-menu-arrow {
   -webkit-transform: rotateX(180deg);
@@ -1217,7 +1221,7 @@ body > .cpts-modal-mask.cpts-modal-centered {
 .cpts-menu.cpts-menu-vertical > .cpts-menu-submenu > .cpts-menu-title > .cpts-menu-arrow {
   position: absolute;
   right: 16px;
-  top: 50%;
+  top: 20px;
   width: 10px;
   -webkit-transition: -webkit-transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
   transition: -webkit-transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
@@ -1252,6 +1256,14 @@ body > .cpts-modal-mask.cpts-modal-centered {
       -ms-transform: rotate(45deg) translate(-2.5px);
        -o-transform: rotate(45deg) translate(-2.5px);
           transform: rotate(45deg) translate(-2.5px);
+}
+.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu > .cpts-menu-sub {
+  padding-left: 24px;
+  -webkit-transition: height 0.3s ease-in-out;
+  -o-transition: height 0.3s ease-in-out;
+  -moz-transition: height 0.3s ease-in-out;
+  transition: height 0.3s ease-in-out;
+  overflow: hidden;
 }
 .cpts-menu.cpts-menu-light {
   border-right: 1px solid #e8e8e8;

@@ -6,7 +6,7 @@
   const { 
     Component, jQuery: $,
     util: { 
-      isUndefined, extend, appendClass, toSelector, propsChecker, isString
+      isUndefined, extend, appendClass, toSelector, propsChecker, isString, toArray
     },
     ClassName: { 
       MENU_CONTAINER_CLASS , MENU_ITEM_CLASS, MENU_SUBMENU_CLASS, MENU_VERTICAL_CLASS,
@@ -17,7 +17,9 @@
   } = global,
   
   menuMode = ['vertical', 'horizontal'],
-  menuTheme = ['light', 'dark'];
+  menuTheme = ['light', 'dark'],
+  
+  SUB_ITEM_HEIGHT = 40;
 
   /**
    * @deprecated Menu
@@ -149,8 +151,7 @@
       const subMenuTitle = this.getSubMenuTitle();
 
       const menuSubClass = appendClass(
-        MENU_SUB_CLASS,
-        MENU_HIDDEN_CLASS
+        MENU_SUB_CLASS
       );
       const child = children.map(c => isString(c) ? c : c.html);
       const menuSub = $.node('ul', child.join(''), menuSubClass, {
@@ -221,28 +222,43 @@
       this.$subMenuItem = this.$subMenu.find(toSelector(MENU_ITEM_CLASS));
     },
 
+    style () {
+      const { $subMenu } = this;
+      $subMenu.each((_, submenu) => {
+        const $sub = $(submenu).children(toSelector(MENU_SUB_CLASS));
+        $sub
+          .addClass(MENU_HIDDEN_CLASS)
+          .css('height', 0);
+      });
+    },
+
     bindEvents () {
       this.handleSubMenuEvents();
       this.handleItemClick();
     },
 
     handleSubMenuEvents () {
-      const { subMenuCloseDelay, subMenuOpenDelay, mode } = this.props;
+      const { $subMenu, props: { mode } } = this;
+
+      const subChildrenCount = toArray($subMenu.children(toSelector(MENU_SUB_CLASS))).map(item => $(item).children(toSelector(MENU_ITEM_CLASS)).length);
+      const subHeight = subChildrenCount.map(count => count * SUB_ITEM_HEIGHT);
 
       const isVertical = mode === 'vertical';
-
       if (isVertical) {
-        this.subMenuClick(subMenuOpenDelay, subMenuCloseDelay);
+        this.subMenuClick(subHeight);
       } else {
-        this.subMenuHover(subMenuOpenDelay, subMenuCloseDelay);
+        this.subMenuHover(subHeight);
       }
     },
 
-    subMenuClick (subMenuOpenDelay, subMenuCloseDelay) {
-      const { $subMenu } = this;
+    subMenuClick (subHeight) {
+      const {
+        $subMenu, props: { subMenuOpenDelay, subMenuCloseDelay }
+      } = this;
 
       $subMenu.on('click', function () {
         const $this = $(this);
+        const index = $subMenu.indexOf($this);
 
         if ($this.hasClass(MENU_SUBMENU_CLOSE_CLASS)) { // close => open
           setTimeout(() => {
@@ -252,6 +268,7 @@
               .addClass(MENU_SUBMENU_OPEN_CLASS)
               .children(toSelector(MENU_SUB_CLASS))
               .removeClass(MENU_HIDDEN_CLASS)
+              .css('height', subHeight[index] + 'px');
 
           }, subMenuOpenDelay * 1000);
         } else { // open => close
@@ -261,26 +278,34 @@
               .removeClass(MENU_SUBMENU_CLOSE_CLASS)
               .addClass(MENU_SUBMENU_CLOSE_CLASS)
               .children(toSelector(MENU_SUB_CLASS))
-              .addClass(MENU_HIDDEN_CLASS);
+              .addClass(MENU_HIDDEN_CLASS)
+              .css('height', 0);
 
           }, subMenuCloseDelay * 1000);
         }
       });
     },
 
-    subMenuHover (subMenuOpenDelay, subMenuCloseDelay) {
-      const { $subMenu } = this;
+    subMenuHover () {
+      const {
+        $subMenu,
+        props: { subMenuOpenDelay, subMenuCloseDelay }
+      } = this;
 
       $subMenu.on('hover', function () {
         setTimeout(() => {
 
-          $(this).removeClass(MENU_HIDDEN_CLASS);
+          $(this)
+            .children(toSelector(MENU_SUB_CLASS))
+            .removeClass(MENU_HIDDEN_CLASS);
 
         }, subMenuOpenDelay * 1000);
       }, function () {
         setTimeout(() => {
 
-          $(this).addClass(MENU_HIDDEN_CLASS);
+          $(this)
+          .children(toSelector(MENU_SUB_CLASS))
+          .addClass(MENU_HIDDEN_CLASS);
 
         }, subMenuCloseDelay * 1000);
       });

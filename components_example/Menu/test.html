@@ -20,11 +20,11 @@
     var menu = new Menu('body', {
       children: [
         new Menu.Item({ key: '1', title: 'Menu item 1' }),
-        new Menu.Item({ key: '2', title: 'Menu item 2' }),
         new Menu.SubMenu({ key: 'sub menu', title: 'Sub menu', children: [
           new Menu.Item({ key: 'sub1', title: 'Sub item 1' }),
           new Menu.Item({ key: 'sub2', title: 'Sub item 2' })
-        ] })
+        ] }),
+        new Menu.Item({ key: '2', title: 'Menu item 2' })
       ],
     });
   </script>
