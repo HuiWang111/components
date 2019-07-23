@@ -19,7 +19,7 @@
         DATE_TAG = '[object Date]',
         STRING_TAG = '[object String]',
         NUMBER_TAG = '[object Number]',
-        BOOLEN_TAG = '[object Boolean]',
+        BOOLEAN_TAG = '[object Boolean]',
         FUNCTION_TAG = '[object Function]',
         UNDEFINED_TAG = '[object Undefined]',
         NULL_TAG = '[object Null]';
@@ -112,7 +112,7 @@
   /**
    * @description 在对象中查找需要的key值
    * @param { Object } object
-   * @param { Boolen } deep 是否第一次查找到后继续遍历查找
+   * @param { Boolean } deep 是否第一次查找到后继续遍历查找
    */
   function baseKeyOf(object, iteratee, deep) {
     checkObjectLike(object);
@@ -340,6 +340,33 @@
     return number < 10 ? `0${number}` : number;
   }
 
+  function baseFlatten(array, deep, depth, currentDepth = 1) {
+    checkType(array, 'array');
+    checkType(deep, 'boolean');
+    checkType(depth, 'number');
+
+    const newArray = [];
+    for (let i = 0, len = array.length; i < len; i++) {
+      const value = array[i];
+      if (!isArray(value)) {
+        newArray.push(value);
+      } else {
+        if ( deep || (!isNil(depth) && depth > currentDepth) ) {
+          const arr = baseFlatten(value, deep, depth, currentDepth + 1);
+          for (let j = 0, size = arr.length; j < size; j++) {
+            newArray.push(arr[j]);
+          }
+        } else {
+          for (let j = 0, size = value.length; j < size; j++) {
+            newArray.push(value[j]);
+          }
+        }
+      }
+    }
+
+    return newArray;
+  }
+
   /* ======== Util全局对象中的方法 ======== */
 
   function isString(value) {
@@ -366,7 +393,7 @@
       return !0;
     } else if (isNumber(value)) {
       return value === 0;
-    } else if (isBoolen(value)) {
+    } else if (isBoolean(value)) {
       return !value;
     }
   }
@@ -391,8 +418,8 @@
   function isFunction(value) {
     return getTag(value) === FUNCTION_TAG;
   }
-  function isBoolen(value) {
-    return getTag(value) === BOOLEN_TAG;
+  function isBoolean(value) {
+    return getTag(value) === BOOLEAN_TAG;
   }
   function isDate(value) {
     return getTag(value) === DATE_TAG;
@@ -478,15 +505,14 @@
           return;
         }
       });
-      if (!types.includes(valueType))
+      if (!types.includes(valueType) && !isUndefined(value))
         throw new TypeError(`${message} Expected one of '${types.join(',')}', You given a '${valueType}'`);
     } else {
       if (!typeList.includes(types)) {
         console.warn(`${types} is not a correct javaScript data type`);
         return;
       }
-
-      if (!_is(valueType, '*') && !_is(valueType, types))
+      if (!_is(valueType, '*') && !_is(valueType, types) && !isUndefined(value))
         throw new TypeError(`${message} Expected a '${types}', You given a '${valueType}'`);
     }
   }
@@ -1171,6 +1197,18 @@
     return result;
   }
 
+  function flatten(array) {
+    return baseFlatten(array);
+  }
+
+  function flattenDeep(array) {
+    return baseFlatten(array, true);
+  }
+
+  function flattenDepth(array, depth) {
+    return baseFlatten(array, undefined, depth);
+  }
+
   function pick(object, path) {
     checkObjectLike(object);
 
@@ -1480,7 +1518,7 @@
     isUndefined,
     isNull,
     isNil,
-    isBoolen,
+    isBoolean,
     isArray,
     isDate,
     isRegExp,
@@ -1519,6 +1557,9 @@
     union,
     unionBy,
     groupBy,
+    flatten,
+    flattenDeep,
+    flattenDepth,
 
     // 对象方法
     removeKey,
@@ -1578,7 +1619,7 @@
    * [{
    *   html: String, // 需要被挂载的dom字符串
    *   container: DOMElement | 'body', // 挂载的目标容器
-   *   condition: Boolen, // 挂载的条件，默认挂载
+   *   condition: Boolean, // 挂载的条件，默认挂载
    *   type: 'html' // 挂载dom的jQuery方法, append | prepend | before | after | html 等, 默认html
    * }]
    */
