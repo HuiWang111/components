@@ -12,7 +12,8 @@
       MENU_CONTAINER_CLASS , MENU_ITEM_CLASS, MENU_SUBMENU_CLASS, MENU_VERTICAL_CLASS,
       MENU_HORIZONTAL_CLASS, MENU_DARK_CLASS, MENU_LIGHT_CLASS, MENU_DISABLED_CLASS,
       MENU_SUBMENU_TITLE_CLASS, MENU_SUBMENU_TITLE_WRAP_CLASS, MENU_SUBMENU_ARROW_CLASS,
-      MENU_SUB_CLASS, MENU_HIDDEN_CLASS, MENU_SUBMENU_OPEN_CLASS, MENU_SUBMENU_CLOSE_CLASS
+      MENU_SUB_CLASS, MENU_HIDDEN_CLASS, MENU_SUBMENU_OPEN_CLASS, MENU_SUBMENU_CLOSE_CLASS,
+      MENU_SELECTED_ITEM_CLASS
     }
   } = global,
   
@@ -154,9 +155,7 @@
         MENU_SUB_CLASS
       );
       const child = children.map(c => isString(c) ? c : c.html);
-      const menuSub = $.node('ul', child.join(''), menuSubClass, {
-        dataKey: key
-      });
+      const menuSub = $.node('ul', child.join(''), menuSubClass);
 
       onTitleClick && (this.onTitleClick = onTitleClick);
 
@@ -165,7 +164,9 @@
         disabled ? MENU_DISABLED_CLASS : '',
         MENU_SUBMENU_CLOSE_CLASS
       );
-      return $.node('li', subMenuTitle + menuSub, klass);
+      return $.node('li', subMenuTitle + menuSub, klass, {
+        dataKey: key
+      });
     },
 
     getSubMenuTitle () {
@@ -314,11 +315,19 @@
     handleItemClick () {
       const {
         props: { onClick },
-        $item, $subMenuItem
+        $item, $subMenuItem, $container
       } = this;
 
-      function clickFunc () {
-        onClick && onClick($(this).attr('data-key'));
+      function clickFunc(e) {
+        e.stopPropagation();
+
+        const $this = $(this);
+        const $active = $container.find(toSelector(MENU_SELECTED_ITEM_CLASS));console.log($active)
+
+        $active.removeClass(MENU_SELECTED_ITEM_CLASS);
+        $this.addClass(MENU_SELECTED_ITEM_CLASS);
+          
+        onClick && onClick($this.attr('data-key'));
       }
 
       $item.on('click', clickFunc);

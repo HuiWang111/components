@@ -7,36 +7,49 @@
   outline: none;
   // box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
 
-  & > .cpts-menu-item,
-  & > .cpts-menu-submenu {
+  > .cpts-menu-item,
+  > .cpts-menu-submenu > .cpts-menu-title {
     position: relative;
     display: block;
     padding: 0 20px;
     white-space: nowrap;
-    cursor: pointer;
     transition: color .3s cubic-bezier(.645, .045, .355, 1),
     border-color .3s cubic-bezier(.645, .045, .355, 1),
     background .3s cubic-bezier(.645, .045, .355, 1),
     padding .15s cubic-bezier(.645, .045, .355, 1);
   }
 
+  .cpts-menu-item,
+  .cpts-menu-submenu > .cpts-menu-title {
+    cursor: pointer;
+
+    &:hover {
+      color: @primary-color;
+    }
+
+    &.cpts-menu-selected {
+      border-right: 3px solid @primary-color;//
+      background-color: @menu-selected-item-bg;
+    }
+  }
+
   &.cpts-menu-vertical {
 
-    & > .cpts-menu-item,
-    & > .cpts-menu-submenu,
-    & > .cpts-menu-submenu > .cpts-menu-sub > .cpts-menu-item {
+    > .cpts-menu-item,
+    > .cpts-menu-submenu > .cpts-menu-title,
+    > .cpts-menu-submenu > .cpts-menu-sub > .cpts-menu-item {
       height: 40px;
       line-height: 40px;
       padding: 0 24px;
       overflow: hidden;
       text-overflow: ellipsis;
-
-      &.cpts-menu-active-item {
-        background-color: @menu-active-item-bg;
-      }
     }
 
-    & > .cpts-menu-submenu {
+    > .cpts-menu-submenu > .cpts-menu-sub > .cpts-menu-item {
+      padding-left: 48px;
+    }
+
+    > .cpts-menu-submenu {
       overflow: visible;
       padding: 0;
       height: auto;
@@ -49,11 +62,11 @@
         transform: rotateX(0);
       }
 
-      & > .cpts-menu-title {
+      > .cpts-menu-title {
         padding-left: 24px;
         padding-right: 34px;
 
-        & > .cpts-menu-arrow {
+        > .cpts-menu-arrow {
           position: absolute;
           right: 16px;
           top: 20px;
@@ -80,8 +93,7 @@
         }
       }
 
-      & > .cpts-menu-sub {
-        padding-left: 24px;
+      > .cpts-menu-sub {
         transition: height .3s ease-in-out;
         overflow: hidden;
       }
