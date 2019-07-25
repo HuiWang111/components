@@ -63,7 +63,7 @@
     if (!isUndefined(props.mode) && !menuMode.includes(props.mode)) {
       throw new Error(`'${props.mode}' is not a correct Menu Mode`);
     }
-    if (!isUndefined(props.mode) && !menuTheme.includes(props.theme)) {
+    if (!isUndefined(props.theme) && !menuTheme.includes(props.theme)) {
       throw new Error(`'${props.mode}' is not a correct Menu theme`);
     }
 
@@ -276,7 +276,7 @@
           setTimeout(() => {
 
             $this
-              .removeClass(MENU_SUBMENU_CLOSE_CLASS)
+              .removeClass(MENU_SUBMENU_OPEN_CLASS)
               .addClass(MENU_SUBMENU_CLOSE_CLASS)
               .children(toSelector(MENU_SUB_CLASS))
               .addClass(MENU_HIDDEN_CLASS)
@@ -287,26 +287,37 @@
       });
     },
 
-    subMenuHover () {
+    subMenuHover (subHeight) {
       const {
         $subMenu,
         props: { subMenuOpenDelay, subMenuCloseDelay }
       } = this;
 
-      $subMenu.on('hover', function () {
+      $subMenu.hover(function () {
+        const $this = $(this);
+        const index = $subMenu.indexOf($this);
+        
         setTimeout(() => {
-
-          $(this)
+          
+          $this
+            .removeClass(MENU_SUBMENU_CLOSE_CLASS)
+            .addClass(MENU_SUBMENU_OPEN_CLASS)
             .children(toSelector(MENU_SUB_CLASS))
-            .removeClass(MENU_HIDDEN_CLASS);
+            .removeClass(MENU_HIDDEN_CLASS)
+            .css('height', subHeight[index] + 'px');
 
         }, subMenuOpenDelay * 1000);
       }, function () {
-        setTimeout(() => {
+        const $this = $(this);
 
-          $(this)
-          .children(toSelector(MENU_SUB_CLASS))
-          .addClass(MENU_HIDDEN_CLASS);
+        setTimeout(() => {
+          
+          $this
+            .removeClass(MENU_SUBMENU_OPEN_CLASS)
+            .addClass(MENU_SUBMENU_CLOSE_CLASS)
+            .children(toSelector(MENU_SUB_CLASS))
+            .addClass(MENU_HIDDEN_CLASS)
+            .css('height', 0);
 
         }, subMenuCloseDelay * 1000);
       });

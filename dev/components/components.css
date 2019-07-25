@@ -1172,32 +1172,16 @@ body > .cpts-modal-mask.cpts-modal-centered {
   outline: none;
 }
 .cpts-menu > .cpts-menu-item,
-.cpts-menu > .cpts-menu-submenu > .cpts-menu-title {
+.cpts-menu > .cpts-menu-submenu > .cpts-menu-title,
+.cpts-menu > .cpts-menu-submenu > .cpts-menu-sub > .cpts-menu-item {
   position: relative;
   display: block;
-  padding: 0 20px;
   white-space: nowrap;
   -webkit-transition: color 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), border-color 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), background 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), padding 0.15s cubic-bezier(0.645, 0.045, 0.355, 1);
   -o-transition: color 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), border-color 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), background 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), padding 0.15s cubic-bezier(0.645, 0.045, 0.355, 1);
   -moz-transition: color 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), border-color 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), background 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), padding 0.15s cubic-bezier(0.645, 0.045, 0.355, 1);
   transition: color 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), border-color 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), background 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), padding 0.15s cubic-bezier(0.645, 0.045, 0.355, 1);
-}
-.cpts-menu .cpts-menu-item,
-.cpts-menu .cpts-menu-submenu > .cpts-menu-title {
   cursor: pointer;
-}
-.cpts-menu .cpts-menu-item:hover,
-.cpts-menu .cpts-menu-submenu > .cpts-menu-title:hover {
-  color: #1890ff;
-}
-.cpts-menu .cpts-menu-item.cpts-menu-selected,
-.cpts-menu .cpts-menu-submenu > .cpts-menu-title.cpts-menu-selected {
-  border-right: 3px solid #1890ff;
-  background-color: #e6f7ff;
-}
-.cpts-menu.cpts-menu-vertical > .cpts-menu-item,
-.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu > .cpts-menu-title,
-.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu > .cpts-menu-sub > .cpts-menu-item {
   height: 40px;
   line-height: 40px;
   padding: 0 24px;
@@ -1205,30 +1189,32 @@ body > .cpts-modal-mask.cpts-modal-centered {
   -o-text-overflow: ellipsis;
      text-overflow: ellipsis;
 }
-.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu > .cpts-menu-sub > .cpts-menu-item {
-  padding-left: 48px;
+.cpts-menu > .cpts-menu-item:hover,
+.cpts-menu > .cpts-menu-submenu > .cpts-menu-title:hover,
+.cpts-menu > .cpts-menu-submenu > .cpts-menu-sub > .cpts-menu-item:hover {
+  color: #1890ff;
 }
-.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu {
-  overflow: visible;
-  padding: 0;
-  height: auto;
-  min-height: 40px;
+.cpts-menu > .cpts-menu-item.cpts-menu-selected,
+.cpts-menu > .cpts-menu-submenu > .cpts-menu-title.cpts-menu-selected,
+.cpts-menu > .cpts-menu-submenu > .cpts-menu-sub > .cpts-menu-item.cpts-menu-selected {
+  border-right: 3px solid #1890ff;
+  background-color: #e6f7ff;
 }
-.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu.cpts-menu-open > .cpts-menu-title > .cpts-menu-arrow {
+.cpts-menu > .cpts-menu-submenu.cpts-menu-open > .cpts-menu-title > .cpts-menu-arrow {
   -webkit-transform: rotateX(180deg);
      -moz-transform: rotateX(180deg);
           transform: rotateX(180deg);
 }
-.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu.cpts-menu-close > .cpts-menu-title > .cpts-menu-arrow {
+.cpts-menu > .cpts-menu-submenu.cpts-menu-close > .cpts-menu-title > .cpts-menu-arrow {
   -webkit-transform: rotateX(0);
      -moz-transform: rotateX(0);
           transform: rotateX(0);
 }
-.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu > .cpts-menu-title {
+.cpts-menu > .cpts-menu-submenu > .cpts-menu-title {
   padding-left: 24px;
   padding-right: 34px;
 }
-.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu > .cpts-menu-title > .cpts-menu-arrow {
+.cpts-menu > .cpts-menu-submenu > .cpts-menu-title > .cpts-menu-arrow {
   position: absolute;
   right: 16px;
   top: 20px;
@@ -1240,8 +1226,8 @@ body > .cpts-modal-mask.cpts-modal-centered {
   transition: transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
   transition: transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), -webkit-transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), -moz-transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), -o-transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
-.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu > .cpts-menu-title > .cpts-menu-arrow::before,
-.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu > .cpts-menu-title > .cpts-menu-arrow::after {
+.cpts-menu > .cpts-menu-submenu > .cpts-menu-title > .cpts-menu-arrow::before,
+.cpts-menu > .cpts-menu-submenu > .cpts-menu-title > .cpts-menu-arrow::after {
   content: ' ';
   position: absolute;
   width: 6px;
@@ -1253,27 +1239,46 @@ body > .cpts-modal-mask.cpts-modal-centered {
   background-image: -o-linear-gradient(left, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65));
   background-image: linear-gradient(to right, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65));
 }
-.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu > .cpts-menu-title > .cpts-menu-arrow::before {
+.cpts-menu > .cpts-menu-submenu > .cpts-menu-title > .cpts-menu-arrow::before {
   -webkit-transform: rotate(-45deg) translate(2.5px);
      -moz-transform: rotate(-45deg) translate(2.5px);
       -ms-transform: rotate(-45deg) translate(2.5px);
        -o-transform: rotate(-45deg) translate(2.5px);
           transform: rotate(-45deg) translate(2.5px);
 }
-.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu > .cpts-menu-title > .cpts-menu-arrow::after {
+.cpts-menu > .cpts-menu-submenu > .cpts-menu-title > .cpts-menu-arrow::after {
   -webkit-transform: rotate(45deg) translate(-2.5px);
      -moz-transform: rotate(45deg) translate(-2.5px);
       -ms-transform: rotate(45deg) translate(-2.5px);
        -o-transform: rotate(45deg) translate(-2.5px);
           transform: rotate(45deg) translate(-2.5px);
 }
-.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu > .cpts-menu-sub {
+.cpts-menu > .cpts-menu-submenu > .cpts-menu-sub {
   -webkit-transition: height 0.3s ease-in-out;
   -o-transition: height 0.3s ease-in-out;
   -moz-transition: height 0.3s ease-in-out;
   transition: height 0.3s ease-in-out;
   overflow: hidden;
 }
-.cpts-menu.cpts-menu-light {
+.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu > .cpts-menu-sub > .cpts-menu-item {
+  padding-left: 48px;
+}
+.cpts-menu.cpts-menu-vertical > .cpts-menu-submenu {
+  overflow: visible;
+  padding: 0;
+  height: auto;
+  min-height: 40px;
+}
+.cpts-menu.cpts-menu-vertical.cpts-menu-light {
   border-right: 1px solid #e8e8e8;
+}
+.cpts-menu.cpts-menu-horizontal {
+  width: auto;
+  height: 50px;
+  line-height: 50px;
+}
+.cpts-menu.cpts-menu-horizontal > .cpts-menu-item,
+.cpts-menu.cpts-menu-horizontal > .cpts-menu-submenu {
+  display: inline-block;
+  vertical-align: top;
 }
