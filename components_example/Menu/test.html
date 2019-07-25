@@ -26,7 +26,10 @@
         ] }),
         new Menu.Item({ key: '2', title: 'Menu item 2' })
       ],
-      mode: 'horizontal'
+      mode: 'horizontal',
+      onClick: function(key) {
+        console.log(key);
+      }
     });
   </script>
 </body>

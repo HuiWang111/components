@@ -1,4 +1,5 @@
 @primary-color: #1890ff;
+
 @warning-color: #faad14;
 @success-color: #52c41a;
 @error-color: #f5222d;
@@ -17,16 +18,16 @@
 @btn-small-size: 24px;
 @btn-small-padding: 0 7px;
 @btn-box-shadow: 0 2px 0 rgba(0, 0, 0, .015);
-@btn-default-border-color: #d9d9d9;
+@btn-default-border-color: @disabled-border;
 
 /* Tabs */
 @tabs-base-margin-right: 32px;
 @tabs-base-color: rgba(0, 0, 0, .65);
 @tabs-card-border-radius: 4px 4px 0 0;
 @tabs-card-bg: #fafafa;
-@tabs-card-border: 1px solid #e8e8e8;
+@tabs-card-border: 1px solid @base-border-color;
 @tabs-card-margin-right: 2px;
-@tabs-card-border-color: #e8e8e8;
+@tabs-card-border-color: @base-border-color;
 
 /* Alert */
 @alert-success-bg: #f6ffed;
@@ -39,7 +40,16 @@
 @alert-error-border: #ffa39e;
 
 /* Menu */
-@menu-selected-item-bg: #e6f7ff;
+@menu-box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+@menu-border-color: @base-border-color;
+
+@light-menu-color: rgba(0, 0, 0, .65);
+@light-menu-selected-item-bg: #e6f7ff;
+
+@vertical-menu-width: 256px;
+@horizontal-menu-height: 50px;
+
+
 
 .rowStyle (@index) when (@index = 1) {
   display: flex;

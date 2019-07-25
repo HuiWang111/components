@@ -1,11 +1,10 @@
 .cpts-menu {
-  width: 256px;
+  width: @vertical-menu-width;
   box-sizing: border-box;
   font-size: 14px;
-  color: rgba(0, 0, 0, .65);
+  color: @light-menu-color;
   background: #fff;
   outline: none;
-  // box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
 
   > .cpts-menu-item,
   > .cpts-menu-submenu > .cpts-menu-title,
@@ -26,11 +25,6 @@
 
     &:hover {
       color: @primary-color;
-    }
-
-    &.cpts-menu-selected {
-      border-right: 3px solid @primary-color;//
-      background-color: @menu-selected-item-bg;
     }
   }
 
@@ -61,7 +55,7 @@
           height: 1.5px;
           background-color: #fff;
           // 不是很理解为什么使用linear-gradient，而不是直接使用background-color
-          background-image: linear-gradient(to right, rgba(0, 0, 0, .65), rgba(0, 0, 0, .65));
+          background-image: linear-gradient(to right, @light-menu-color, @light-menu-color);
         }
 
         &::before {
@@ -85,6 +79,11 @@
       padding-left: 48px;
     }
 
+    .cpts-menu-item.cpts-menu-selected {
+      border-right: 3px solid @primary-color;
+      background-color: @light-menu-selected-item-bg;
+    }
+
     > .cpts-menu-submenu {
       overflow: visible;
       padding: 0;
@@ -93,19 +92,59 @@
     }
 
     &.cpts-menu-light {
-      border-right: 1px solid #e8e8e8;
+      border-right: 1px solid @menu-border-color;
     }
   }
 
   &.cpts-menu-horizontal {
     width: auto;
-    height: 50px;
-    line-height: 50px;
+    height: @horizontal-menu-height;
+    line-height: @horizontal-menu-height;
+    border-bottom: 1px solid @menu-border-color;
     
-    > .cpts-menu-item,
     > .cpts-menu-submenu {
       display: inline-block;
       vertical-align: top;
+      height: 100%;
+
+      > .cpts-menu-title {
+        height: 100%;
+      }
+
+      &.cpts-menu-open > .cpts-menu-title,
+      &.cpts-menu-submenu-active > .cpts-menu-title {
+        color: @primary-color;
+        border-bottom: 2px solid @primary-color;
+        box-sizing: border-box;
+      }
+
+      > .cpts-menu-sub {
+        background-color: #fff;
+        box-shadow: @menu-box-shadow;
+
+        > .cpts-menu-item {
+          &.cpts-menu-selected {
+            color: @primary-color;
+            background-color: @light-menu-selected-item-bg;
+          }
+          &.hover {
+            color: @primary-color;
+          }
+        }
+      }
+    }
+
+    > .cpts-menu-item {
+      display: inline-block;
+      vertical-align: top;
+      height: 100%;
+      box-sizing: border-box;
+
+      &.cpts-menu-selected,
+      &:hover {
+        color: @primary-color;
+        border-bottom: 2px solid @primary-color;
+      }
     }
   }
 }

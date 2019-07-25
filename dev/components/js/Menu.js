@@ -12,7 +12,7 @@
       MENU_CONTAINER_CLASS , MENU_ITEM_CLASS, MENU_SUBMENU_CLASS, MENU_VERTICAL_CLASS,
       MENU_HORIZONTAL_CLASS, MENU_DARK_CLASS, MENU_LIGHT_CLASS, MENU_DISABLED_CLASS,
       MENU_SUBMENU_TITLE_CLASS, MENU_SUBMENU_TITLE_WRAP_CLASS, MENU_SUBMENU_ARROW_CLASS,
-      MENU_SUB_CLASS, MENU_HIDDEN_CLASS, MENU_SUBMENU_OPEN_CLASS, MENU_SUBMENU_CLOSE_CLASS,
+      MENU_SUB_CLASS, MENU_HIDDEN_CLASS, MENU_SUBMENU_OPEN_CLASS, MENU_SUBMENU_CLOSE_CLASS, MENU_SUBMENU_ACTIVE_CLASS,
       MENU_SELECTED_ITEM_CLASS
     }
   } = global,
@@ -298,27 +298,23 @@
         const index = $subMenu.indexOf($this);
         
         setTimeout(() => {
-          
           $this
             .removeClass(MENU_SUBMENU_CLOSE_CLASS)
             .addClass(MENU_SUBMENU_OPEN_CLASS)
             .children(toSelector(MENU_SUB_CLASS))
             .removeClass(MENU_HIDDEN_CLASS)
             .css('height', subHeight[index] + 'px');
-
         }, subMenuOpenDelay * 1000);
       }, function () {
         const $this = $(this);
 
         setTimeout(() => {
-          
           $this
             .removeClass(MENU_SUBMENU_OPEN_CLASS)
             .addClass(MENU_SUBMENU_CLOSE_CLASS)
             .children(toSelector(MENU_SUB_CLASS))
             .addClass(MENU_HIDDEN_CLASS)
             .css('height', 0);
-
         }, subMenuCloseDelay * 1000);
       });
     },
@@ -326,23 +322,44 @@
     handleItemClick () {
       const {
         props: { onClick },
-        $item, $subMenuItem, $container
+        $item, $subMenuItem, $container, $subMenu
       } = this;
 
       function clickFunc(e) {
         e.stopPropagation();
 
         const $this = $(this);
-        const $active = $container.find(toSelector(MENU_SELECTED_ITEM_CLASS));console.log($active)
+        const $active = $container.find(toSelector(MENU_SELECTED_ITEM_CLASS));
 
         $active.removeClass(MENU_SELECTED_ITEM_CLASS);
         $this.addClass(MENU_SELECTED_ITEM_CLASS);
+
+        const $parentEl = $this.parent().parent();
+        if ($parentEl.hasClass(MENU_SUBMENU_CLASS)) {
+          $parentEl.hasClass(MENU_SUBMENU_ACTIVE_CLASS) ||$parentEl.addClass(MENU_SUBMENU_ACTIVE_CLASS);
+        } else {
+          $subMenu
+            .filter(toSelector(MENU_SUBMENU_ACTIVE_CLASS))
+            .removeClass(MENU_SUBMENU_ACTIVE_CLASS);
+        }
           
         onClick && onClick($this.attr('data-key'));
       }
 
       $item.on('click', clickFunc);
       $subMenuItem.on('click', clickFunc);
+    },
+
+    /**
+     * 判断是否有子元素是已经被选中的状态
+     */
+    hasSelectedChildren (index) {
+      const { $subMenu } = this;
+      const $subMenuItem = $subMenu.eq(index).find(toSelector(MENU_ITEM_CLASS));
+
+      return toArray($subMenuItem).some(item => {
+        return $(item).hasClass(MENU_SELECTED_ITEM_CLASS);
+      });
     }
   });
 
