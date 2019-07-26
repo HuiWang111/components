@@ -8,12 +8,15 @@
   <link rel="stylesheet" href="../../dev/components/components.css">
   <style>
     .tab-container {
-      width: 500px;
+      width: 100%;
       height: 500px;
       padding: 0 10px;
       border: 1px solid #eee;
-      margin: 10px auto;
       border-top: none;
+      /* position: absolute;
+      top: 10px;
+      left:50%;
+      transform: translateX(-50%); */
     }
   </style>
 </head>
@@ -22,11 +25,15 @@
   
   <script src="../../lib/jquery-3.3.1.min.js"></script>
   <script src="../../dev/util.js"></script>
-  <script src="../../dev/components/components.js"></script>
+  <script src="../../dev/components/js/common/className.js"></script>
+  <script src="../../dev/components/js/common/color.js"></script>
+  <script src="../../dev/components/js/common/svg.js"></script>
+  <script src="../../dev/components/js/Tabs.js"></script>
   <script>
     var myTab = new Tabs('.tab-container', {
       type: 'card',
       editable: false,
+      block: true,
       tabPanes: [{
         key: 'hh',
         tab: '哈哈哈哈哈哈哈哈哈'
@@ -47,8 +54,8 @@
         key: 'qq',
         tab: 'qqqqqqqq'
       }],
-      onChange: function (index) {
-        // console.log(index);
+      onChange: function (key, index) {
+        console.log(key, index);
       },
       renderPaneItem: function (tabName, key) {
         return $.node('span', `this is ${tabName} pane content, this tab's key is "${key}"`);

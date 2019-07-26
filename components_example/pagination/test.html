@@ -14,11 +14,14 @@
   
   <script src="../../lib/jquery-3.3.1.min.js"></script>
   <script src="../../dev/util.js"></script>
-  <script src="../../dev/components/components.js"></script>
+  <script src="../../dev/components/js/common/className.js"></script>
+  <script src="../../dev/components/js/common/color.js"></script>
+  <script src="../../dev/components/js/common/svg.js"></script>
+  <script src="../../dev/components/js/Pagination.js"></script>
   <script>
     var pagination = new Pagination('div', {
       total: 500,
-      bordered: false,
+      // bordered: false,
       current: 18,
       itemRender: function (current, type, originalElement) {
         if (type === 'prev') {
@@ -33,6 +36,22 @@
       }
     });
 
+    var pagination = new Pagination('div', {
+      total: 500,
+      // bordered: false,
+      current: 18,
+      itemRender: function (current, type, originalElement) {
+        if (type === 'prev') {
+          return '<a>上一页</a>';
+        } else if (type === 'next') {
+          return '<a>下一页</a>';
+        }
+        return originalElement;
+      },
+      onChange: function (current) {
+        // console.log(current);
+      }
+    });
     
 
     

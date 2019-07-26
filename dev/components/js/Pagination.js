@@ -6,7 +6,8 @@
   const { 
     Component, jQuery: $,
     util: { 
-      isFunction, checkType, toSelector, extend, removeKeys, appendClass
+      isFunction, checkType, toSelector, extend, removeKeys, appendClass,
+      getRandomClassName
     },
     ClassName: {
       PAGINATION_ITEM_CLASS, PAGINATION_ITEM_CLASS_ACTIVE, PAGINATION_ITEM_CLASS_BORDER, PAGINATION_ITEM_CLASS_DISABLE,
@@ -55,6 +56,7 @@
 
     this.options = opts;
     this.selector = selector;
+    this.RANDOM_CLASS = getRandomClassName();
 
     this.super();
   };
@@ -63,7 +65,7 @@
 
   extend(Pagination.prototype, {
     render () {
-      const { selector, options: { current, total, pageSize } } = this;
+      const { selector, RANDOM_CLASS, options: { current, total, pageSize } } = this;
 
       const totalPage = Math.ceil(total/pageSize);
       Object.defineProperty(this, 'totalPage', {
@@ -124,15 +126,20 @@
       //next
       const nextItem = this.createNext();
 
+      const klass = appendClass(
+        RANDOM_CLASS,
+        PAGINATION_CONTAINER_CLASS
+      );
+
       return [{
-        html: $.node('ul', prevItem + ulInner + nextItem, PAGINATION_CONTAINER_CLASS),
+        html: $.node('ul', prevItem + ulInner + nextItem, klass),
         container: $(selector),
         type: 'append'
       }];
     },
 
     componentDidMount () {
-      this.$container = $(toSelector(PAGINATION_CONTAINER_CLASS));
+      this.$container = $(toSelector(this.RANDOM_CLASS));
 
       this.$next = this.$container.find(toSelector(PAGINATION_ITEM_CLASS_NEXT));
       this.$prev = this.$container.find(toSelector(PAGINATION_ITEM_CLASS_PREV));
@@ -145,7 +152,7 @@
       // click previous button
       $prev.on('click', function () {
         const $this = $(this);
-        const $pagination = $(toSelector(PAGINATION_ITEM_CLASS));
+        const $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
         if (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
           const $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
           const current = __this__.getPage($active);
@@ -159,7 +166,7 @@
       // click next button
       $next.on('click', function () {
         const $this = $(this);
-        const $pagination = $(toSelector(PAGINATION_ITEM_CLASS));
+        const $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
         if (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
           const $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
           const current = __this__.getPage($active);
@@ -173,7 +180,7 @@
       // click paginations
       $container.on('click', `${toSelector(PAGINATION_ITEM_CLASS)}`, function () {
         const $this = $(this);
-        const $pagination = $(toSelector(PAGINATION_ITEM_CLASS));
+        const $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
         if (!$this.hasClass(PAGINATION_ITEM_CLASS_ACTIVE)) {
           const $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
           const current = __this__.getPage($active);
@@ -190,7 +197,7 @@
       const moreSelector = `${toSelector(PAGINATION_ITEM_NEXT_MORE_CLASS)},${toSelector(PAGINATION_ITEM_PREV_MORE_CLASS)}`;
       $container.on('click', moreSelector, function () {
         const $this = $(this);
-        const $pagination = $(toSelector(PAGINATION_ITEM_CLASS));
+        const $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
         const $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
         const current = __this__.getPage($active);
         const variable = $this.hasClass(PAGINATION_ITEM_PREV_MORE_CLASS) ? -5 : 5;

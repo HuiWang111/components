@@ -22,7 +22,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       DATE_TAG = '[object Date]',
       STRING_TAG = '[object String]',
       NUMBER_TAG = '[object Number]',
-      BOOLEN_TAG = '[object Boolean]',
+      BOOLEAN_TAG = '[object Boolean]',
       FUNCTION_TAG = '[object Function]',
       UNDEFINED_TAG = '[object Undefined]',
       NULL_TAG = '[object Null]';
@@ -116,7 +116,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   /**
    * @description 在对象中查找需要的key值
    * @param { Object } object
-   * @param { Boolen } deep 是否第一次查找到后继续遍历查找
+   * @param { Boolean } deep 是否第一次查找到后继续遍历查找
    */
   function baseKeyOf(object, iteratee, deep) {
     checkObjectLike(object);
@@ -343,6 +343,35 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     return number < 10 ? '0' + number : number;
   }
 
+  function baseFlatten(array, deep, depth) {
+    var currentDepth = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1;
+
+    checkType(array, 'array');
+    checkType(deep, 'boolean');
+    checkType(depth, 'number');
+
+    var newArray = [];
+    for (var i = 0, len = array.length; i < len; i++) {
+      var value = array[i];
+      if (!isArray(value)) {
+        newArray.push(value);
+      } else {
+        if (deep || !isNil(depth) && depth > currentDepth) {
+          var arr = baseFlatten(value, deep, depth, currentDepth + 1);
+          for (var j = 0, size = arr.length; j < size; j++) {
+            newArray.push(arr[j]);
+          }
+        } else {
+          for (var _j = 0, _size = value.length; _j < _size; _j++) {
+            newArray.push(value[_j]);
+          }
+        }
+      }
+    }
+
+    return newArray;
+  }
+
   /* ======== Util全局对象中的方法 ======== */
 
   function isString(value) {
@@ -370,7 +399,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       }return !0;
     } else if (isNumber(value)) {
       return value === 0;
-    } else if (isBoolen(value)) {
+    } else if (isBoolean(value)) {
       return !value;
     }
   }
@@ -395,8 +424,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   function isFunction(value) {
     return getTag(value) === FUNCTION_TAG;
   }
-  function isBoolen(value) {
-    return getTag(value) === BOOLEN_TAG;
+  function isBoolean(value) {
+    return getTag(value) === BOOLEAN_TAG;
   }
   function isDate(value) {
     return getTag(value) === DATE_TAG;
@@ -456,7 +485,9 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     return _is(instance, '*') ? instance : getType(instance);
   }));
 
-  function checkType(value, types) {
+  function checkType(value, types, message) {
+    message = message || '';
+
     var valueType = getType(value);
     if (isArray(types)) {
       types.forEach(function (type) {
@@ -465,15 +496,39 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           return;
         }
       });
-      if (!types.includes(valueType)) throw new TypeError('Expected one of \'' + types.join(',') + '\', You given a \'' + valueType + '\'');
+      if (!types.includes(valueType) && !isUndefined(value)) throw new TypeError(message + ' Expected one of \'' + types.join(',') + '\', You given a \'' + valueType + '\'');
     } else {
       if (!typeList.includes(types)) {
         console.warn(types + ' is not a correct javaScript data type');
         return;
       }
-
-      if (!_is(valueType, '*') && !_is(valueType, types)) throw new TypeError('Expected a \'' + types + '\', You given a \'' + valueType + '\'');
+      if (!_is(valueType, '*') && !_is(valueType, types) && !isUndefined(value)) throw new TypeError(message + ' Expected a \'' + types + '\', You given a \'' + valueType + '\'');
     }
+  }
+
+  function propsChecker(props, checker) {
+    checkType(props, 'object');
+    checkType(checker, 'object');
+
+    forInOwn(checker, function (value, key) {
+      var toChecks = value.split('.');
+      toChecks.forEach(function (toCheck) {
+        var isRequire = toCheck === 'require';
+
+        if (!typeList.includes(toCheck) && !isRequire) {
+          throw new Error('\'' + toCheck + '\' is not a correct checker type in propsChecker');
+        }
+
+        if (isRequire) {
+          if (isNil(props[key])) throw new Error('the props \'' + key + '\' is required');
+        } else {
+          if (!isUndefined(props[key])) {
+            var message = 'the props \'' + key + '\' is';
+            checkType(props[key], toCheck, message);
+          }
+        }
+      });
+    });
   }
 
   /**
@@ -1153,6 +1208,18 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     return result;
   }
 
+  function flatten(array) {
+    return baseFlatten(array);
+  }
+
+  function flattenDeep(array) {
+    return baseFlatten(array, true);
+  }
+
+  function flattenDepth(array, depth) {
+    return baseFlatten(array, undefined, depth);
+  }
+
   function pick(object, path) {
     checkObjectLike(object);
 
@@ -1447,12 +1514,13 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     isUndefined: isUndefined,
     isNull: isNull,
     isNil: isNil,
-    isBoolen: isBoolen,
+    isBoolean: isBoolean,
     isArray: isArray,
     isDate: isDate,
     isRegExp: isRegExp,
     checkType: checkType,
     getType: getType,
+    propsChecker: propsChecker,
 
     // number方法
     toNumber: toNumber,
@@ -1485,6 +1553,9 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     union: union,
     unionBy: unionBy,
     groupBy: groupBy,
+    flatten: flatten,
+    flattenDeep: flattenDeep,
+    flattenDepth: flattenDepth,
 
     // 对象方法
     removeKey: removeKey,
@@ -1550,7 +1621,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * [{
    *   html: String, // 需要被挂载的dom字符串
    *   container: DOMElement | 'body', // 挂载的目标容器
-   *   condition: Boolen, // 挂载的条件，默认挂载
+   *   condition: Boolean, // 挂载的条件，默认挂载
    *   type: 'html' // 挂载dom的jQuery方法, append | prepend | before | after | html 等, 默认html
    * }]
    */
@@ -1785,7 +1856,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       isObject = _global$util3.isObject,
       fromCamelCase = _global$util3.fromCamelCase,
       isArray = _global$util3.isArray,
-      checkType = _global$util3.checkType;
+      checkType = _global$util3.checkType,
+      extend = _global$util3.extend;
 
 
   var $ = global.jQuery;

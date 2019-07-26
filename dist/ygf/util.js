@@ -1,35 +1,38 @@
-;!function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined'
-  ? module.exports = factory() : typeof define === 'function' && define.amd
-  ? define(factory) : typeof global._ === 'undefined'
-  ? global._ = global.util = factory() : global.util = factory();
-}(this, function() {
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-  const emptyArray = Object.freeze([]);
-  const _slice = emptyArray.slice;
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+;!function (global, factory) {
+  (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory() : typeof define === 'function' && define.amd ? define(factory) : typeof global._ === 'undefined' ? global._ = global.util = factory() : global.util = factory();
+}(this, function () {
+
+  var emptyArray = Object.freeze([]);
+  var _slice = emptyArray.slice;
 
   if (!emptyArray.map) {
     alert('您的浏览器过旧，请升级浏览器！');
     return;
   }
 
-  const ARRAY_TAG = '[object Array]',
-        OBJECT_TAG ='[object Object]',
-        REGEXP_TAG = '[object RegExp]',
-        DATE_TAG = '[object Date]',
-        STRING_TAG = '[object String]',
-        NUMBER_TAG = '[object Number]',
-        BOOLEAN_TAG = '[object Boolean]',
-        FUNCTION_TAG = '[object Function]',
-        UNDEFINED_TAG = '[object Undefined]',
-        NULL_TAG = '[object Null]';
+  var ARRAY_TAG = '[object Array]',
+      OBJECT_TAG = '[object Object]',
+      REGEXP_TAG = '[object RegExp]',
+      DATE_TAG = '[object Date]',
+      STRING_TAG = '[object String]',
+      NUMBER_TAG = '[object Number]',
+      BOOLEAN_TAG = '[object Boolean]',
+      FUNCTION_TAG = '[object Function]',
+      UNDEFINED_TAG = '[object Undefined]',
+      NULL_TAG = '[object Null]';
 
   /**
    * Object.assign
    */
-  const extend = Object.assign || function () {
-    const receiver = _slice.call(arguments, 0, 1)[0],
-          suppliers = _slice.call(arguments, 1);
+  var extend = Object.assign || function () {
+    var receiver = _slice.call(arguments, 0, 1)[0],
+        suppliers = _slice.call(arguments, 1);
 
     suppliers.forEach(function (supplier) {
       Object.keys(supplier).forEach(function (key) {
@@ -38,13 +41,13 @@
     });
 
     return receiver;
-  }
+  };
 
   /**
    * Object.is
    */
-  const _is = Object.is || function (x, y) {
-    if (x === y) { 
+  var _is = Object.is || function (x, y) {
+    if (x === y) {
       return x !== 0 || 1 / x === 1 / y;
     } else {
       return x !== x && y !== y;
@@ -54,14 +57,14 @@
   /**
    * Array.from
    */
-  const toArray = Array.from || function (arrayLike, callback) {
-    const len = arrayLike.length || arrayLike.size;
+  var toArray = Array.from || function (arrayLike, callback) {
+    var len = arrayLike.length || arrayLike.size;
     if (!isLength(len)) return [];
-    
-    const array = [];
-    forInOwn(arrayLike, (value, key, self) => {
+
+    var array = [];
+    forInOwn(arrayLike, function (value, key, self) {
       if (isNumeric(key)) {
-        const item = isFunction(callback) ? callback(value, parseInt(key), self) : value;
+        var item = isFunction(callback) ? callback(value, parseInt(key), self) : value;
         array.push(item);
       } else {
         array.push(undefined);
@@ -76,12 +79,13 @@
    */
   if (!emptyArray.includes) {
     Array.prototype.includes = function (target, start) {
-      const array = this, len = array.length;
+      var array = this,
+          len = array.length;
       start = isNumeric(start) ? parseInt(start) : 0;
       start = start >= 0 ? start : 0;
 
-      let result = false;
-      for (let i = start; i < len; i++) {
+      var result = false;
+      for (var i = start; i < len; i++) {
         if (_is(target, array[i])) {
           result = true;
           break;
@@ -89,24 +93,24 @@
       }
 
       return result;
-    }
+    };
   }
 
   /* ======== 私有方法，不添加到Util全局对象 ======== */
 
   function baseUnion(args, isSample) {
-    const array = [];
-    let prop = null;
-    for( let i = 0, len = args.length; i < len; i++) {
+    var array = [];
+    var prop = null;
+    for (var i = 0, len = args.length; i < len; i++) {
       if (isArray(args[i])) {
-        array.push(...args[i]);
+        array.push.apply(array, _toConsumableArray(args[i]));
       } else {
         prop = args[i];
         break;
       }
     }
 
-    return !isSample ? { array, prop } : array;
+    return !isSample ? { array: array, prop: prop } : array;
   }
 
   /**
@@ -117,10 +121,10 @@
   function baseKeyOf(object, iteratee, deep) {
     checkObjectLike(object);
 
-    const keys = [];
+    var keys = [];
     for (key in object) {
       if (isFunction(iteratee)) {
-        const result = iteratee(object[key], key, object);
+        var result = iteratee(object[key], key, object);
         if (result === true) {
           keys.push(key);
           if (!deep) break;
@@ -144,26 +148,27 @@
   function baseRemoveKey(object, iteratee, deep) {
     checkObjectLike(object);
 
-    const isFunc = isFunction(iteratee);
+    var isFunc = isFunction(iteratee);
 
-    let obj = {}, flag = false;
+    var obj = {},
+        flag = false;
     if (isFunc) {
-      for (const key in object) {
-        const result = iteratee(object[key], key, object);
+      for (var _key in object) {
+        var result = iteratee(object[_key], _key, object);
         if (result === true) {
-          const value = object[key];
-          delete object[key];
+          var value = object[_key];
+          delete object[_key];
           flag = true;
-          extend(obj, { [key]: value });
+          extend(obj, _defineProperty({}, _key, value));
           if (!deep) break;
         }
       }
     } else {
       if (iteratee in object) {
-        const value = object[iteratee];
+        var _value = object[iteratee];
         delete object[iteratee];
         flag = true;
-        extend(obj, { [iteratee]: value });
+        extend(obj, _defineProperty({}, iteratee, _value));
       }
     }
 
@@ -171,11 +176,11 @@
   }
 
   function baseRemoveAt(array, indexes) {
-    const length = array && isLength(array.length) ? array.length : 0;
+    var length = array && isLength(array.length) ? array.length : 0;
     indexes = uniq(indexes);
-    
-    for (let i = length - 1; i > -1; i--) {
-      const index = indexes[i];
+
+    for (var i = length - 1; i > -1; i--) {
+      var index = indexes[i];
       if (isIndex(index)) {
         emptyArray.splice.call(array, index, 1);
       } else {
@@ -187,29 +192,30 @@
   function baseRemove(array, iteratee) {
     checkType(array, 'array');
 
-    const isFunc = isFunction(iteratee);
-    const isArr = isArray(iteratee);
-    const indexes = [], result = [];
+    var isFunc = isFunction(iteratee);
+    var isArr = isArray(iteratee);
+    var indexes = [],
+        result = [];
 
-    for (let i = 0, len = array.length; i < len; i++) {
-      const value = array[i];
-      switch(true) {
-        case (isFunc):
-          const ifRemove = iteratee(value, i, array);
+    for (var i = 0, len = array.length; i < len; i++) {
+      var value = array[i];
+      switch (true) {
+        case isFunc:
+          var ifRemove = iteratee(value, i, array);
           if (ifRemove === true) {
             result.push(value);
             indexes.push(i);
           }
           break;
-          
-        case (isArr):
+
+        case isArr:
           if (iteratee.includes(value)) {
             result.push(value);
             indexes.push(i);
           }
           break;
 
-        default: 
+        default:
           if (_is(iteratee, value)) {
             result.push(value);
             indexes.push(i);
@@ -222,25 +228,25 @@
   }
 
   function getLetters() {
-    const letters = [];
-    for (let i = 65; i < 91; i++) {
+    var letters = [];
+    for (var i = 65; i < 91; i++) {
       letters.push(String.fromCharCode(i));
     }
-    for (let j = 97; j < 123; j++) {
+    for (var j = 97; j < 123; j++) {
       letters.push(String.fromCharCode(j));
     }
     return letters;
   }
 
   function baseRandomLetter(size) {
-    const letters = getLetters();
+    var letters = getLetters();
 
-    let result = letters[Math.floor(Math.random()*letters.length)];
+    var result = letters[Math.floor(Math.random() * letters.length)];
     size = toInteger(size);
 
     if (size && size > 1) {
-      for (let i = 1; i < size; i++) {
-        result += letters[Math.floor(Math.random()*letters.length)];
+      for (var i = 1; i < size; i++) {
+        result += letters[Math.floor(Math.random() * letters.length)];
       }
     }
 
@@ -253,16 +259,16 @@
    * @returns 随机字符串
    */
   function buildRandomString(length) {
-    let randomString = Math.random().toString(36).substr(2);
-    const letter = baseRandomLetter();
-    randomString =  letter + randomString; //保证第一位一定是字母
+    var randomString = Math.random().toString(36).substr(2);
+    var letter = baseRandomLetter();
+    randomString = letter + randomString; //保证第一位一定是字母
 
     length = toInteger(length);
     if (length) {
-      const size = randomString.length;
+      var size = randomString.length;
       if (length > size) {
-        const diff = length - size;
-        const letters = baseRandomLetter(diff);
+        var diff = length - size;
+        var letters = baseRandomLetter(diff);
         randomString += letters;
       } else if (length < size) {
         randomString = randomString.substr(0, length);
@@ -275,61 +281,58 @@
   function baseClone(object, deep) {
     checkObjectLike(object);
 
-    const result = isArray(object) ? [] : {};
-    for (let key in object) {
-      const value = object[key];
+    var result = isArray(object) ? [] : {};
+    for (var _key2 in object) {
+      var value = object[_key2];
       if (isObjectLike(value) && deep) {
-        result[key] =  baseClone(value, true);
+        result[_key2] = baseClone(value, true);
       } else {
-        result[key] = value;
+        result[_key2] = value;
       }
     }
 
     return result;
   }
 
-  const _toString = Object.prototype.toString;
+  var _toString = Object.prototype.toString;
   function getTag(value) {
     return _toString.call(value);
   }
 
-  const _hasOwnProperty = Object.prototype.hasOwnProperty;
-  function hasOwn (obj, key) {
-    return _hasOwnProperty.call(obj, key)
+  var _hasOwnProperty = Object.prototype.hasOwnProperty;
+  function hasOwn(obj, key) {
+    return _hasOwnProperty.call(obj, key);
   }
 
-  function getType (value) {
-    const tag = getTag(value);
-    
+  function getType(value) {
+    var tag = getTag(value);
+
     return tag.slice(8, tag.length - 1).toLowerCase();
   }
 
   function checkObjectLike(value) {
-    if (!isObjectLike(value))
-      throw new TypeError(`Excepted a 'objectLike', You given a ${getType(value)}`);
+    if (!isObjectLike(value)) throw new TypeError('Excepted a \'objectLike\', You given a ' + getType(value));
   }
-  
+
   /**
    * Date
    */
-  function baseNow () {
+  function baseNow() {
     return new Date();
   }
 
   function baseHandleYear(year) {
     year = toNumber(year) || baseNow().getFullYear();
-    
-    if (year < 1970)
-      throw new Error(`year:${year} is not in range`);
+
+    if (year < 1970) throw new Error('year:' + year + ' is not in range');
 
     return year;
   }
 
   function baseHandleMonth(month) {
-    month = toNumber(month) || (baseNow().getMonth() + 1);
+    month = toNumber(month) || baseNow().getMonth() + 1;
 
-    if (month < 1 || month > 12)
-      throw new Error(`month:${month} is not in range`);
+    if (month < 1 || month > 12) throw new Error('month:' + month + ' is not in range');
 
     return month;
   }
@@ -337,28 +340,30 @@
   function baseDateFull(number) {
     checkType(number, 'number');
 
-    return number < 10 ? `0${number}` : number;
+    return number < 10 ? '0' + number : number;
   }
 
-  function baseFlatten(array, deep, depth, currentDepth = 1) {
+  function baseFlatten(array, deep, depth) {
+    var currentDepth = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1;
+
     checkType(array, 'array');
     checkType(deep, 'boolean');
     checkType(depth, 'number');
 
-    const newArray = [];
-    for (let i = 0, len = array.length; i < len; i++) {
-      const value = array[i];
+    var newArray = [];
+    for (var i = 0, len = array.length; i < len; i++) {
+      var value = array[i];
       if (!isArray(value)) {
         newArray.push(value);
       } else {
-        if ( deep || (!isNil(depth) && depth > currentDepth) ) {
-          const arr = baseFlatten(value, deep, depth, currentDepth + 1);
-          for (let j = 0, size = arr.length; j < size; j++) {
+        if (deep || !isNil(depth) && depth > currentDepth) {
+          var arr = baseFlatten(value, deep, depth, currentDepth + 1);
+          for (var j = 0, size = arr.length; j < size; j++) {
             newArray.push(arr[j]);
           }
         } else {
-          for (let j = 0, size = value.length; j < size; j++) {
-            newArray.push(value[j]);
+          for (var _j = 0, _size = value.length; _j < _size; _j++) {
+            newArray.push(value[_j]);
           }
         }
       }
@@ -373,7 +378,7 @@
     return getTag(value) === STRING_TAG;
   }
   function isObjectLike(value) {
-    return typeof value === 'object' && !isNull(value);
+    return (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && !isNull(value);
   }
   function isObject(value) {
     return getTag(value) === OBJECT_TAG;
@@ -389,8 +394,9 @@
     } else if (isLength(value.size)) {
       return value.size === 0;
     } else if (isObjectLike(value)) {
-      for (const _ in value) return !1;
-      return !0;
+      for (var _ in value) {
+        return !1;
+      }return !0;
     } else if (isNumber(value)) {
       return value === 0;
     } else if (isBoolean(value)) {
@@ -424,32 +430,32 @@
   function isDate(value) {
     return getTag(value) === DATE_TAG;
   }
-  const nativeIsArray = Array.isArray;
+  var nativeIsArray = Array.isArray;
   function isArray(value) {
     return nativeIsArray ? nativeIsArray(value) : getTag(value) === ARRAY_TAG;
   }
   function isRegExp(value) {
     return getTag(value) === REGEXP_TAG;
   }
-  
+
   /**
    * @example
    * toNumber('5') // 5
    * toNumber('abc') // false
    */
   function toNumber(value) {
-    const number = parseFloat(value);
+    var number = parseFloat(value);
     return isNaN(number) ? false : number;
   }
   function toInteger(value) {
-    const int = parseInt(value);
+    var int = parseInt(value);
     return isNaN(int) ? false : int;
   }
   /**
    * @description 是否为整数
    */
   function isInteger(value) {
-    return isNumber(value) && (value % 1 === 0);
+    return isNumber(value) && value % 1 === 0;
   }
   /**
    * @description 是否为符合规范的length属性值
@@ -465,19 +471,7 @@
    * @param Other 除了HTMLCollection/jQuery/HTMLElement/NodeList/Zepto以外的也可以算作dom的原型对象
    */
   function isDom(target, Other) {
-    return (
-      target instanceof HTMLCollection
-    ) || (
-      target instanceof jQuery
-    ) || (
-      target instanceof HTMLElement
-    ) || (
-      target instanceof NodeList
-    ) || (
-      target instanceof Zepto
-    ) || (
-      Other && (target instanceof Other)
-    )
+    return target instanceof HTMLCollection || target instanceof jQuery || target instanceof HTMLElement || target instanceof NodeList || target instanceof Zepto || Other && target instanceof Other;
   }
 
   /**
@@ -486,34 +480,29 @@
    * @param { Array | String } 目标类型，类型全部为小写，如 'number'
    * 不符合要求的类型会抛出TypeError
    */
-  const promise = Promise ? new Promise(() => {}) : undefined;
-  const typeList = uniq(
-    [1, true, emptyArray, {}, /a-z/, baseNow(), '', new Function, undefined,  null, promise, '*',
-    Set ? new Set : undefined, WeakSet ? new WeakSet : undefined, Map ? new Map : undefined,
-    WeakMap ? new WeakMap : undefined, Symbol ? Symbol('') : undefined, ArrayBuffer ? new ArrayBuffer : undefined,
-    ].map(instance => _is(instance, '*') ? instance : getType(instance))
-  );
+  var promise = Promise ? new Promise(function () {}) : undefined;
+  var typeList = uniq([1, true, emptyArray, {}, /a-z/, baseNow(), '', new Function(), undefined, null, promise, '*', Set ? new Set() : undefined, WeakSet ? new WeakSet() : undefined, Map ? new Map() : undefined, WeakMap ? new WeakMap() : undefined, Symbol ? Symbol('') : undefined, ArrayBuffer ? new ArrayBuffer() : undefined].map(function (instance) {
+    return _is(instance, '*') ? instance : getType(instance);
+  }));
 
-  function checkType (value, types, message) {
+  function checkType(value, types, message) {
     message = message || '';
 
-    const valueType = getType(value);
+    var valueType = getType(value);
     if (isArray(types)) {
-      types.forEach(type => {
+      types.forEach(function (type) {
         if (!typeList.includes(type)) {
-          console.warn(`${type} is not a correct javaScript data type`);
+          console.warn(type + ' is not a correct javaScript data type');
           return;
         }
       });
-      if (!types.includes(valueType) && !isUndefined(value))
-        throw new TypeError(`${message} Expected one of '${types.join(',')}', You given a '${valueType}'`);
+      if (!types.includes(valueType) && !isUndefined(value)) throw new TypeError(message + ' Expected one of \'' + types.join(',') + '\', You given a \'' + valueType + '\'');
     } else {
       if (!typeList.includes(types)) {
-        console.warn(`${types} is not a correct javaScript data type`);
+        console.warn(types + ' is not a correct javaScript data type');
         return;
       }
-      if (!_is(valueType, '*') && !_is(valueType, types) && !isUndefined(value))
-        throw new TypeError(`${message} Expected a '${types}', You given a '${valueType}'`);
+      if (!_is(valueType, '*') && !_is(valueType, types) && !isUndefined(value)) throw new TypeError(message + ' Expected a \'' + types + '\', You given a \'' + valueType + '\'');
     }
   }
 
@@ -521,20 +510,20 @@
     checkType(props, 'object');
     checkType(checker, 'object');
 
-    forInOwn(checker, (value, key) => {
-      const toChecks = value.split('.');
-      toChecks.forEach(toCheck => {
-        const isRequire = toCheck === 'require';
+    forInOwn(checker, function (value, key) {
+      var toChecks = value.split('.');
+      toChecks.forEach(function (toCheck) {
+        var isRequire = toCheck === 'require';
 
         if (!typeList.includes(toCheck) && !isRequire) {
-          throw new Error(`'${toCheck}' is not a correct checker type in propsChecker`);
+          throw new Error('\'' + toCheck + '\' is not a correct checker type in propsChecker');
         }
 
         if (isRequire) {
-          if (isNil(props[key])) throw new Error(`the props '${key}' is required`);
+          if (isNil(props[key])) throw new Error('the props \'' + key + '\' is required');
         } else {
           if (!isUndefined(props[key])) {
-            const message = `the props '${key}' is`;
+            var message = 'the props \'' + key + '\' is';
             checkType(props[key], toCheck, message);
           }
         }
@@ -550,7 +539,9 @@
    * toSelector('className') // '.className'
    * toSelector('id', 'id') // '#id'
    */
-  function toSelector(string, type = 'class') {
+  function toSelector(string) {
+    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'class';
+
     if (!isString(string) || string === '') return '';
     if (type !== 'class' && type !== 'id') return string;
     return (type === 'class' ? '.' : '#') + string;
@@ -562,31 +553,33 @@
    * getSelector('<div class="wrapper wrap" id="main"><span class="inner"></span></div>') // .wrapper.wrap
    * getSelector('<div class="wrapper wrap" id="main"><span class="inner"></span></div>', 'id') // #main
    */
-  function getSelector(string, type = 'class') {
+  function getSelector(string) {
+    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'class';
+
     checkType(string, 'string');
-    let selector = '';
+    var selector = '';
 
     if (type !== 'class' && type !== 'id') return selector;
     if (string.length === 0) return selector;
-    
-    if (type === 'class') {
-      const classIndex = string.indexOf('class');
-      if (classIndex < 0) return selector;
 
-      const start = string.indexOf('"', classIndex + 5);
-      const end = string.indexOf('"', start + 1);
-      const className = string.substring(start + 1, end);
-      const klasses = className.split(' ');
-      klasses.forEach((klass) => {
+    if (type === 'class') {
+      var _classIndex = string.indexOf('class');
+      if (_classIndex < 0) return selector;
+
+      var start = string.indexOf('"', _classIndex + 5);
+      var end = string.indexOf('"', start + 1);
+      var className = string.substring(start + 1, end);
+      var klasses = className.split(' ');
+      klasses.forEach(function (klass) {
         selector += toSelector(klass);
       });
     } else {
-      const idIndex = string.indexOf('id');
+      var idIndex = string.indexOf('id');
       if (idIndex < 0) return selector;
 
-      const start = string.indexOf('"', classIndex + 2);
-      const end = string.indexOf('"', start + 1);
-      const ID = string.substring(start + 1, end);
+      var _start = string.indexOf('"', classIndex + 2);
+      var _end = string.indexOf('"', _start + 1);
+      var ID = string.substring(_start + 1, _end);
       selector = toSelector(ID, 'id');
     }
 
@@ -608,27 +601,29 @@
    *   }
    * });
    */
-  function appendStyle(object, type = 'self') {
+  function appendStyle(object) {
+    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'self';
+
     if (!isObject(object) || isEmpty(object)) {
       return;
     }
-    
-    let style = "";
-    forInOwn(object, (obj, key) => {
-      let styl = "";
-      forInOwn(obj, (value, k) => {
-        styl += `\n  ${fromCamelCase(k)}: ${value};`;
+
+    var style = "";
+    forInOwn(object, function (obj, key) {
+      var styl = "";
+      forInOwn(obj, function (value, k) {
+        styl += '\n  ' + fromCamelCase(k) + ': ' + value + ';';
       });
       styl += '\n';
-      style = style === '' ? `${key} {${styl}}` : `${style}\n${key} {${styl}}`;
+      style = style === '' ? key + ' {' + styl + '}' : style + '\n' + key + ' {' + styl + '}';
     });
-    const oldStyleTag = document.querySelector('head').querySelector('style');
+    var oldStyleTag = document.querySelector('head').querySelector('style');
     if (oldStyleTag && type === 'self') {
-      const oldStyle = oldStyleTag.innerHTML;
-      const newStyle = oldStyle === '' ? style : `${oldStyle}\n${style}`;
+      var oldStyle = oldStyleTag.innerHTML;
+      var newStyle = oldStyle === '' ? style : oldStyle + '\n' + style;
       oldStyleTag.innerHTML = newStyle;
     } else {
-      const styleTag = document.createElement('style');
+      var styleTag = document.createElement('style');
       styleTag.type = 'text/css';
       styleTag.innerHTML = style;
       document.querySelector('head').appendChild(styleTag);
@@ -640,10 +635,10 @@
    * @example
    * appendClass('test1', 'test2', 'test3'); //'test1 test2 test3'
    */
-  function appendClass () {
-    return toArray(arguments).reduce((result, current) => {
-      const willAppend = isString(current) ? current : String(current);
-      const division = result === '' || willAppend === '' ? '' : ' ';
+  function appendClass() {
+    return toArray(arguments).reduce(function (result, current) {
+      var willAppend = isString(current) ? current : String(current);
+      var division = result === '' || willAppend === '' ? '' : ' ';
       return result += division + willAppend;
     }, '');
   }
@@ -653,20 +648,20 @@
    * @param { Node | NodeList | jQuery } el
    */
   function insertElementToBody(el) {
-    const script = document.querySelector('script');
-    const parent = script ? script.parentNode : document.querySelector('body');
+    var script = document.querySelector('script');
+    var parent = script ? script.parentNode : document.querySelector('body');
 
-    const insert = (v) => {
+    var insert = function insert(v) {
       if (script) {
         parent.insertBefore(v, script);
       } else {
         parent.appendChild(v);
       }
-    }
+    };
 
-    const len = el.length;
+    var len = el.length;
     if (typeof len !== 'undefined') {
-      for (let i = 0; i < len; i++) {
+      for (var i = 0; i < len; i++) {
         el[i] && insert(el[i]);
       }
     } else {
@@ -680,8 +675,10 @@
    * @param { String } format 格式
    * @returns 日期字符串
    */
-  function dateFormater(dateStamp, format = 'yyyy/mm/dd hh:mm:ss') {
-    let date;
+  function dateFormater(dateStamp) {
+    var format = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'yyyy/mm/dd hh:mm:ss';
+
+    var date = void 0;
     if (isNil(dateStamp)) {
       date = baseNow();
     } else {
@@ -694,35 +691,36 @@
       }
     }
 
-    const year = date.getFullYear(),
-          month = baseDateFull(date.getMonth() + 1),
-          day = baseDateFull(date.getDate()),
-          hour = baseDateFull(date.getHours()),
-          minute = baseDateFull(date.getMinutes()),
-          second = baseDateFull(date.getSeconds());
+    var year = date.getFullYear(),
+        month = baseDateFull(date.getMonth() + 1),
+        day = baseDateFull(date.getDate()),
+        hour = baseDateFull(date.getHours()),
+        minute = baseDateFull(date.getMinutes()),
+        second = baseDateFull(date.getSeconds());
 
-    let result;
-    switch(format) {
+    var result = void 0;
+    switch (format) {
       case 'yyyy-mm-dd hh:mm:ss':
-        result = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second; break;
+        result = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;break;
       case 'yyyy-mm-dd hh:mm':
-        result = year + '-' + month + '-' + day + ' ' + hour + ':' + minute; break;
+        result = year + '-' + month + '-' + day + ' ' + hour + ':' + minute;break;
       case 'mm-dd yyyy':
-        result = month + '-' + day + ' ' + year; break;
+        result = month + '-' + day + ' ' + year;break;
       case 'yyyy-mm-dd':
-        result = year + '-' + month + '-' + day; break;
+        result = year + '-' + month + '-' + day;break;
       case 'yyyy/mm/dd hh:mm:ss':
-        result = year + '/' + month + '/' + day + ' ' + hour + ':' + minute + ':' + second; break;
+        result = year + '/' + month + '/' + day + ' ' + hour + ':' + minute + ':' + second;break;
       case 'yyyy/mm/dd hh:mm':
-        result = year + '/' + month + '/' + day + ' ' + hour + ':' + minute; break;
+        result = year + '/' + month + '/' + day + ' ' + hour + ':' + minute;break;
       case 'yyyy/mm/dd':
-        result = year + '/' + month + '/' + day; break;
+        result = year + '/' + month + '/' + day;break;
       case 'hh:mm:ss':
-        result = hour + ':' + minute + ':' + second; break;
+        result = hour + ':' + minute + ':' + second;break;
       case 'hh:mm':
-        result = hour + ':' + minute; break;
+        result = hour + ':' + minute;break;
 
-      default: throw new Error('not support this format:`' + format + '`');
+      default:
+        throw new Error('not support this format:`' + format + '`');
     }
 
     return result;
@@ -737,29 +735,31 @@
     year = baseHandleYear(year);
     month = baseHandleMonth(month);
 
-    const days = [];
+    var days = [];
 
     /* 该月第一天 */
-    const firstDay = new Date(year, month -1, 1);
-    let weekOfFirstDay = firstDay.getDay();
+    var firstDay = new Date(year, month - 1, 1);
+    var weekOfFirstDay = firstDay.getDay();
 
     /* 该月最后一天 */
-    const lastDay = new Date(year, month, 0);
-    const dateOfLastDay = lastDay.getDate();
+    var lastDay = new Date(year, month, 0);
+    var dateOfLastDay = lastDay.getDate();
 
     /* 上个月的最后一天 */
-    const lastDayOfLastMonth = new Date(year, month - 1, 0);
-    const lastDateOfLastMonth = lastDayOfLastMonth.getDate(); // 上个月最后一天的日期
+    var lastDayOfLastMonth = new Date(year, month - 1, 0);
+    var lastDateOfLastMonth = lastDayOfLastMonth.getDate(); // 上个月最后一天的日期
     /* 本月日历上包含的上个月的日期个数(日历上显示的灰色部分) */
-    const previousMonthDaysCount = weekOfFirstDay;
+    var previousMonthDaysCount = weekOfFirstDay;
 
-    const nextMonthDaysCount = 42 - (previousMonthDaysCount + dateOfLastDay);
+    var nextMonthDaysCount = 42 - (previousMonthDaysCount + dateOfLastDay);
     /* 如果显示的下月日期数量大于6个，显示总数设为35，否则设为42 */
-    const total = nextMonthDaysCount > 6 ? 35 : 42;
+    var total = nextMonthDaysCount > 6 ? 35 : 42;
 
-    for (let i = 0; i < total; i++) {
-      const date = i + 1 - previousMonthDaysCount;
-      let showDate = date, thisYear = year, thisMonth = month;
+    for (var i = 0; i < total; i++) {
+      var date = i + 1 - previousMonthDaysCount;
+      var showDate = date,
+          thisYear = year,
+          thisMonth = month;
       if (date < 1) {
         showDate = lastDateOfLastMonth + date;
         thisMonth--;
@@ -777,16 +777,14 @@
       }
 
       /* 上一个月或下一个月的数据时isForbid为true */
-      const isForbid = date < 1 || date > dateOfLastDay ? true : false;
+      var isForbid = date < 1 || date > dateOfLastDay ? true : false;
 
       days.push({
-        date,
+        date: date,
         year: thisYear,
         month: thisMonth,
-        showDate,
-        dateStr: dateFormater( 
-          (new Date(thisYear, thisMonth-1, showDate)).getTime(), 'yyyy-mm-dd'
-        ),
+        showDate: showDate,
+        dateStr: dateFormater(new Date(thisYear, thisMonth - 1, showDate).getTime(), 'yyyy-mm-dd'),
         forbid: isForbid ? 1 : 0
       });
     }
@@ -794,9 +792,9 @@
     return days;
   }
 
-  const stringSet = new SetMock();
+  var stringSet = new SetMock();
   function getUniqString() {
-    const string = buildRandomString();
+    var string = buildRandomString();
     if (!stringSet.has(string)) {
       stringSet.add(string);
       return string;
@@ -806,7 +804,7 @@
   }
 
   function getRandomClassName() {
-    const className = buildRandomString();
+    var className = buildRandomString();
     if (!document.querySelector(toSelector(className))) {
       return className;
     }
@@ -830,18 +828,19 @@
    * @example
    * toCamelCase('my-name') // 'myName'
    */
-  function toCamelCase(string, spliter = '-') {
-    const index = [];
-    for (let i = 0, len = string.length; i < len; i++) {
-      if ( _is(spliter, string[i]) ) {
+  function toCamelCase(string) {
+    var spliter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '-';
+
+    var index = [];
+    for (var i = 0, len = string.length; i < len; i++) {
+      if (_is(spliter, string[i])) {
         index.push(i + 1);
       }
     }
-    
-    return (
-      string.split('').map((str, ii) => index.includes(ii)
-      ? str.toUpperCase() : str).join('')
-    ).replace(new RegExp(spliter, 'g'), '');
+
+    return string.split('').map(function (str, ii) {
+      return index.includes(ii) ? str.toUpperCase() : str;
+    }).join('').replace(new RegExp(spliter, 'g'), '');
   }
 
   /**
@@ -851,10 +850,12 @@
    * fromCamelCase('myName') // 'my-name'
    * fromCamelCase('myName', '_') // 'my_name'
    */
-  function fromCamelCase(string, type = '-') {
-    const upperRe = /[A-Z]/g;
-    const indexSet = [];
-    const array = string.split('').map((str, i) => {
+  function fromCamelCase(string) {
+    var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '-';
+
+    var upperRe = /[A-Z]/g;
+    var indexSet = [];
+    var array = string.split('').map(function (str, i) {
       if (upperRe.test(str)) {
         indexSet.push(i);
         return str.toLowerCase();
@@ -862,15 +863,15 @@
       return str;
     });
 
-    const insertSet = indexSet.map((index) => {
+    var insertSet = indexSet.map(function (index) {
       return {
-        index,
+        index: index,
         item: type
-      }
+      };
     });
 
     return insert(array, insertSet).join('');
-  } 
+  }
 
   /**
    * @description 检测元素挂载完成后执行回调
@@ -878,31 +879,35 @@
    * @param { Function } loadedCallback 挂载完成回调
    * @param { Number } maxTimes 最大尝试检测次数，默认500
    */
-  const domAfterLoad = (function fn(selector, loadedCallback, maxTimes = 500, times = 0) {
+  var domAfterLoad = function fn(selector, loadedCallback) {
+    var maxTimes = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 500;
+    var times = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+
     if (!isNumber(maxTimes)) return;
     checkType(selector, 'string');
     if (selector.length < 1) return;
 
-    let timer = null;
-    const dom = document.querySelectorAll(selector);
+    var timer = null;
+    var dom = document.querySelectorAll(selector);
     if (dom.length > 0) {
       timer && clearTimeout(timer);
       isFunction(loadedCallback) && loadedCallback();
     } else {
-      if (times >= maxTimes) { //超过最大尝试检测次数
+      if (times >= maxTimes) {
+        //超过最大尝试检测次数
         isFunction(loadedCallback) && console.warn('`' + selector + '`未挂载到dom，回调未执行');
         return;
       }
       times++;
-      
-      timer = setTimeout(() => {
+
+      timer = setTimeout(function () {
         fn(selector, loadedCallback, maxTimes, times);
       }, 0);
     }
-  });
+  };
 
   function findKey(object, iteratee) {
-    const keys = baseKeyOf(object, iteratee);
+    var keys = baseKeyOf(object, iteratee);
     return keys.length === 0 ? undefined : keys[0];
   }
 
@@ -912,16 +917,19 @@
 
   function removeKeys(object, iteratees) {
     if (isNil(iteratees)) {
-      forInOwn(object, (_, key, self) => { delete self[key] });
+      forInOwn(object, function (_, key, self) {
+        delete self[key];
+      });
       return;
     }
-    
+
     checkType(iteratees, ['string', 'array']);
 
     iteratees = isString(iteratees) ? iteratees.split(',') : iteratees;
-    let obj = {}, flag = false;
-    iteratees.forEach((iteratee) => {
-      const result = baseRemoveKey(object, iteratee.trim());
+    var obj = {},
+        flag = false;
+    iteratees.forEach(function (iteratee) {
+      var result = baseRemoveKey(object, iteratee.trim());
       if (result) {
         extend(obj, result);
         flag = true;
@@ -944,17 +952,17 @@
   function forIn(object, callback) {
     checkType(callback, 'function');
 
-    for (const key in object) {
-      const isBreak = callback(object[key], key, object);
+    for (var _key3 in object) {
+      var isBreak = callback(object[_key3], _key3, object);
       if (isBreak === false) break;
     }
   }
   function forInOwn(object, callback) {
     checkType(callback, 'function');
 
-    for(const key in object) {
-      if (hasOwn(object, key)) {
-        const isBreak = callback(object[key], key, object);
+    for (var _key4 in object) {
+      if (hasOwn(object, _key4)) {
+        var isBreak = callback(object[_key4], _key4, object);
         if (isBreak === false) break;
       }
     }
@@ -981,13 +989,15 @@
    * insert([1,3,5], [{ index: 1, item: 'x' }, { index: 2, item: 'y' }]) // [1, 'x', 3, 'y', 5]
    */
   function insert(array, insertSet) {
-    [array, insertSet].forEach((v) => {
+    [array, insertSet].forEach(function (v) {
       checkType(v, 'array');
     });
 
-    let adder = 0;
+    var adder = 0;
     insertSet.forEach(function (insert) {
-      const { index, item } = insert;
+      var index = insert.index,
+          item = insert.item;
+
       array.splice(index + adder, 0, item);
       adder++;
     });
@@ -1000,20 +1010,19 @@
    * @param { Array } array
    */
   function uniq(array) {
-    const type = getType(array);
-    if (type !== 'array')
-      throw new Error(`Excepted a array, You given a ${type}`);
+    var type = getType(array);
+    if (type !== 'array') throw new Error('Excepted a array, You given a ' + type);
 
-    return array.reduce((arr, item) => {
-      return arr.includes(item) ? arr : [...arr, item];
+    return array.reduce(function (arr, item) {
+      return arr.includes(item) ? arr : [].concat(_toConsumableArray(arr), [item]);
     }, []);
   }
 
   function uniqBy(array, prop) {
     checkType(array, 'array');
 
-    return array.reduce((arr, item) => {
-      return includesBy(arr, item, prop) ? arr : [...arr, item];
+    return array.reduce(function (arr, item) {
+      return includesBy(arr, item, prop) ? arr : [].concat(_toConsumableArray(arr), [item]);
     }, []);
   }
 
@@ -1025,7 +1034,10 @@
   }
 
   function unionBy() {
-    const { array, prop } = baseUnion(toArray(arguments));
+    var _baseUnion = baseUnion(toArray(arguments)),
+        array = _baseUnion.array,
+        prop = _baseUnion.prop;
+
     return prop ? uniqBy(array, prop) : uniq(array);
   }
 
@@ -1034,11 +1046,11 @@
    * includesBy([{x: 1}, {x: 2}], [{x: 1}], 'x'); //true
    */
   function includesBy(array, target, prop) {
-    let result = false;
-    if ( !(prop in target) ) return result;
+    var result = false;
+    if (!(prop in target)) return result;
 
-    for (let i = 0, len = array.length; i < len; i++) {
-      if ((prop in array[i]) && _is(array[i][prop], target[prop])) {
+    for (var i = 0, len = array.length; i < len; i++) {
+      if (prop in array[i] && _is(array[i][prop], target[prop])) {
         result = true;
         break;
       }
@@ -1065,7 +1077,7 @@
     checkType(array, 'array');
     checkType(list, 'array');
 
-    const result = [];
+    var result = [];
     array.forEach(function (item) {
       list.includes(item) && result.push(item);
     });
@@ -1074,103 +1086,103 @@
   }
 
   function sum(array) {
-    let sum = 0;
-    const len = isNil(array) ? 0 : array.length;
+    var sum = 0;
+    var len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 1) return sum;
 
-    return array.reduce((sum, current) => {
+    return array.reduce(function (sum, current) {
       return sum + current;
     });
   }
 
   function sumBy(array, iteratee) {
-    let sum = 0;
-    const len = isNil(array) ? 0 : array.length;
+    var sum = 0;
+    var len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return sum;
 
     if (isString(iteratee)) {
-      return array.reduce((sum, item) => {
-        return sum + ( iteratee in item ? item[iteratee] : 0 );
+      return array.reduce(function (sum, item) {
+        return sum + (iteratee in item ? item[iteratee] : 0);
       }, 0);
     } else if (isFunction(iteratee)) {
-      return array.reduce((sum, item, index, self) => {
-        return sum  + iteratee(item, index, self);
+      return array.reduce(function (sum, item, index, self) {
+        return sum + iteratee(item, index, self);
       }, 0);
     }
     return 0;
   }
 
   function max(array) {
-    const len = isNil(array) ? 0 : array.length;
+    var len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return;
 
-    return array.reduce((max, current) => {
+    return array.reduce(function (max, current) {
       return max >= current ? max : current;
     });
   }
 
   function maxBy(array, iteratee) {
-    const len = isNil(array) ? 0 : array.length;
+    var len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return;
-    
-    let initialValue;
+
+    var initialValue = void 0;
     if (isString(iteratee)) {
       initialValue = array[0][iteratee];
 
-      return array.reduce((max, current) => {
-        const currentValue = current[iteratee];
+      return array.reduce(function (max, current) {
+        var currentValue = current[iteratee];
         return max >= currentValue ? max : currentValue;
       }, initialValue);
     } else if (isFunction(iteratee)) {
       initialValue = iteratee(array[0], 0, array);
 
-      return array.reduce((max, current, index, self) => {
-        const currentValue = iteratee(current, index, self);
+      return array.reduce(function (max, current, index, self) {
+        var currentValue = iteratee(current, index, self);
         return max >= currentValue ? max : currentValue;
       }, initialValue);
     }
   }
 
   function min(array) {
-    const len = isNil(array) ? 0 : array.length;
-    if (!array || !isLength(len) || len ===0) return;
+    var len = isNil(array) ? 0 : array.length;
+    if (!array || !isLength(len) || len === 0) return;
 
-    return array.reduce((min, current) => {
+    return array.reduce(function (min, current) {
       return min <= current ? min : current;
     });
   }
 
   function minBy(array, iteratee) {
-    const len = isNil(array) ? 0 : array.length;
+    var len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return;
 
-    let initialValue;
+    var initialValue = void 0;
     if (isString(iteratee)) {
       initialValue = array[0][iteratee];
 
-      return array.reduce((min, current) => {
-        const currentValue = current[iteratee];
+      return array.reduce(function (min, current) {
+        var currentValue = current[iteratee];
         return min <= currentValue ? min : currentValue;
       }, initialValue);
     } else if (isFunction(iteratee)) {
       initialValue = iteratee(array[0], 0, array);
 
-      return array.reduce((min, current, index, self) => {
-        const currentValue = iteratee(current, index, self);
+      return array.reduce(function (min, current, index, self) {
+        var currentValue = iteratee(current, index, self);
         return min <= currentValue ? min : currentValue;
       }, initialValue);
     }
   }
-  
+
   function mean(array) {
-    const len = isNil(array) ? 0 : array.length;
+    var len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return;
 
     return sum(array) / len;
   }
 
   function meanBy(array, iteratee) {
-    const len = isNil(array) ? 0 : array.length;
+    var len = isNil(array) ? 0 : array.length;
     if (!array || !isLength(len) || len === 0) return;
 
     return sumBy(array, iteratee) / len;
@@ -1179,19 +1191,18 @@
   function groupBy(array, iteratee) {
     checkType(array, 'array');
 
-    const len = array.length,
-          isFunc = isFunction(iteratee),
-          result = {};
+    var len = array.length,
+        isFunc = isFunction(iteratee),
+        result = {};
 
     if (isNil(iteratee)) return result;
-    
-    for (let i = 0; i < len; i++) {
-      const value = array[i];
-      const key = isFunc ? iteratee(value) : value[iteratee];
-      if (!hasOwn(result, key))
-        result[key] = [];
-      
-      result[key].push(value);
+
+    for (var i = 0; i < len; i++) {
+      var value = array[i];
+      var _key5 = isFunc ? iteratee(value) : value[iteratee];
+      if (!hasOwn(result, _key5)) result[_key5] = [];
+
+      result[_key5].push(value);
     }
 
     return result;
@@ -1214,8 +1225,8 @@
     checkType(size, 'number');
 
     var result = [];
-    array.forEach((item, i) => {
-      var index = Math.floor(i/size);
+    array.forEach(function (item, i) {
+      var index = Math.floor(i / size);
       if (!isArray(result[index])) {
         result[index] = [];
       }
@@ -1229,10 +1240,9 @@
     checkObjectLike(object);
 
     if (isArray(path)) {
-      const result = {};
-      path.forEach(property => {
-        if (property in object)
-          result[property] = object[property];
+      var result = {};
+      path.forEach(function (property) {
+        if (property in object) result[property] = object[property];
       });
       return result;
     } else {
@@ -1244,12 +1254,11 @@
     checkObjectLike(object);
     checkType(predicate, 'function');
 
-    const result = {};
-    for(const key in object) {
-      const value = object[key];
-      const isPick = predicate(value, key, object);
-      if (isPick === true)
-        result[key] = value;
+    var result = {};
+    for (var _key6 in object) {
+      var value = object[_key6];
+      var isPick = predicate(value, _key6, object);
+      if (isPick === true) result[_key6] = value;
     }
 
     return result;
@@ -1258,11 +1267,10 @@
   function omit(object, path) {
     checkObjectLike(object);
 
-    const keys = isArray(path) ? path : [path],
-          result = {};
-    for(const key in object) {
-      if (!keys.includes(key))
-        result[key] = object[key];
+    var keys = isArray(path) ? path : [path],
+        result = {};
+    for (var _key7 in object) {
+      if (!keys.includes(_key7)) result[_key7] = object[_key7];
     }
 
     return result;
@@ -1272,12 +1280,11 @@
     checkObjectLike(object);
     checkType(predicate, 'function');
 
-    const result = {};
-    for(const key in object) {
-      const value = object[key];
-      const isPick = predicate(value, key, object);
-      if (isPick === false)
-        result[key] = value;
+    var result = {};
+    for (var _key8 in object) {
+      var value = object[_key8];
+      var isPick = predicate(value, _key8, object);
+      if (isPick === false) result[_key8] = value;
     }
 
     return result;
@@ -1287,10 +1294,10 @@
     checkObjectLike(object);
     checkType(iteratee, 'function');
 
-    const result = {};
-    for(const key in object) {
-      const value = object[key];
-      const newKey = iteratee(value, key, object);
+    var result = {};
+    for (var _key9 in object) {
+      var value = object[_key9];
+      var newKey = iteratee(value, _key9, object);
       result[newKey] = value;
     }
 
@@ -1301,10 +1308,10 @@
     checkObjectLike(object);
     checkType(iteratee, 'function');
 
-    const result = {};
-    for(const key in object) {
-      const newValue = iteratee(object[key], key, object);
-      result[key] = newValue;
+    var result = {};
+    for (var _key10 in object) {
+      var newValue = iteratee(object[_key10], _key10, object);
+      result[_key10] = newValue;
     }
 
     return result;
@@ -1314,7 +1321,7 @@
    * @description 获取元素(带有length属性的对象都可以)的最后一个元素
    */
   function lastOf(object) {
-    const len = object.length;
+    var len = object.length;
     if (!object || !isLength(len)) return;
 
     return object[len - 1];
@@ -1323,7 +1330,7 @@
   function removeUndef(object) {
     checkObjectLike(object);
 
-    forInOwn(object, (value, key, self) => {
+    forInOwn(object, function (value, key, self) {
       if (isUndefined(value)) {
         delete self[key];
       }
@@ -1350,51 +1357,47 @@
         writable: true
       }
     });
-
   }
 
   SetMock.prototype = {
     constructor: SetMock,
 
-    has (item) {
-      const key  = findKey(this, (value, key) => {
+    has: function has(item) {
+      var key = findKey(this, function (value, key) {
         return !['size', 'nextKey'].includes(key) && _is(value, item);
       });
-      return (typeof key !== 'undefined');
+      return typeof key !== 'undefined';
     },
-
-    forEach (callback, context) {
+    forEach: function forEach(callback, context) {
       checkType(callback, 'array');
 
-      forInOwn(this, (value, key, self) => {
-        isObjectLike(context) && context !== null 
-        ? callback.call(context, value, key, self)
-        : callback(value, key, self);
+      forInOwn(this, function (value, key, self) {
+        isObjectLike(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
       });
     },
+    add: function add(item) {
+      var _this = this;
 
-    add (item) {
-      const addSet =  (target) => {
-        if (!this.has(target)) {
-          this[this.nextKey++] = target;
-          this.size++;
+      var addSet = function addSet(target) {
+        if (!_this.has(target)) {
+          _this[_this.nextKey++] = target;
+          _this.size++;
         }
-      }
+      };
 
       if (isArray(item)) {
-        const set = uniq(item);
-        set.forEach((setItem) => {
+        var set = uniq(item);
+        set.forEach(function (setItem) {
           addSet(setItem);
-        }); 
+        });
       } else {
         addSet(item);
       }
-      
+
       return this;
     },
-
-    delete (item) {
-      const key = findKey(this, item);
+    delete: function _delete(item) {
+      var key = findKey(this, item);
       if (typeof key !== 'undefined') {
         delete this[key];
         this.size--;
@@ -1403,7 +1406,8 @@
       return !1;
     },
 
-    clear: function() {
+
+    clear: function clear() {
       removeKeys(this);
       this.size = 0;
       this.nextKey = 0;
@@ -1412,28 +1416,26 @@
     /**
      * 额外的，不同于ES6 Set集合的方法
      */
-    filter (callback) {
+    filter: function filter(callback) {
       checkType(callback, 'function');
 
-      const result  = new SetMock();
-      forInOwn(this, (value, key, self) => {
-        const state = callback(value, key, self);
+      var result = new SetMock();
+      forInOwn(this, function (value, key, self) {
+        var state = callback(value, key, self);
         if (state === true) result.add(value);
       });
 
       return result;
     },
-
-    toArray () {
-      const array = [];
-      forInOwn(this, (value) => {
+    toArray: function toArray() {
+      var array = [];
+      forInOwn(this, function (value) {
         array.push(value);
       });
 
       return array;
     },
-
-    indexOf (item) {
+    indexOf: function indexOf(item) {
       return this.toArray().indexOf(item);
     }
   };
@@ -1442,6 +1444,7 @@
    * @description ES5版Map集合
    */
   function MapMock(entries) {
+    var _this2 = this;
 
     Object.defineProperty(this, 'size', {
       configurable: false,
@@ -1454,36 +1457,34 @@
       if (!isArray(entries)) {
         throw new TypeError(entries + ' is not a Array');
       } else {
-        entries.forEach((entry) => {
+        entries.forEach(function (entry) {
           if (!isArray(entry)) {
             throw new TypeError(entry + ' is not a Array');
           } else {
-            const key = entry[0], value = entry[1];
-            this[key] = value;
-            this.size++;
+            var _key11 = entry[0],
+                value = entry[1];
+            _this2[_key11] = value;
+            _this2.size++;
           }
         });
       }
     }
-
   }
 
   MapMock.prototype = {
     constructor: MapMock,
 
-    set (key, value) {
+    set: function set(key, value) {
       this[key] = value;
       this.size++;
       return this;
     },
-
-    get (key) {
+    get: function get(key) {
       return this[key];
     },
-
-    has (key) {
-      let has = false;
-      forInOwn(this, (_, k) => {
+    has: function has(key) {
+      var has = false;
+      forInOwn(this, function (_, k) {
         if (_is(key, k)) {
           has = true;
           return false;
@@ -1492,8 +1493,7 @@
 
       return has;
     },
-
-    delete (key) {
+    delete: function _delete(key) {
       if (this.has(key)) {
         delete this[key];
         this.size--;
@@ -1501,115 +1501,111 @@
       }
       return false;
     },
-
-    clear () {
+    clear: function clear() {
       removeKeys(this);
       this.size = 0;
     },
-
-    forEach (callback, context) {
+    forEach: function forEach(callback, context) {
       checkType(callback, 'function');
 
-      forInOwn(this, (value, key, self) => {
-        isObjectLike(context) && context !== null
-        ? callback.call(context, value, key, self)
-        : callback(value, key, self);
+      forInOwn(this, function (value, key, self) {
+        isObjectLike(context) && context !== null ? callback.call(context, value, key, self) : callback(value, key, self);
       });
     }
   };
 
-  const util = {
+  var util = {
 
     // 判断
-    isString,
-    isObjectLike,
-    isObject,
-    isEmpty,
-    isFunction,
-    isNumber,
-    isNumeric,
-    isDom,
-    isInteger,
-    isLength,
-    isUndefined,
-    isNull,
-    isNil,
-    isBoolean,
-    isArray,
-    isDate,
-    isRegExp,
-    checkType,
-    getType,
-    propsChecker,
+    isString: isString,
+    isObjectLike: isObjectLike,
+    isObject: isObject,
+    isEmpty: isEmpty,
+    isFunction: isFunction,
+    isNumber: isNumber,
+    isNumeric: isNumeric,
+    isDom: isDom,
+    isInteger: isInteger,
+    isLength: isLength,
+    isUndefined: isUndefined,
+    isNull: isNull,
+    isNil: isNil,
+    isBoolean: isBoolean,
+    isArray: isArray,
+    isDate: isDate,
+    isRegExp: isRegExp,
+    checkType: checkType,
+    getType: getType,
+    propsChecker: propsChecker,
 
     // number方法
-    toNumber,
-    toInteger,
+    toNumber: toNumber,
+    toInteger: toInteger,
 
     // dom方法
-    toSelector,
-    appendStyle,
-    insertElementToBody,
-    domAfterLoad,
-    tagOf,
-    getSelector,
-    appendClass,
-    getRandomClassName,
+    toSelector: toSelector,
+    appendStyle: appendStyle,
+    insertElementToBody: insertElementToBody,
+    domAfterLoad: domAfterLoad,
+    tagOf: tagOf,
+    getSelector: getSelector,
+    appendClass: appendClass,
+    getRandomClassName: getRandomClassName,
 
     // 数组方法
-    uniq,
-    remove,
-    ins,
-    sum,
-    sumBy,
-    max,
-    maxBy,
-    min,
-    minBy,
-    mean,
-    meanBy,
-    insert,
-    includesBy,
-    union,
-    unionBy,
-    groupBy,
-    flatten,
-    flattenDeep,
-    flattenDepth,
-    chunk,
+    uniq: uniq,
+    remove: remove,
+    ins: ins,
+    sum: sum,
+    sumBy: sumBy,
+    max: max,
+    maxBy: maxBy,
+    min: min,
+    minBy: minBy,
+    mean: mean,
+    meanBy: meanBy,
+    insert: insert,
+    includesBy: includesBy,
+    union: union,
+    unionBy: unionBy,
+    groupBy: groupBy,
+    flatten: flatten,
+    flattenDeep: flattenDeep,
+    flattenDepth: flattenDepth,
+    chunk: chunk,
 
     // 对象方法
-    removeKey,
-    removeKeys,
-    findKey,
-    lastOf,
-    forIn,
-    forInOwn,
-    clone,
-    cloneDeep,
-    removeUndef,
-    extend,
-    toArray,
-    pick,
-    pickBy,
-    omit,
-    omitBy,
-    mapKeys,
-    mapValues,
+    removeKey: removeKey,
+    removeKeys: removeKeys,
+    findKey: findKey,
+    lastOf: lastOf,
+    forIn: forIn,
+    forInOwn: forInOwn,
+    clone: clone,
+    cloneDeep: cloneDeep,
+    removeUndef: removeUndef,
+    extend: extend,
+    toArray: toArray,
+    pick: pick,
+    pickBy: pickBy,
+    omit: omit,
+    omitBy: omitBy,
+    mapKeys: mapKeys,
+    mapValues: mapValues,
 
     // String方法
-    toCamelCase,
-    fromCamelCase,
-    getUniqString,
-    
-    // 其他方法
-    dateFormater,
-    getMonthData,
-    
-    SetMock,
-    MapMock
+    toCamelCase: toCamelCase,
+    fromCamelCase: fromCamelCase,
+    getUniqString: getUniqString,
 
-  }
+    // 其他方法
+    dateFormater: dateFormater,
+    getMonthData: getMonthData,
+
+    SetMock: SetMock,
+    MapMock: MapMock
+
+  };
 
   return util;
 });
@@ -1618,13 +1614,19 @@
  * @description 组件的通用父类
  */
 ;!function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined'
-  ? module.exports = factory(global) : typeof define === 'function' && define.amd
-  ? define([global], factory) : global.Component = factory(global);
+  (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory(global) : typeof define === 'function' && define.amd ? define([global], factory) : global.Component = factory(global);
 }(this, function (global) {
-  const { 
-    isLength, removeUndef, isNil, isUndefined, insertElementToBody, lastOf, getSelector, domAfterLoad, extend
-  } = global.util;
+  var _global$util = global.util,
+      isLength = _global$util.isLength,
+      removeUndef = _global$util.removeUndef,
+      isNil = _global$util.isNil,
+      isUndefined = _global$util.isUndefined,
+      insertElementToBody = _global$util.insertElementToBody,
+      lastOf = _global$util.lastOf,
+      getSelector = _global$util.getSelector,
+      domAfterLoad = _global$util.domAfterLoad,
+      extend = _global$util.extend;
+
 
   function Component() {
     this.init();
@@ -1641,12 +1643,18 @@
    * }]
    */
   Object.defineProperty(Component.prototype, 'mount', {
-    value: function (doms) {
+    value: function value(doms) {
+      var _this3 = this;
+
       if (!doms || !isLength(doms.length) || doms.length < 1) return;
       removeUndef(doms);
-    
-      doms.forEach((dom) => {
-        let { condition, container, html, type } = dom;
+
+      doms.forEach(function (dom) {
+        var condition = dom.condition,
+            container = dom.container,
+            html = dom.html,
+            type = dom.type;
+
         if (isNil(html)) throw new Error('缺少需挂载的dom字符串');
         if (isNil(container)) throw new Error('缺少挂载目标容器');
 
@@ -1663,21 +1671,23 @@
         }
       });
 
-      const last = lastOf(doms.filter(dom => isUndefined(dom.condition) || dom.condition));
+      var last = lastOf(doms.filter(function (dom) {
+        return isUndefined(dom.condition) || dom.condition;
+      }));
       if (last) {
-        const classIndex = last.html.indexOf('class');
-        let selector = '';
-        if (classIndex > -1) {
+        var _classIndex2 = last.html.indexOf('class');
+        var selector = '';
+        if (_classIndex2 > -1) {
           selector = getSelector(last.html);
         } else {
           selector = getSelector(last.html, 'id');
         }
-        
-        domAfterLoad(selector, () => {
-          this.componentDidMount();
-          this.style();
-          this.bindEvents();
-          this.destroy();
+
+        domAfterLoad(selector, function () {
+          _this3.componentDidMount();
+          _this3.style();
+          _this3.bindEvents();
+          _this3.destroy();
         });
       }
     },
@@ -1687,8 +1697,8 @@
   });
 
   Object.defineProperty(Component.prototype, 'init', {
-    value: function () {
-      const doms = this.render();
+    value: function value() {
+      var doms = this.render();
       this.componentWillMount();
       this.mount(doms);
     },
@@ -1696,19 +1706,20 @@
     configurable: false,
     enumerable: true
   });
-  
+
   extend(Component.prototype, {
-    render () {
+    render: function render() {
       return [];
     },
-    style () {},
-    componentWillMount () {},
-    componentDidMount () {},
-    bindEvents () {},
+    style: function style() {},
+    componentWillMount: function componentWillMount() {},
+    componentDidMount: function componentDidMount() {},
+    bindEvents: function bindEvents() {},
+
     /**
      * @description 删除一些无用的实例属性
      */
-    destroy () {}
+    destroy: function destroy() {}
   });
 
   return Component;
@@ -1722,17 +1733,19 @@
  * }
  */
 ;!function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined'
-  ? module.exports = factory(global) : typeof define === 'function' && define.amd
-  ? define([global], factory) : global.Observer = factory(global);
+  (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory(global) : typeof define === 'function' && define.amd ? define([global], factory) : global.Observer = factory(global);
 }(this, function (global) {
-  const { 
-    isObjectLike, isObject, isNil, extend, isFunction, getType
-   } = global.util;
+  var _global$util2 = global.util,
+      isObjectLike = _global$util2.isObjectLike,
+      isObject = _global$util2.isObject,
+      isNil = _global$util2.isNil,
+      extend = _global$util2.extend,
+      isFunction = _global$util2.isFunction,
+      getType = _global$util2.getType;
+
 
   function Observer(object, prop, options) {
-    if (!isObjectLike(object))
-      throw new TypeError(`Excepted a objectLike, You given a ${getType(object)}`);
+    if (!isObjectLike(object)) throw new TypeError('Excepted a objectLike, You given a ' + getType(object));
 
     if (isObject(prop) && isNil(options)) {
       options = prop;
@@ -1744,46 +1757,48 @@
   }
 
   extend(Observer.prototype, {
-    watching (object, prop) {
+    watching: function watching(object, prop) {
       if (!object || !isObjectLike(object)) return;
 
       if (isNil(prop)) {
-        for (const key in object) {
-          this.handlePropChange(object, key, object[key]);
+        for (var _key12 in object) {
+          this.handlePropChange(object, _key12, object[_key12]);
         }
       } else {
         this.handlePropChange(object, prop, object[prop]);
       }
     },
-
-    handlePropChange (object, prop, value) {
+    handlePropChange: function handlePropChange(object, prop, value) {
       this.watching(value);
 
-      const { get, set } = this.options;
-      
+      var _options = this.options,
+          _get = _options.get,
+          _set = _options.set;
+
+
       if (Object.defineProperty) {
         Object.defineProperty(object, prop, {
-          set (newValue) {
-            isFunction(set) && set(newValue);
+          set: function set(newValue) {
+            isFunction(_set) && _set(newValue);
             value = newValue;
           },
-          get () {
-            isFunction(get) && get();
+          get: function get() {
+            isFunction(_get) && _get();
             return value;
           }
         });
       } else if (object.__defineSetter__) {
-        object.__defineSetter__(prop, (newValue) => {
-          isFunction(set) && set(newValue);
+        object.__defineSetter__(prop, function (newValue) {
+          isFunction(_set) && _set(newValue);
           value = newValue;
         });
 
-        object.__defineGetter__(prop, () => {
-          isFunction(get) && get();
+        object.__defineGetter__(prop, function () {
+          isFunction(_get) && _get();
           return value;
         });
       } else {
-        throw new Error(`not support defineProperty`);
+        throw new Error('not support defineProperty');
       }
     }
   });
@@ -1795,28 +1810,25 @@
  * 滚轮事件监听
  */
 ;!function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined'
-  ? module.exports = factory(global) : typeof define === 'function' && define.amd
-  ? define([global], factory) : global.mouseWheelListener = factory(global);
+  (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory(global) : typeof define === 'function' && define.amd ? define([global], factory) : global.mouseWheelListener = factory(global);
 }(this, function (global) {
-  const {
-    isFunction
-  } = global.util;
+  var isFunction = global.util.isFunction;
+
 
   function mouseWheelListener(callback) {
     addMouseWheelHandler(function (e) {
       e = e || global.event;
-      const value = e.wheelDelta || -e.deltaY || -e.detail;
-      const delta = Math.max(-1, Math.min(1, value));
-      const direction = delta < 0 ? 'down' : 'up';
+      var value = e.wheelDelta || -e.deltaY || -e.detail;
+      var delta = Math.max(-1, Math.min(1, value));
+      var direction = delta < 0 ? 'down' : 'up';
       isFunction(callback) && callback(direction, value, delta);
     });
   }
 
-  let g_supportsPassive = false;
+  var g_supportsPassive = false;
   try {
-    const opts = Object.defineProperty({}, 'passive', {
-      get: function () {
+    var opts = Object.defineProperty({}, 'passive', {
+      get: function get() {
         g_supportsPassive = true;
       }
     });
@@ -1824,23 +1836,21 @@
     global.removeEventListener("testPassive", null, opts);
   } catch (e) {}
 
-  function addMouseWheelHandler (callback) {
-    let prefix = '';
-    let _addEventListener;
-  
+  function addMouseWheelHandler(callback) {
+    var prefix = '';
+    var _addEventListener = void 0;
+
     if (global.addEventListener) {
       _addEventListener = "addEventListener";
     } else {
       _addEventListener = "attachEvent";
       prefix = 'on';
     }
-    
-    const support = 'onwheel' in document.createElement('div') ? 'wheel' : (
-      document.onmousewheel !== undefined ? 'mousewheel' : 'DOMMouseScroll'
-    );
-      
-    const passiveEvent = g_supportsPassive ? { passive: false } : false;
-    
+
+    var support = 'onwheel' in document.createElement('div') ? 'wheel' : document.onmousewheel !== undefined ? 'mousewheel' : 'DOMMouseScroll';
+
+    var passiveEvent = g_supportsPassive ? { passive: false } : false;
+
     if (support == 'DOMMouseScroll') {
       document[_addEventListener](prefix + 'MozMousePixelScroll', callback, passiveEvent);
     } else {
@@ -1855,12 +1865,19 @@
  * @description jQuery extend
  */
 ;!function (global) {
-  const {
-    isNil, isFunction, isString, forInOwn, isObject, fromCamelCase, isArray, checkType,
-    extend
-  } = global.util;
+  var _global$util3 = global.util,
+      isNil = _global$util3.isNil,
+      isFunction = _global$util3.isFunction,
+      isString = _global$util3.isString,
+      forInOwn = _global$util3.forInOwn,
+      isObject = _global$util3.isObject,
+      fromCamelCase = _global$util3.fromCamelCase,
+      isArray = _global$util3.isArray,
+      checkType = _global$util3.checkType,
+      extend = _global$util3.extend;
 
-  const $ = global.jQuery;
+
+  var $ = global.jQuery;
 
   /**
    * @description 设置或获取元素的translate值
@@ -1869,15 +1886,13 @@
    */
   $.prototype.translate = function (x, y) {
     if (isNil(x) && isNil(y)) {
-      const tx = parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[4]);
-      const ty = parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[5]);
-      return [
-        isNaN(tx) ? 0 : tx,
-        isNaN(ty) ? 0 : ty,
-      ];
+      var tx = parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[4]);
+      var ty = parseFloat(this.css('transform').replace(/[^0-9\-.,]/g, '').split(',')[5]);
+      return [isNaN(tx) ? 0 : tx, isNaN(ty) ? 0 : ty];
     }
 
-    let xValue, yValue;
+    var xValue = void 0,
+        yValue = void 0;
     if (isNil(y)) {
       xValue = isFunction(x) ? parseFloat(x()) : parseFloat(x);
       if (!isNaN(xValue)) {
@@ -1904,19 +1919,19 @@
       }
       return this;
     }
-  }
+  };
   $.prototype.translateX = function (value) {
     if (isNil(value)) {
       return this.translate()[0];
     }
     return this.translate(value);
-  }
+  };
   $.prototype.translateY = function (value) {
     if (isNil(value)) {
       return this.translate()[1];
     }
     return this.translate(null, value);
-  }
+  };
 
   /**
    * @description 查找元素的index
@@ -1925,9 +1940,9 @@
   $.prototype.findIndex = function (callback) {
     checkType(callback, 'function');
 
-    const $el = this;
-    for (let i = 0, len = $el.length; i < len; i++) {
-      const found = callback(i, $el[i], $el);
+    var $el = this;
+    for (var i = 0, len = $el.length; i < len; i++) {
+      var found = callback(i, $el[i], $el);
       if (found === true) return i;
     }
 
@@ -1935,11 +1950,11 @@
   };
 
   $.prototype.indexOf = function (jq) {
-    if ( !(jq instanceof jQuery) ) jq = $(jq);
-    
-    let index = -1;
-    const $el = this;
-    for (let i = 0, len = $el.length; i< len; i++) {
+    if (!(jq instanceof jQuery)) jq = $(jq);
+
+    var index = -1;
+    var $el = this;
+    for (var i = 0, len = $el.length; i < len; i++) {
       if ($el[i] === jq[0]) {
         index = i;
         break;
@@ -1948,21 +1963,21 @@
 
     return index;
   };
-  
+
   $.prototype.reduce = function (callback, initialValue) {
     checkType(callback, 'function');
-    if ( (this.length === 0) && (typeof initialValue === 'undefined') ) {
+    if (this.length === 0 && typeof initialValue === 'undefined') {
       throw new TypeError('Reduce of empty jQuery with no initial value');
     }
 
-    const $el = this;
-    let i = -1;
-    let result = initialValue;
+    var $el = this;
+    var i = -1;
+    var result = initialValue;
     if (typeof result === 'undefined') {
       result = $el[0];
       i = 0;
     }
-    const len = $el.length;
+    var len = $el.length;
     while (++i < len) {
       result = callback(result, $el[i], i, $el);
     }
@@ -1972,29 +1987,29 @@
   /**
    * for $.node, $.closingNode
    */
-  const handleAttr = (attr) => {
-    let attributes = '';
+  var handleAttr = function handleAttr(attr) {
+    var attributes = '';
     if (attr) {
       if (isString(attr)) {
         attributes = ' ' + attr;
       } else if (isObject(attr)) {
-        forInOwn(attr, (obj, key) => {
-          if ( (key.trim() === 'style') && isObject(obj) ) {
-            attributes += ` ${key}="`;
-            forInOwn(obj, (value, k) => {
-              attributes += `${fromCamelCase(k)}: ${value};`;
+        forInOwn(attr, function (obj, key) {
+          if (key.trim() === 'style' && isObject(obj)) {
+            attributes += ' ' + key + '="';
+            forInOwn(obj, function (value, k) {
+              attributes += fromCamelCase(k) + ': ' + value + ';';
             });
-            attributes += `"`;
+            attributes += '"';
           } else {
-            const thisAttr = `${fromCamelCase(key)}="${obj}"`;
-            attributes += ` ${thisAttr}`;
+            var thisAttr = fromCamelCase(key) + '="' + obj + '"';
+            attributes += ' ' + thisAttr;
           }
         });
       }
     }
 
     return attributes;
-  }
+  };
 
   /**
    * @description 生成html字符串
@@ -2013,9 +2028,9 @@
    * 
    * // "<div class="test" data-value="1" style="background-color: red;color: #fff;">1234</div>"
    */
-  const node = function (wrapper, children, klass, attr) {
+  var node = function node(wrapper, children, klass, attr) {
     if (isNil(children)) return '';
-  
+
     // If the children is an array, do a join
     children = isArray(children) ? children.join('') : children;
 
@@ -2023,15 +2038,15 @@
     klass = klass ? ' class="' + klass + '"' : '';
 
     // Check for any attributes
-    const attributes = handleAttr(attr);
-    
+    var attributes = handleAttr(attr);
+
     return '<' + wrapper + klass + attributes + '>' + children + '</' + wrapper + '>';
   };
 
-  const closingNode = function (tagName, klass, attr) {
-    klass = klass ? ` class="${klass}"` : '';
-      
-    const attributes = handleAttr(attr);
+  var closingNode = function closingNode(tagName, klass, attr) {
+    klass = klass ? ' class="' + klass + '"' : '';
+
+    var attributes = handleAttr(attr);
 
     return '<' + tagName + klass + attributes + '/>';
   };
@@ -2039,16 +2054,15 @@
   /**
    * @description 子类使用this.super()继承父类
    */
-  const inherit = function (SuperClass, SubClass) {
+  var inherit = function inherit(SuperClass, SubClass) {
     SubClass.prototype = new SuperClass();
     SubClass.prototype.constructor = SubClass;
     SubClass.prototype.super = SuperClass;
   };
-  
+
   $.extend({
-    node,
-    closingNode,
-    inherit
+    node: node,
+    closingNode: closingNode,
+    inherit: inherit
   });
-  
-}(this)
+}(this);

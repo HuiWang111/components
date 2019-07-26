@@ -6,7 +6,8 @@
   const { 
     Component, jQuery: $,
     util: { 
-      isFunction, isUndefined, isNil, toSelector, extend, removeKeys, appendClass
+      isFunction, isUndefined, isNil, toSelector, extend, removeKeys, appendClass,
+      propsChecker
     },
     ClassName: {
       TAB_ITEM_CLASS, TAB_ITEM_CLASS_ACTIVE, TAB_ITEM_CARD_CLASS, TAB_ITEM_WRAP_CLASS, TAB_ITEM_INNER_CLASS,
@@ -28,11 +29,12 @@
   TAB_ITEM_GAP = 32;
   
   /**
-   *  @param options: {
+   *  @param props: {
    *    type: 'line' | 'card', // default is 'line' 
    *    tabPanes: Array, // => [{tab: String, key: String, forceRender: Boolen}]
    *    defaultKey: String,
-   *    editable: Boolen, // 仅type='card'时有效
+   *    editable: Boolean, // 仅type='card'时有效
+   *    block: Boolean, // 宽度自适应父元素，设置此配置为true还会额外监听window.resize事件
    *    onChange: Function(index),
    *    renderPaneItem: Function(tabName, index)
    *  }
@@ -42,19 +44,27 @@
    *  在关闭一个tab后切换tab时pane会出现位置错乱，有待优化
    */
 
-  function Tabs(selector, options) {
+  function Tabs(selector, props) {
+    propsChecker(props, {
+      type: 'string',
+      tabPanes: 'array.require',
+      editable: 'boolean',
+      block: 'boolean',
+      onChange: 'function',
+      renderPaneItem: 'function'
+    });
 
     this.$container = $(selector);
     if (this.$container.length < 1) throw new Error(`not found ${selector} Element`);
 
-    const { type } = options;
+    const { type } = props;
     if (!isUndefined(type) && !['line', 'card'].includes(type)) {
       throw new Error(`${type} is not a correct tabs type`);
     }
 
     //default
-    const defaultKey = options.tabPanes[0].key;
-    const defaultOptions = {
+    const defaultKey = props.tabPanes[0].key;
+    const defaultProps = {
       type: 'line',
       tabPanes: [],
       defaultKey,
@@ -63,7 +73,7 @@
       renderPaneItem: null
     };
 
-    this.options = extend({}, defaultOptions, options);
+    this.props = extend({}, defaultProps, props);
     this.super();
   };
 
@@ -73,7 +83,7 @@
     render () {
       const { 
         $container,
-        options: { tabPanes, renderPaneItem, defaultKey, type, editable}
+        props: { tabPanes, renderPaneItem, defaultKey, type, editable}
       } = this;
 
       let tabsDOM = '', panesDOM = '', isDefaultFirst = false, isDefaultLast = false;
@@ -162,7 +172,7 @@
     },
 
     componentDidMount () {
-      const { $container, options: { tabPanes } } = this;
+      const { $container, props: { tabPanes } } = this;
 
       // tab
       this.$tabContainer = $container.find(toSelector(TAB_ITEM_CONTAINER_CLASS));
@@ -194,7 +204,10 @@
     },
 
     bindEvents () {
-      const { $tabItems, $panes, options: { editable } } = this;
+      const {
+        $tabItems, $panes, $paneWrap, $container,
+        props: { editable, block }
+      } = this;
 
       this.setUnderLineWidth(0);
 
@@ -203,7 +216,7 @@
       const __this__ = this;
 
       //click tab item
-      const { options: { type } } = this;
+      const { props: { type } } = this;
 
       $tabItems.on('click', function() {
         const $this = $(this);
@@ -238,6 +251,15 @@
         }
 
         __this__.setPaneWrapWidth('sub');
+        __this__.checkArrowVisibleStatus();
+      });
+
+      // resize
+      block && window.addEventListener('resize', function () {
+        const newWidth = $container.width();
+        $panes.width(newWidth);
+        $paneWrap.width(newWidth * __this__.tabCount);
+
         __this__.checkArrowVisibleStatus();
       });
     },
@@ -372,7 +394,7 @@
     handleTabChange (current, index, isOnClose) {
       const { 
         unRenderPanes, isRenderedRecords, $underline, $paneWrap, $panes, containerWidth,
-        options: { type, onChange, tabPanes }
+        props: { type, onChange, tabPanes }
       } = this;
       let { $tabItems } = this;
 
@@ -402,16 +424,17 @@
       !isNil(current) && $panes.eq(current).removeClass(PANE_ITEM_CLASS_ACTIVE);
       $panes.eq(index).addClass(PANE_ITEM_CLASS_ACTIVE);
 
+      const { key } = tabPanes[index];
+
       /* 渲染未在初始化时渲染的pane */
       if (index < tabPanes.length) {
-        const { key } = tabPanes[index];
         if (!isRenderedRecords[key]) {
           $panes.eq(index).html(unRenderPanes[key]);
           isRenderedRecords[key] = true;
         }
       }
 
-      isFunction(onChange) && onChange(index);
+      isFunction(onChange) && onChange(key, index);
     },
 
     destroy () {
