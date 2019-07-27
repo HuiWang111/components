@@ -6,7 +6,7 @@
   const { 
     jQuery: $,
     util: { 
-      isNumber, isUndefined, isNil, extend, removeKey, appendClass
+      isNumber, isUndefined, propsChecker, extend, removeKey, appendClass,
     },
     ClassName: { 
       ICON_CLASS, FILLED_ICON_CLASS, WARNING_ICON_CLASS, SUCCESS_ICON_CLASS, INFO_ICON_CLASS, ERROR_ICON_CLASS,
@@ -15,32 +15,40 @@
     SVG: {
       getWarnSvg, getWarnFilledSvg, getSuccessSvg, getSuccessFilledSvg, getInfoSvg, getInfoFilledSvg,
       getErrorSvg, getErrorFilledSvg, getConfirmSvg, getFilledConfirmSvg, getCloseSvg, getLoadingSvg
-    }
+    },
+    Color: { WARNING_COLOR }
   } = global,
   
   iconTypes = ['warn', 'success', 'info', 'error', 'close', 'loading', 'confirm'],
-  themes = ['outline', 'filled'];
+  themes = ['outlined', 'filled'];
 
   /**
    * @description Icon
-   * @param options = {
-   *    size: Number | String,
+   * @param props = {
+   *    size: Number,
    *    className: String,
-   *    theme: 'wireframe' | 'filled',
+   *    theme: 'outlined' | 'filled',
    *    color: String,
    *    spin: Boolen,
    *    style: Object
    * }
    */
 
-  function Icon(type, options) {
-    isNil(options) && (options = {});
+  function Icon(type, props) {
+    propsChecker(props, {
+      size: 'number',
+      className: 'string',
+      theme: 'string',
+      color: 'string',
+      spin: 'boolean',
+      style: 'object'
+    });
 
     if (!iconTypes.includes(type)) {
       throw new Error(`${type} is not a correct icon type`);
     }
-    if (!isUndefined(options.theme) && !themes.includes(options.theme)) {
-      throw new Error(`${options.theme} is not a correct theme`);
+    if (!isUndefined(props.theme) && !themes.includes(props.theme)) {
+      throw new Error(`${props.theme} is not a correct theme`);
     }
     
     let defaultSize;
@@ -50,19 +58,18 @@
       case 'info':
       case 'error':
       case 'confirm':
+      case 'loading':
       case 'close': defaultSize = 16;break;
     }
 
-    const defaultOptions = {
+    const defaultProps = {
       size: defaultSize,
-      className: '',
       color: '#cccccc',
       theme: 'outline',
-      spin: false,
-      style: {}
+      spin: false
     }
 
-    this.options = extend({}, defaultOptions, options);
+    this.props = extend({}, defaultProps, props);
     
     this.type = type;
     this.html = this.render();
@@ -71,7 +78,7 @@
 
   extend(Icon.prototype, {
     render () {
-      const { type, options: { size, className, theme, color, spin, style } } = this;
+      const { type, props: { size, className, theme, color, spin, style } } = this;
       const isDefaultTheme = theme === 'outline';
 
       let typeClass, svg;
@@ -94,7 +101,7 @@
           break;
         case 'confirm':
           typeClass = CONFIRM_ICON_CLASS;
-          svg = isDefaultTheme ? getConfirmSvg('#faad14') : getFilledConfirmSvg('#faad14');
+          svg = isDefaultTheme ? getConfirmSvg(WARNING_COLOR) : getFilledConfirmSvg(WARNING_COLOR);
           break;
         case 'close': 
           typeClass = CLOSE_ICON_CLASS;
@@ -116,16 +123,16 @@
 
       const icon = $.node('i', svg, klass, {
         style: extend({
-          width: isNumber(size) ? `${size}px` : size,
-          height: isNumber(size) ? `${size}px` : size
-        }, style)
+          width: `${size}px`,
+          height: `${size}px`
+        }, style ? style : {})
       });
 
       return icon;
     },
 
     destroy () {
-      removeKey(this, 'options');
+      removeKey(this, 'props');
     }
   });
 

@@ -205,9 +205,7 @@
       );
       
       const child = children.map(c => isString(c) ? c : c.html);
-      const menu = $.node('ul', child.join(''), klass, {
-        style: style ? style : ''
-      });
+      const menu = $.node('ul', child.join(''), klass, style ? { style } : null);
       
       return [{
         html: menu,

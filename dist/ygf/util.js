@@ -522,7 +522,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         if (isRequire) {
           if (isNil(props[key])) throw new Error('the props \'' + key + '\' is required');
         } else {
-          if (!isUndefined(props[key])) {
+          if (!isNil(props[key])) {
             var message = 'the props \'' + key + '\' is';
             checkType(props[key], toCheck, message);
           }
@@ -1779,8 +1779,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       if (Object.defineProperty) {
         Object.defineProperty(object, prop, {
           set: function set(newValue) {
-            isFunction(_set) && _set(newValue);
             value = newValue;
+            isFunction(_set) && _set(newValue);
           },
           get: function get() {
             isFunction(_get) && _get();
@@ -1789,8 +1789,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         });
       } else if (object.__defineSetter__) {
         object.__defineSetter__(prop, function (newValue) {
-          isFunction(_set) && _set(newValue);
           value = newValue;
+          isFunction(_set) && _set(newValue);
         });
 
         object.__defineGetter__(prop, function () {

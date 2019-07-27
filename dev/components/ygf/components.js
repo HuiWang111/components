@@ -5,9 +5,10 @@
 }(this, function () {
   const PRIMARY_COLOR = '#1890ff';
   const DISABLE_COLOR = '#ccc';
+  const WARNING_COLOR = '#faad14';
 
   return Object.freeze({
-    PRIMARY_COLOR, DISABLE_COLOR
+    PRIMARY_COLOR, DISABLE_COLOR, WARNING_COLOR
   });
 });
 ;!function (global, factory) {
@@ -304,7 +305,7 @@
   const { 
     jQuery: $,
     util: { 
-      isNumber, isUndefined, isNil, extend, removeKey, appendClass
+      isNumber, isUndefined, propsChecker, extend, removeKey, appendClass,
     },
     ClassName: { 
       ICON_CLASS, FILLED_ICON_CLASS, WARNING_ICON_CLASS, SUCCESS_ICON_CLASS, INFO_ICON_CLASS, ERROR_ICON_CLASS,
@@ -313,32 +314,40 @@
     SVG: {
       getWarnSvg, getWarnFilledSvg, getSuccessSvg, getSuccessFilledSvg, getInfoSvg, getInfoFilledSvg,
       getErrorSvg, getErrorFilledSvg, getConfirmSvg, getFilledConfirmSvg, getCloseSvg, getLoadingSvg
-    }
+    },
+    Color: { WARNING_COLOR }
   } = global,
   
   iconTypes = ['warn', 'success', 'info', 'error', 'close', 'loading', 'confirm'],
-  themes = ['outline', 'filled'];
+  themes = ['outlined', 'filled'];
 
   /**
    * @description Icon
-   * @param options = {
-   *    size: Number | String,
+   * @param props = {
+   *    size: Number,
    *    className: String,
-   *    theme: 'wireframe' | 'filled',
+   *    theme: 'outlined' | 'filled',
    *    color: String,
    *    spin: Boolen,
    *    style: Object
    * }
    */
 
-  function Icon(type, options) {
-    isNil(options) && (options = {});
+  function Icon(type, props) {
+    propsChecker(props, {
+      size: 'number',
+      className: 'string',
+      theme: 'string',
+      color: 'string',
+      spin: 'boolean',
+      style: 'object'
+    });
 
     if (!iconTypes.includes(type)) {
       throw new Error(`${type} is not a correct icon type`);
     }
-    if (!isUndefined(options.theme) && !themes.includes(options.theme)) {
-      throw new Error(`${options.theme} is not a correct theme`);
+    if (!isUndefined(props.theme) && !themes.includes(props.theme)) {
+      throw new Error(`${props.theme} is not a correct theme`);
     }
     
     let defaultSize;
@@ -348,19 +357,18 @@
       case 'info':
       case 'error':
       case 'confirm':
+      case 'loading':
       case 'close': defaultSize = 16;break;
     }
 
-    const defaultOptions = {
+    const defaultProps = {
       size: defaultSize,
-      className: '',
       color: '#cccccc',
       theme: 'outline',
-      spin: false,
-      style: {}
+      spin: false
     }
 
-    this.options = extend({}, defaultOptions, options);
+    this.props = extend({}, defaultProps, props);
     
     this.type = type;
     this.html = this.render();
@@ -369,7 +377,7 @@
 
   extend(Icon.prototype, {
     render () {
-      const { type, options: { size, className, theme, color, spin, style } } = this;
+      const { type, props: { size, className, theme, color, spin, style } } = this;
       const isDefaultTheme = theme === 'outline';
 
       let typeClass, svg;
@@ -392,7 +400,7 @@
           break;
         case 'confirm':
           typeClass = CONFIRM_ICON_CLASS;
-          svg = isDefaultTheme ? getConfirmSvg('#faad14') : getFilledConfirmSvg('#faad14');
+          svg = isDefaultTheme ? getConfirmSvg(WARNING_COLOR) : getFilledConfirmSvg(WARNING_COLOR);
           break;
         case 'close': 
           typeClass = CLOSE_ICON_CLASS;
@@ -414,16 +422,16 @@
 
       const icon = $.node('i', svg, klass, {
         style: extend({
-          width: isNumber(size) ? `${size}px` : size,
-          height: isNumber(size) ? `${size}px` : size
-        }, style)
+          width: `${size}px`,
+          height: `${size}px`
+        }, style ? style : {})
       });
 
       return icon;
     },
 
     destroy () {
-      removeKey(this, 'options');
+      removeKey(this, 'props');
     }
   });
 
@@ -437,7 +445,8 @@
   const { 
     jQuery: $,
     util: { 
-      isEmpty, isFunction, isUndefined, toSelector, extend, removeKey, appendClass, getRandomClassName
+      isEmpty, isFunction, isUndefined, toSelector, extend, removeKey, appendClass, getRandomClassName,
+      propsChecker
     },
     ClassName: {
       DEFAULT_BTN_CLASS, GHOST_BTN_CLASS, PRIMARY_BTN_CLASS, DANGER_BTN_CLASS, DASHED_BTN_CLASS, LINK_BTN_CLASS,
@@ -454,30 +463,39 @@
    * 
    * 可以通过实例的loading属性设置button的loading状态
    */
-  function Button(selector, options) {
+  function Button(selector, props) {
     if ($(selector).length === 0) {
       throw new Error(`not found ${selector} elemet in Button`);
     }
-    if (!isUndefined(options.size) && !['large', 'default', 'small'].includes(options.size)) {
-      throw new Error(`${options.size} in not correct Button size`);
+
+    propsChecker(props, {
+      type: 'string',
+      disabled: 'boolean',
+      ghost: 'boolean',
+      htmlType: 'string',
+      iconType: 'string',
+      iconProps: 'object',
+      shape: 'string',
+      onClick: 'function',
+      block: 'boolean',
+      size: 'string',
+      className: 'string',
+      text: 'string'
+    });
+
+    if (!isUndefined(props.size) && !['large', 'default', 'small'].includes(props.size)) {
+      throw new Error(`${props.size} in not correct Button size`);
     }
 
-    const defaultOptions = {
-      type: '',
+    const defaultProps = {
       disabled: false,
       ghost: false,
       htmlType: 'button',
-      iconType: '',
-      iconOptions: {},
-      shape: '',
-      onClick: null,
       block: false,
-      size: 'default',
-      className: '',
-      text: ''
+      size: 'default'
     }
 
-    this.options = extend({}, defaultOptions, options);
+    this.props = extend({}, defaultProps, props);
 
     const RANDOM_CLASS = getRandomClassName();
     $(selector).eq(0).addClass(RANDOM_CLASS);
@@ -492,7 +510,7 @@
     render () {
       const { 
         $el, 
-        options: { type, shape, ghost, disabled, iconType, iconOptions, block, className, htmlType, size, text }
+        props: { type, shape, ghost, disabled, iconType, iconProps, block, className, htmlType, size, text }
       } = this;
 
       let typeClass;
@@ -532,9 +550,9 @@
         this.iconSize = iconSize;
       
       if (!isEmpty(iconType)) {
-        extend(iconOptions, { size: iconSize });
+        extend(iconProps, { size: iconSize });
 
-        const icon = new Icon(iconType, iconOptions);
+        const icon = new Icon(iconType, iconProps);
         $el.prepend(icon.html);
 
         this.icon = icon.html;
@@ -557,7 +575,7 @@
     },
 
     bindEvents() {
-      const { $el, options: { onClick } } = this;
+      const { $el, props: { onClick } } = this;
       const __this__ = this;
       isFunction(onClick) && $el.on('click', function () {
         onClick.call(__this__);
@@ -608,7 +626,7 @@
     },
 
     destroy () {
-      removeKey(this, 'options');
+      removeKey(this, 'props');
     }
   });
 
@@ -622,7 +640,8 @@
   const { 
     Swiper, Component, jQuery: $,
     util: { 
-      isNumber, toSelector, tagOf, extend, toArray, toNumber, appendClass, getRandomClassName
+      isNumber, toSelector, tagOf, extend, toArray, toNumber, appendClass, getRandomClassName,
+      propsChecker
     },
     ClassName: {
       GALLERY_BUTTON_NEXT_CLASS, GALLERY_BUTTON_PREV_CLASS, GALLERY_PAGINATION_CLASS, GALLERY_SWIPER_CONTAINER_CLASS,
@@ -635,33 +654,34 @@
   };
 
   /**
-   *  @param options: {
+   *  @param props: {
    *    navgation: true | false, // 是否需要导航箭头
    *    pagination: true | false, // 是否需要分页器
    *    width: String | Number, // 百分比或者px, 移动端宽高通常使用默认的100%
    *    height: String | Number,
    *    bgColor: String,
-   *    swiperOptions: {}
+   *    swiperProps: {}
    *  }
    */
-  function Gallery(selector, options) {
+  function Gallery(selector, props) {
+    // propsChecker()
 
     // default
-    const defaultOptions = {
+    const defaultProps = {
       navgation: false,
       pagination: true,
       width: '100%',
       height: '100%',
       bgColor: 'transparent',
-      swiperOptions: {}
+      swiperProps: {}
     };
 
-    const opts = extend({}, defaultOptions, options);
+    const opts = extend({}, defaultProps, props);
     if ( (opts.width === '100%') && opts.navgation ) {
       opts.navgation = false; // 宽度100%时不使用导航箭头
     }
 
-    this.options = opts;
+    this.props = opts;
     this.$source = $(selector);
 
     // 为每个实例容器创建一个随机className
@@ -676,13 +696,13 @@
 
   extend(Gallery.prototype, {
     componentWillMount () {
-      // handle swiper options
-      this.swiperOptionsHandler();
+      // handle swiper props
+      this.swiperPropsHandler();
     },
 
     render: function () {
       const srcList = this.createSrcList();
-      const { RANDOM_CLASS, options: { pagination, navgation } } = this;
+      const { RANDOM_CLASS, props: { pagination, navgation } } = this;
       
       const slideList = srcList.map(function (src) {
         const img = $.closingNode('img', null, { src });
@@ -720,7 +740,7 @@
 
     style: function () {
       const maxZIndex = this.getMaxZIndex();
-      let { width, height, bgColor, navgation } = this.options;
+      let { width, height, bgColor, navgation } = this.props;
       const $container = this.$container;
 
       // 设置gallery元素的z-index为当前页面z-index最大值+1
@@ -760,7 +780,7 @@
     },
 
     bindEvents () {
-      const { RANDOM_CLASS, $container, $source, options: { swiperOptions } } = this;
+      const { RANDOM_CLASS, $container, $source, props: { swiperProps } } = this;
   
       // 点击初始化gallery swiper
       const GALLERY = this;
@@ -770,8 +790,8 @@
         const index = $source.indexOf(target);
   
         if (!GALLERY.$swiper) {
-          (index > 0) && (swiperOptions.initialSlide = index);
-          GALLERY.$swiper = new Swiper(appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_SWIPER_CONTAINER_CLASS)), swiperOptions);
+          (index > 0) && (swiperProps.initialSlide = index);
+          GALLERY.$swiper = new Swiper(appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_SWIPER_CONTAINER_CLASS)), swiperProps);
         } else {
           GALLERY.$swiper.slideTo(index, 0, false);
         }
@@ -823,23 +843,23 @@
       return maxZIndex;
     },
 
-    swiperOptionsHandler: function () {
-      const { RANDOM_CLASS, options: { swiperOptions, pagination, navgation } } = this;
+    swiperPropsHandler: function () {
+      const { RANDOM_CLASS, props: { swiperProps, pagination, navgation } } = this;
   
-      if (swiperOptions.pagination) delete swiperOptions.pagination;
-      if (swiperOptions.nextButton) delete swiperOptions.nextButton;
-      if (swiperOptions.prevButton) delete swiperOptions.prevButton;
+      if (swiperProps.pagination) delete swiperProps.pagination;
+      if (swiperProps.nextButton) delete swiperProps.nextButton;
+      if (swiperProps.prevButton) delete swiperProps.prevButton;
   
-      if (pagination) swiperOptions.pagination = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_PAGINATION_CLASS));
+      if (pagination) swiperProps.pagination = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_PAGINATION_CLASS));
       if (navgation) {
-        swiperOptions.nextButton = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_BUTTON_NEXT_CLASS));
-        swiperOptions.prevButton = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_BUTTON_PREV_CLASS));
+        swiperProps.nextButton = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_BUTTON_NEXT_CLASS));
+        swiperProps.prevButton = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_BUTTON_PREV_CLASS));
       }
 
-      swiperOptions.observer = true;
-      swiperOptions.observeParents = true;
+      swiperProps.observer = true;
+      swiperProps.observeParents = true;
 
-      this.options.swiperOptions = swiperOptions;
+      this.props.swiperProps = swiperProps;
     }
   });
 
@@ -1046,7 +1066,8 @@
   const { 
     Component, jQuery: $,
     util: { 
-      isFunction, checkType, toSelector, extend, removeKeys, appendClass
+      isFunction, toSelector, extend, removeKeys, appendClass,
+      getRandomClassName, propsChecker
     },
     ClassName: {
       PAGINATION_ITEM_CLASS, PAGINATION_ITEM_CLASS_ACTIVE, PAGINATION_ITEM_CLASS_BORDER, PAGINATION_ITEM_CLASS_DISABLE,
@@ -1060,12 +1081,12 @@
   MAX_DISPLAY_TOTAL = 9, LEFTMODEINDEXMAP = [2, 3, 4, 5, 6], INDEXMAP = [1, 2, 3, 4, 5],
   
   prevSvg = getPrevSvg(),
-  nextSvg = getNextSvg()
+  nextSvg = getNextSvg(),
   prevSvgDisable = getPrevSvg(DISABLE_COLOR),
   nextSvgDisable = getNextSvg(DISABLE_COLOR);
   
   /**
-   *  @param options: {
+   *  @param props: {
    *    total: Numer,
    *    pageSize: Number,
    *    current: Number,
@@ -1074,27 +1095,28 @@
    *    itemRender: Function (current, type, originalElement)
    *  }
    */
-  function Pagination(selector, options) {
+  function Pagination(selector, props) {
+    propsChecker(props, {
+      total: 'number.require',
+      pageSize: 'number',
+      current: 'number',
+      bordered: 'boolean',
+      onChange: 'function',
+      itemRender: 'function'
+    });
 
-    //default
-    const defaultOptions = {
-      total: 0,
+    // default
+    const defaultProps = {
       pageSize: 10,
       current: 1,
       bordered: true,
-      onChange: null,
-      itemRender: null
     };
 
-    const opts = extend({}, defaultOptions, options);
+    this.props = extend({}, defaultProps, props);
+    if (!this.props.total) return;
 
-    var mustBeNumber = ['total', 'pageSize', 'current'];
-    mustBeNumber.forEach(key => {
-      checkType(opts[key], 'number');
-    });
-
-    this.options = opts;
     this.selector = selector;
+    this.RANDOM_CLASS = getRandomClassName();
 
     this.super();
   };
@@ -1103,7 +1125,7 @@
 
   extend(Pagination.prototype, {
     render () {
-      const { selector, options: { current, total, pageSize } } = this;
+      const { selector, RANDOM_CLASS, props: { current, total, pageSize } } = this;
 
       const totalPage = Math.ceil(total/pageSize);
       Object.defineProperty(this, 'totalPage', {
@@ -1113,7 +1135,7 @@
         value: totalPage
       });
 
-      //pagination
+      // pagination
       let i, ulInner = '';
       if (totalPage <= MAX_DISPLAY_TOTAL) {
         for (i = 1; i <= totalPage; i++) {
@@ -1164,15 +1186,20 @@
       //next
       const nextItem = this.createNext();
 
+      const klass = appendClass(
+        RANDOM_CLASS,
+        PAGINATION_CONTAINER_CLASS
+      );
+
       return [{
-        html: $.node('ul', prevItem + ulInner + nextItem, PAGINATION_CONTAINER_CLASS),
+        html: $.node('ul', prevItem + ulInner + nextItem, klass),
         container: $(selector),
         type: 'append'
       }];
     },
 
     componentDidMount () {
-      this.$container = $(toSelector(PAGINATION_CONTAINER_CLASS));
+      this.$container = $(toSelector(this.RANDOM_CLASS));
 
       this.$next = this.$container.find(toSelector(PAGINATION_ITEM_CLASS_NEXT));
       this.$prev = this.$container.find(toSelector(PAGINATION_ITEM_CLASS_PREV));
@@ -1185,7 +1212,7 @@
       // click previous button
       $prev.on('click', function () {
         const $this = $(this);
-        const $pagination = $(toSelector(PAGINATION_ITEM_CLASS));
+        const $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
         if (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
           const $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
           const current = __this__.getPage($active);
@@ -1199,7 +1226,7 @@
       // click next button
       $next.on('click', function () {
         const $this = $(this);
-        const $pagination = $(toSelector(PAGINATION_ITEM_CLASS));
+        const $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
         if (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
           const $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
           const current = __this__.getPage($active);
@@ -1213,7 +1240,7 @@
       // click paginations
       $container.on('click', `${toSelector(PAGINATION_ITEM_CLASS)}`, function () {
         const $this = $(this);
-        const $pagination = $(toSelector(PAGINATION_ITEM_CLASS));
+        const $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
         if (!$this.hasClass(PAGINATION_ITEM_CLASS_ACTIVE)) {
           const $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
           const current = __this__.getPage($active);
@@ -1230,7 +1257,7 @@
       const moreSelector = `${toSelector(PAGINATION_ITEM_NEXT_MORE_CLASS)},${toSelector(PAGINATION_ITEM_PREV_MORE_CLASS)}`;
       $container.on('click', moreSelector, function () {
         const $this = $(this);
-        const $pagination = $(toSelector(PAGINATION_ITEM_CLASS));
+        const $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
         const $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
         const current = __this__.getPage($active);
         const variable = $this.hasClass(PAGINATION_ITEM_PREV_MORE_CLASS) ? -5 : 5;
@@ -1243,7 +1270,7 @@
 
     createPagination (page, isActive) {
 
-      const { bordered, itemRender } = this.options;
+      const { bordered, itemRender } = this.props;
 
       const klass = appendClass(
         PAGINATION_ITEM_CLASS,
@@ -1262,7 +1289,7 @@
     },
 
     createPrevious () {
-      const { current, itemRender, bordered } = this.options;
+      const { current, itemRender, bordered } = this.props;
       const isDisable = current === 1;
       
       const klass = appendClass(
@@ -1284,7 +1311,7 @@
     },
 
     createNext () {
-      const { options: { current, itemRender, bordered }, totalPage } = this;
+      const { props: { current, itemRender, bordered }, totalPage } = this;
       const isDisable = current === totalPage;
 
       const klass = appendClass(
@@ -1330,7 +1357,7 @@
     handlePaginationChange (current, index) {
       const { 
         totalPage, $container, $prev, $next, isPrevOriginal, isNextOriginal, currentMode,
-        options: { onChange }
+        props: { onChange }
       } = this;
       const $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
 
@@ -1362,6 +1389,7 @@
         }
       }
 
+      this.props.current = index;
       isFunction(onChange) && onChange(index);
     },
 
@@ -1484,7 +1512,7 @@
     },
 
     moreToPagination ($more, type) {
-      const { totalPage, options: { bordered } } = this;
+      const { totalPage, props: { bordered } } = this;
       const isPrev = type === 'prev';
       const page = isPrev ? 2 :  totalPage - 1;
       const $anchor = $more.children('a');
@@ -1511,10 +1539,11 @@
   ? module.exports = factory(global) : typeof define === 'function' && define.amd
   ? define([global], factory) : global.Tabs = factory(global);
 }(this, function (global) {
-  const { 
+  const {
     Component, jQuery: $,
     util: { 
-      isFunction, isUndefined, isNil, toSelector, extend, removeKeys, appendClass
+      isFunction, isUndefined, isNil, toSelector, extend, removeKeys, appendClass,
+      propsChecker
     },
     ClassName: {
       TAB_ITEM_CLASS, TAB_ITEM_CLASS_ACTIVE, TAB_ITEM_CARD_CLASS, TAB_ITEM_WRAP_CLASS, TAB_ITEM_INNER_CLASS,
@@ -1536,11 +1565,13 @@
   TAB_ITEM_GAP = 32;
   
   /**
-   *  @param options: {
+   *  @param props: {
    *    type: 'line' | 'card', // default is 'line' 
    *    tabPanes: Array, // => [{tab: String, key: String, forceRender: Boolen}]
    *    defaultKey: String,
-   *    editable: Boolen, // 仅type='card'时有效
+   *    editable: Boolean, // 仅type='card'时有效
+   *    block: Boolean, // 宽度自适应父元素，设置此配置为true还会额外监听window.resize事件
+   *    insertElementJQueryFunc: string, // 将元素插入到文档的jQuery方法
    *    onChange: Function(index),
    *    renderPaneItem: Function(tabName, index)
    *  }
@@ -1550,28 +1581,39 @@
    *  在关闭一个tab后切换tab时pane会出现位置错乱，有待优化
    */
 
-  function Tabs(selector, options) {
+  function Tabs(selector, props) {
+    propsChecker(props, {
+      type: 'string',
+      tabPanes: 'array.require',
+      editable: 'boolean',
+      block: 'boolean',
+      insertElementJQueryFunc: 'string',
+      onChange: 'function',
+      renderPaneItem: 'function'
+    });
 
     this.$container = $(selector);
     if (this.$container.length < 1) throw new Error(`not found ${selector} Element`);
 
-    const { type } = options;
+    const { type } = props;
     if (!isUndefined(type) && !['line', 'card'].includes(type)) {
       throw new Error(`${type} is not a correct tabs type`);
     }
 
     //default
-    const defaultKey = options.tabPanes[0].key;
-    const defaultOptions = {
+    const defaultKey = props.tabPanes[0].key;
+    const defaultProps = {
       type: 'line',
       tabPanes: [],
       defaultKey,
       editable: false,
+      block: false,
+      insertElementJQueryFunc: 'html',
       onChange: null,
       renderPaneItem: null
     };
 
-    this.options = extend({}, defaultOptions, options);
+    this.props = extend({}, defaultProps, props);
     this.super();
   };
 
@@ -1581,7 +1623,7 @@
     render () {
       const { 
         $container,
-        options: { tabPanes, renderPaneItem, defaultKey, type, editable}
+        props: { tabPanes, renderPaneItem, defaultKey, type, editable, insertElementJQueryFunc }
       } = this;
 
       let tabsDOM = '', panesDOM = '', isDefaultFirst = false, isDefaultLast = false;
@@ -1665,12 +1707,13 @@
       
       return [{
         html: $.node('div', [tabsContainerDOM, panesWrapDOM], TAB_CONTAINER_CLASS),
-        container: $container
+        container: $container,
+        type: insertElementJQueryFunc
       }];
     },
 
     componentDidMount () {
-      const { $container, options: { tabPanes } } = this;
+      const { $container, props: { tabPanes } } = this;
 
       // tab
       this.$tabContainer = $container.find(toSelector(TAB_ITEM_CONTAINER_CLASS));
@@ -1702,7 +1745,10 @@
     },
 
     bindEvents () {
-      const { $tabItems, $panes, options: { editable } } = this;
+      const {
+        $tabItems, $panes, $paneWrap, $container,
+        props: { editable, block }
+      } = this;
 
       this.setUnderLineWidth(0);
 
@@ -1711,7 +1757,7 @@
       const __this__ = this;
 
       //click tab item
-      const { options: { type } } = this;
+      const { props: { type } } = this;
 
       $tabItems.on('click', function() {
         const $this = $(this);
@@ -1746,6 +1792,16 @@
         }
 
         __this__.setPaneWrapWidth('sub');
+        __this__.checkArrowVisibleStatus();
+      });
+
+      // resize
+      block && window.addEventListener('resize', function () {
+        const newWidth = $container.width();
+        $panes.width(newWidth);
+        $paneWrap.width(newWidth * __this__.tabCount);
+        __this__.containerWidth = newWidth;
+
         __this__.checkArrowVisibleStatus();
       });
     },
@@ -1880,7 +1936,7 @@
     handleTabChange (current, index, isOnClose) {
       const { 
         unRenderPanes, isRenderedRecords, $underline, $paneWrap, $panes, containerWidth,
-        options: { type, onChange, tabPanes }
+        props: { type, onChange, tabPanes }
       } = this;
       let { $tabItems } = this;
 
@@ -1910,16 +1966,17 @@
       !isNil(current) && $panes.eq(current).removeClass(PANE_ITEM_CLASS_ACTIVE);
       $panes.eq(index).addClass(PANE_ITEM_CLASS_ACTIVE);
 
+      const { key } = tabPanes[index];
+
       /* 渲染未在初始化时渲染的pane */
       if (index < tabPanes.length) {
-        const { key } = tabPanes[index];
         if (!isRenderedRecords[key]) {
           $panes.eq(index).html(unRenderPanes[key]);
           isRenderedRecords[key] = true;
         }
       }
 
-      isFunction(onChange) && onChange(index);
+      isFunction(onChange) && onChange(key, index);
     },
 
     destroy () {

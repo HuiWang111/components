@@ -6,8 +6,8 @@
   const { 
     Component, jQuery: $,
     util: { 
-      isFunction, checkType, toSelector, extend, removeKeys, appendClass,
-      getRandomClassName
+      isFunction, toSelector, extend, removeKeys, appendClass,
+      getRandomClassName, propsChecker
     },
     ClassName: {
       PAGINATION_ITEM_CLASS, PAGINATION_ITEM_CLASS_ACTIVE, PAGINATION_ITEM_CLASS_BORDER, PAGINATION_ITEM_CLASS_DISABLE,
@@ -21,12 +21,12 @@
   MAX_DISPLAY_TOTAL = 9, LEFTMODEINDEXMAP = [2, 3, 4, 5, 6], INDEXMAP = [1, 2, 3, 4, 5],
   
   prevSvg = getPrevSvg(),
-  nextSvg = getNextSvg()
+  nextSvg = getNextSvg(),
   prevSvgDisable = getPrevSvg(DISABLE_COLOR),
   nextSvgDisable = getNextSvg(DISABLE_COLOR);
   
   /**
-   *  @param options: {
+   *  @param props: {
    *    total: Numer,
    *    pageSize: Number,
    *    current: Number,
@@ -35,26 +35,26 @@
    *    itemRender: Function (current, type, originalElement)
    *  }
    */
-  function Pagination(selector, options) {
+  function Pagination(selector, props) {
+    propsChecker(props, {
+      total: 'number.require',
+      pageSize: 'number',
+      current: 'number',
+      bordered: 'boolean',
+      onChange: 'function',
+      itemRender: 'function'
+    });
 
-    //default
-    const defaultOptions = {
-      total: 0,
+    // default
+    const defaultProps = {
       pageSize: 10,
       current: 1,
       bordered: true,
-      onChange: null,
-      itemRender: null
     };
 
-    const opts = extend({}, defaultOptions, options);
+    this.props = extend({}, defaultProps, props);
+    if (!this.props.total) return;
 
-    var mustBeNumber = ['total', 'pageSize', 'current'];
-    mustBeNumber.forEach(key => {
-      checkType(opts[key], 'number');
-    });
-
-    this.options = opts;
     this.selector = selector;
     this.RANDOM_CLASS = getRandomClassName();
 
@@ -65,7 +65,7 @@
 
   extend(Pagination.prototype, {
     render () {
-      const { selector, RANDOM_CLASS, options: { current, total, pageSize } } = this;
+      const { selector, RANDOM_CLASS, props: { current, total, pageSize } } = this;
 
       const totalPage = Math.ceil(total/pageSize);
       Object.defineProperty(this, 'totalPage', {
@@ -75,7 +75,7 @@
         value: totalPage
       });
 
-      //pagination
+      // pagination
       let i, ulInner = '';
       if (totalPage <= MAX_DISPLAY_TOTAL) {
         for (i = 1; i <= totalPage; i++) {
@@ -210,7 +210,7 @@
 
     createPagination (page, isActive) {
 
-      const { bordered, itemRender } = this.options;
+      const { bordered, itemRender } = this.props;
 
       const klass = appendClass(
         PAGINATION_ITEM_CLASS,
@@ -229,7 +229,7 @@
     },
 
     createPrevious () {
-      const { current, itemRender, bordered } = this.options;
+      const { current, itemRender, bordered } = this.props;
       const isDisable = current === 1;
       
       const klass = appendClass(
@@ -251,7 +251,7 @@
     },
 
     createNext () {
-      const { options: { current, itemRender, bordered }, totalPage } = this;
+      const { props: { current, itemRender, bordered }, totalPage } = this;
       const isDisable = current === totalPage;
 
       const klass = appendClass(
@@ -297,7 +297,7 @@
     handlePaginationChange (current, index) {
       const { 
         totalPage, $container, $prev, $next, isPrevOriginal, isNextOriginal, currentMode,
-        options: { onChange }
+        props: { onChange }
       } = this;
       const $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
 
@@ -329,6 +329,7 @@
         }
       }
 
+      this.props.current = index;
       isFunction(onChange) && onChange(index);
     },
 
@@ -451,7 +452,7 @@
     },
 
     moreToPagination ($more, type) {
-      const { totalPage, options: { bordered } } = this;
+      const { totalPage, props: { bordered } } = this;
       const isPrev = type === 'prev';
       const page = isPrev ? 2 :  totalPage - 1;
       const $anchor = $more.children('a');

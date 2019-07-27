@@ -6,7 +6,8 @@
   const { 
     Swiper, Component, jQuery: $,
     util: { 
-      isNumber, toSelector, tagOf, extend, toArray, toNumber, appendClass, getRandomClassName
+      isNumber, toSelector, tagOf, extend, toArray, toNumber, appendClass, getRandomClassName,
+      propsChecker
     },
     ClassName: {
       GALLERY_BUTTON_NEXT_CLASS, GALLERY_BUTTON_PREV_CLASS, GALLERY_PAGINATION_CLASS, GALLERY_SWIPER_CONTAINER_CLASS,
@@ -19,33 +20,34 @@
   };
 
   /**
-   *  @param options: {
+   *  @param props: {
    *    navgation: true | false, // 是否需要导航箭头
    *    pagination: true | false, // 是否需要分页器
    *    width: String | Number, // 百分比或者px, 移动端宽高通常使用默认的100%
    *    height: String | Number,
    *    bgColor: String,
-   *    swiperOptions: {}
+   *    swiperProps: {}
    *  }
    */
-  function Gallery(selector, options) {
+  function Gallery(selector, props) {
+    // propsChecker()
 
     // default
-    const defaultOptions = {
+    const defaultProps = {
       navgation: false,
       pagination: true,
       width: '100%',
       height: '100%',
       bgColor: 'transparent',
-      swiperOptions: {}
+      swiperProps: {}
     };
 
-    const opts = extend({}, defaultOptions, options);
+    const opts = extend({}, defaultProps, props);
     if ( (opts.width === '100%') && opts.navgation ) {
       opts.navgation = false; // 宽度100%时不使用导航箭头
     }
 
-    this.options = opts;
+    this.props = opts;
     this.$source = $(selector);
 
     // 为每个实例容器创建一个随机className
@@ -60,13 +62,13 @@
 
   extend(Gallery.prototype, {
     componentWillMount () {
-      // handle swiper options
-      this.swiperOptionsHandler();
+      // handle swiper props
+      this.swiperPropsHandler();
     },
 
     render: function () {
       const srcList = this.createSrcList();
-      const { RANDOM_CLASS, options: { pagination, navgation } } = this;
+      const { RANDOM_CLASS, props: { pagination, navgation } } = this;
       
       const slideList = srcList.map(function (src) {
         const img = $.closingNode('img', null, { src });
@@ -104,7 +106,7 @@
 
     style: function () {
       const maxZIndex = this.getMaxZIndex();
-      let { width, height, bgColor, navgation } = this.options;
+      let { width, height, bgColor, navgation } = this.props;
       const $container = this.$container;
 
       // 设置gallery元素的z-index为当前页面z-index最大值+1
@@ -144,7 +146,7 @@
     },
 
     bindEvents () {
-      const { RANDOM_CLASS, $container, $source, options: { swiperOptions } } = this;
+      const { RANDOM_CLASS, $container, $source, props: { swiperProps } } = this;
   
       // 点击初始化gallery swiper
       const GALLERY = this;
@@ -154,8 +156,8 @@
         const index = $source.indexOf(target);
   
         if (!GALLERY.$swiper) {
-          (index > 0) && (swiperOptions.initialSlide = index);
-          GALLERY.$swiper = new Swiper(appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_SWIPER_CONTAINER_CLASS)), swiperOptions);
+          (index > 0) && (swiperProps.initialSlide = index);
+          GALLERY.$swiper = new Swiper(appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_SWIPER_CONTAINER_CLASS)), swiperProps);
         } else {
           GALLERY.$swiper.slideTo(index, 0, false);
         }
@@ -207,23 +209,23 @@
       return maxZIndex;
     },
 
-    swiperOptionsHandler: function () {
-      const { RANDOM_CLASS, options: { swiperOptions, pagination, navgation } } = this;
+    swiperPropsHandler: function () {
+      const { RANDOM_CLASS, props: { swiperProps, pagination, navgation } } = this;
   
-      if (swiperOptions.pagination) delete swiperOptions.pagination;
-      if (swiperOptions.nextButton) delete swiperOptions.nextButton;
-      if (swiperOptions.prevButton) delete swiperOptions.prevButton;
+      if (swiperProps.pagination) delete swiperProps.pagination;
+      if (swiperProps.nextButton) delete swiperProps.nextButton;
+      if (swiperProps.prevButton) delete swiperProps.prevButton;
   
-      if (pagination) swiperOptions.pagination = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_PAGINATION_CLASS));
+      if (pagination) swiperProps.pagination = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_PAGINATION_CLASS));
       if (navgation) {
-        swiperOptions.nextButton = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_BUTTON_NEXT_CLASS));
-        swiperOptions.prevButton = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_BUTTON_PREV_CLASS));
+        swiperProps.nextButton = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_BUTTON_NEXT_CLASS));
+        swiperProps.prevButton = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_BUTTON_PREV_CLASS));
       }
 
-      swiperOptions.observer = true;
-      swiperOptions.observeParents = true;
+      swiperProps.observer = true;
+      swiperProps.observeParents = true;
 
-      this.options.swiperOptions = swiperOptions;
+      this.props.swiperProps = swiperProps;
     }
   });
 

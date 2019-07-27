@@ -5,9 +5,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 }(this, function () {
   var PRIMARY_COLOR = '#1890ff';
   var DISABLE_COLOR = '#ccc';
+  var WARNING_COLOR = '#faad14';
 
   return Object.freeze({
-    PRIMARY_COLOR: PRIMARY_COLOR, DISABLE_COLOR: DISABLE_COLOR
+    PRIMARY_COLOR: PRIMARY_COLOR, DISABLE_COLOR: DISABLE_COLOR, WARNING_COLOR: WARNING_COLOR
   });
 });
 ;!function (global, factory) {
@@ -297,7 +298,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       _global$util = global.util,
       isNumber = _global$util.isNumber,
       isUndefined = _global$util.isUndefined,
-      isNil = _global$util.isNil,
+      propsChecker = _global$util.propsChecker,
       extend = _global$util.extend,
       removeKey = _global$util.removeKey,
       appendClass = _global$util.appendClass,
@@ -325,29 +326,37 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       getFilledConfirmSvg = _global$SVG.getFilledConfirmSvg,
       getCloseSvg = _global$SVG.getCloseSvg,
       getLoadingSvg = _global$SVG.getLoadingSvg,
+      WARNING_COLOR = global.Color.WARNING_COLOR,
       iconTypes = ['warn', 'success', 'info', 'error', 'close', 'loading', 'confirm'],
-      themes = ['outline', 'filled'];
+      themes = ['outlined', 'filled'];
 
   /**
    * @description Icon
-   * @param options = {
-   *    size: Number | String,
+   * @param props = {
+   *    size: Number,
    *    className: String,
-   *    theme: 'wireframe' | 'filled',
+   *    theme: 'outlined' | 'filled',
    *    color: String,
    *    spin: Boolen,
    *    style: Object
    * }
    */
 
-  function Icon(type, options) {
-    isNil(options) && (options = {});
+  function Icon(type, props) {
+    propsChecker(props, {
+      size: 'number',
+      className: 'string',
+      theme: 'string',
+      color: 'string',
+      spin: 'boolean',
+      style: 'object'
+    });
 
     if (!iconTypes.includes(type)) {
       throw new Error(type + ' is not a correct icon type');
     }
-    if (!isUndefined(options.theme) && !themes.includes(options.theme)) {
-      throw new Error(options.theme + ' is not a correct theme');
+    if (!isUndefined(props.theme) && !themes.includes(props.theme)) {
+      throw new Error(props.theme + ' is not a correct theme');
     }
 
     var defaultSize = void 0;
@@ -357,20 +366,19 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       case 'info':
       case 'error':
       case 'confirm':
+      case 'loading':
       case 'close':
         defaultSize = 16;break;
     }
 
-    var defaultOptions = {
+    var defaultProps = {
       size: defaultSize,
-      className: '',
       color: '#cccccc',
       theme: 'outline',
-      spin: false,
-      style: {}
+      spin: false
     };
 
-    this.options = extend({}, defaultOptions, options);
+    this.props = extend({}, defaultProps, props);
 
     this.type = type;
     this.html = this.render();
@@ -380,13 +388,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   extend(Icon.prototype, {
     render: function render() {
       var type = this.type,
-          _options = this.options,
-          size = _options.size,
-          className = _options.className,
-          theme = _options.theme,
-          color = _options.color,
-          spin = _options.spin,
-          style = _options.style;
+          _props = this.props,
+          size = _props.size,
+          className = _props.className,
+          theme = _props.theme,
+          color = _props.color,
+          spin = _props.spin,
+          style = _props.style;
 
       var isDefaultTheme = theme === 'outline';
 
@@ -411,7 +419,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           break;
         case 'confirm':
           typeClass = CONFIRM_ICON_CLASS;
-          svg = isDefaultTheme ? getConfirmSvg('#faad14') : getFilledConfirmSvg('#faad14');
+          svg = isDefaultTheme ? getConfirmSvg(WARNING_COLOR) : getFilledConfirmSvg(WARNING_COLOR);
           break;
         case 'close':
           typeClass = CLOSE_ICON_CLASS;
@@ -427,15 +435,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
       var icon = $.node('i', svg, klass, {
         style: extend({
-          width: isNumber(size) ? size + 'px' : size,
-          height: isNumber(size) ? size + 'px' : size
-        }, style)
+          width: size + 'px',
+          height: size + 'px'
+        }, style ? style : {})
       });
 
       return icon;
     },
     destroy: function destroy() {
-      removeKey(this, 'options');
+      removeKey(this, 'props');
     }
   });
 
@@ -454,6 +462,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       removeKey = _global$util2.removeKey,
       appendClass = _global$util2.appendClass,
       getRandomClassName = _global$util2.getRandomClassName,
+      propsChecker = _global$util2.propsChecker,
       _global$ClassName2 = global.ClassName,
       DEFAULT_BTN_CLASS = _global$ClassName2.DEFAULT_BTN_CLASS,
       GHOST_BTN_CLASS = _global$ClassName2.GHOST_BTN_CLASS,
@@ -476,30 +485,39 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
    * 可以通过实例的loading属性设置button的loading状态
    */
 
-  function Button(selector, options) {
+  function Button(selector, props) {
     if ($(selector).length === 0) {
       throw new Error('not found ' + selector + ' elemet in Button');
     }
-    if (!isUndefined(options.size) && !['large', 'default', 'small'].includes(options.size)) {
-      throw new Error(options.size + ' in not correct Button size');
+
+    propsChecker(props, {
+      type: 'string',
+      disabled: 'boolean',
+      ghost: 'boolean',
+      htmlType: 'string',
+      iconType: 'string',
+      iconProps: 'object',
+      shape: 'string',
+      onClick: 'function',
+      block: 'boolean',
+      size: 'string',
+      className: 'string',
+      text: 'string'
+    });
+
+    if (!isUndefined(props.size) && !['large', 'default', 'small'].includes(props.size)) {
+      throw new Error(props.size + ' in not correct Button size');
     }
 
-    var defaultOptions = {
-      type: '',
+    var defaultProps = {
       disabled: false,
       ghost: false,
       htmlType: 'button',
-      iconType: '',
-      iconOptions: {},
-      shape: '',
-      onClick: null,
       block: false,
-      size: 'default',
-      className: '',
-      text: ''
+      size: 'default'
     };
 
-    this.options = extend({}, defaultOptions, options);
+    this.props = extend({}, defaultProps, props);
 
     var RANDOM_CLASS = getRandomClassName();
     $(selector).eq(0).addClass(RANDOM_CLASS);
@@ -513,18 +531,18 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   extend(Button.prototype, {
     render: function render() {
       var $el = this.$el,
-          _options2 = this.options,
-          type = _options2.type,
-          shape = _options2.shape,
-          ghost = _options2.ghost,
-          disabled = _options2.disabled,
-          iconType = _options2.iconType,
-          iconOptions = _options2.iconOptions,
-          block = _options2.block,
-          className = _options2.className,
-          htmlType = _options2.htmlType,
-          size = _options2.size,
-          text = _options2.text;
+          _props2 = this.props,
+          type = _props2.type,
+          shape = _props2.shape,
+          ghost = _props2.ghost,
+          disabled = _props2.disabled,
+          iconType = _props2.iconType,
+          iconProps = _props2.iconProps,
+          block = _props2.block,
+          className = _props2.className,
+          htmlType = _props2.htmlType,
+          size = _props2.size,
+          text = _props2.text;
 
 
       var typeClass = void 0;
@@ -574,9 +592,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       this.iconSize = iconSize;
 
       if (!isEmpty(iconType)) {
-        extend(iconOptions, { size: iconSize });
+        extend(iconProps, { size: iconSize });
 
-        var icon = new Icon(iconType, iconOptions);
+        var icon = new Icon(iconType, iconProps);
         $el.prepend(icon.html);
 
         this.icon = icon.html;
@@ -590,7 +608,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     },
     bindEvents: function bindEvents() {
       var $el = this.$el,
-          onClick = this.options.onClick;
+          onClick = this.props.onClick;
 
       var __this__ = this;
       isFunction(onClick) && $el.on('click', function () {
@@ -642,7 +660,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       }
     },
     destroy: function destroy() {
-      removeKey(this, 'options');
+      removeKey(this, 'props');
     }
   });
 
@@ -663,6 +681,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       toNumber = _global$util3.toNumber,
       appendClass = _global$util3.appendClass,
       getRandomClassName = _global$util3.getRandomClassName,
+      propsChecker = _global$util3.propsChecker,
       _global$ClassName3 = global.ClassName,
       GALLERY_BUTTON_NEXT_CLASS = _global$ClassName3.GALLERY_BUTTON_NEXT_CLASS,
       GALLERY_BUTTON_PREV_CLASS = _global$ClassName3.GALLERY_BUTTON_PREV_CLASS,
@@ -676,35 +695,36 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   };
 
   /**
-   *  @param options: {
+   *  @param props: {
    *    navgation: true | false, // 是否需要导航箭头
    *    pagination: true | false, // 是否需要分页器
    *    width: String | Number, // 百分比或者px, 移动端宽高通常使用默认的100%
    *    height: String | Number,
    *    bgColor: String,
-   *    swiperOptions: {}
+   *    swiperProps: {}
    *  }
    */
 
 
-  function Gallery(selector, options) {
+  function Gallery(selector, props) {
+    // propsChecker()
 
     // default
-    var defaultOptions = {
+    var defaultProps = {
       navgation: false,
       pagination: true,
       width: '100%',
       height: '100%',
       bgColor: 'transparent',
-      swiperOptions: {}
+      swiperProps: {}
     };
 
-    var opts = extend({}, defaultOptions, options);
+    var opts = extend({}, defaultProps, props);
     if (opts.width === '100%' && opts.navgation) {
       opts.navgation = false; // 宽度100%时不使用导航箭头
     }
 
-    this.options = opts;
+    this.props = opts;
     this.$source = $(selector);
 
     // 为每个实例容器创建一个随机className
@@ -718,17 +738,17 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
   extend(Gallery.prototype, {
     componentWillMount: function componentWillMount() {
-      // handle swiper options
-      this.swiperOptionsHandler();
+      // handle swiper props
+      this.swiperPropsHandler();
     },
 
 
     render: function render() {
       var srcList = this.createSrcList();
       var RANDOM_CLASS = this.RANDOM_CLASS,
-          _options3 = this.options,
-          pagination = _options3.pagination,
-          navgation = _options3.navgation;
+          _props3 = this.props,
+          pagination = _props3.pagination,
+          navgation = _props3.navgation;
 
 
       var slideList = srcList.map(function (src) {
@@ -765,11 +785,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
     style: function style() {
       var maxZIndex = this.getMaxZIndex();
-      var _options4 = this.options,
-          width = _options4.width,
-          height = _options4.height,
-          bgColor = _options4.bgColor,
-          navgation = _options4.navgation;
+      var _props4 = this.props,
+          width = _props4.width,
+          height = _props4.height,
+          bgColor = _props4.bgColor,
+          navgation = _props4.navgation;
 
       var $container = this.$container;
 
@@ -813,7 +833,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       var RANDOM_CLASS = this.RANDOM_CLASS,
           $container = this.$container,
           $source = this.$source,
-          swiperOptions = this.options.swiperOptions;
+          swiperProps = this.props.swiperProps;
 
       // 点击初始化gallery swiper
 
@@ -824,8 +844,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         var index = $source.indexOf(target);
 
         if (!GALLERY.$swiper) {
-          index > 0 && (swiperOptions.initialSlide = index);
-          GALLERY.$swiper = new Swiper(appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_SWIPER_CONTAINER_CLASS)), swiperOptions);
+          index > 0 && (swiperProps.initialSlide = index);
+          GALLERY.$swiper = new Swiper(appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_SWIPER_CONTAINER_CLASS)), swiperProps);
         } else {
           GALLERY.$swiper.slideTo(index, 0, false);
         }
@@ -879,28 +899,28 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     },
 
 
-    swiperOptionsHandler: function swiperOptionsHandler() {
+    swiperPropsHandler: function swiperPropsHandler() {
       var RANDOM_CLASS = this.RANDOM_CLASS,
-          _options5 = this.options,
-          swiperOptions = _options5.swiperOptions,
-          pagination = _options5.pagination,
-          navgation = _options5.navgation;
+          _props5 = this.props,
+          swiperProps = _props5.swiperProps,
+          pagination = _props5.pagination,
+          navgation = _props5.navgation;
 
 
-      if (swiperOptions.pagination) delete swiperOptions.pagination;
-      if (swiperOptions.nextButton) delete swiperOptions.nextButton;
-      if (swiperOptions.prevButton) delete swiperOptions.prevButton;
+      if (swiperProps.pagination) delete swiperProps.pagination;
+      if (swiperProps.nextButton) delete swiperProps.nextButton;
+      if (swiperProps.prevButton) delete swiperProps.prevButton;
 
-      if (pagination) swiperOptions.pagination = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_PAGINATION_CLASS));
+      if (pagination) swiperProps.pagination = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_PAGINATION_CLASS));
       if (navgation) {
-        swiperOptions.nextButton = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_BUTTON_NEXT_CLASS));
-        swiperOptions.prevButton = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_BUTTON_PREV_CLASS));
+        swiperProps.nextButton = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_BUTTON_NEXT_CLASS));
+        swiperProps.prevButton = appendClass(toSelector(RANDOM_CLASS), toSelector(GALLERY_BUTTON_PREV_CLASS));
       }
 
-      swiperOptions.observer = true;
-      swiperOptions.observeParents = true;
+      swiperProps.observer = true;
+      swiperProps.observeParents = true;
 
-      this.options.swiperOptions = swiperOptions;
+      this.props.swiperProps = swiperProps;
     }
   });
 
@@ -1111,11 +1131,12 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       $ = global.jQuery,
       _global$util5 = global.util,
       isFunction = _global$util5.isFunction,
-      checkType = _global$util5.checkType,
       toSelector = _global$util5.toSelector,
       extend = _global$util5.extend,
       removeKeys = _global$util5.removeKeys,
       appendClass = _global$util5.appendClass,
+      getRandomClassName = _global$util5.getRandomClassName,
+      propsChecker = _global$util5.propsChecker,
       _global$ClassName5 = global.ClassName,
       PAGINATION_ITEM_CLASS = _global$ClassName5.PAGINATION_ITEM_CLASS,
       PAGINATION_ITEM_CLASS_ACTIVE = _global$ClassName5.PAGINATION_ITEM_CLASS_ACTIVE,
@@ -1140,12 +1161,12 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       LEFTMODEINDEXMAP = [2, 3, 4, 5, 6],
       INDEXMAP = [1, 2, 3, 4, 5],
       prevSvg = getPrevSvg(),
-      nextSvg = getNextSvg();
-
-  prevSvgDisable = getPrevSvg(DISABLE_COLOR), nextSvgDisable = getNextSvg(DISABLE_COLOR);
+      nextSvg = getNextSvg(),
+      prevSvgDisable = getPrevSvg(DISABLE_COLOR),
+      nextSvgDisable = getNextSvg(DISABLE_COLOR);
 
   /**
-   *  @param options: {
+   *  @param props: {
    *    total: Numer,
    *    pageSize: Number,
    *    current: Number,
@@ -1154,27 +1175,29 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
    *    itemRender: Function (current, type, originalElement)
    *  }
    */
-  function Pagination(selector, options) {
 
-    //default
-    var defaultOptions = {
-      total: 0,
-      pageSize: 10,
-      current: 1,
-      bordered: true,
-      onChange: null,
-      itemRender: null
-    };
-
-    var opts = extend({}, defaultOptions, options);
-
-    var mustBeNumber = ['total', 'pageSize', 'current'];
-    mustBeNumber.forEach(function (key) {
-      checkType(opts[key], 'number');
+  function Pagination(selector, props) {
+    propsChecker(props, {
+      total: 'number.require',
+      pageSize: 'number',
+      current: 'number',
+      bordered: 'boolean',
+      onChange: 'function',
+      itemRender: 'function'
     });
 
-    this.options = opts;
+    // default
+    var defaultProps = {
+      pageSize: 10,
+      current: 1,
+      bordered: true
+    };
+
+    this.props = extend({}, defaultProps, props);
+    if (!this.props.total) return;
+
     this.selector = selector;
+    this.RANDOM_CLASS = getRandomClassName();
 
     this.super();
   };
@@ -1184,10 +1207,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   extend(Pagination.prototype, {
     render: function render() {
       var selector = this.selector,
-          _options6 = this.options,
-          current = _options6.current,
-          total = _options6.total,
-          pageSize = _options6.pageSize;
+          RANDOM_CLASS = this.RANDOM_CLASS,
+          _props6 = this.props,
+          current = _props6.current,
+          total = _props6.total,
+          pageSize = _props6.pageSize;
 
 
       var totalPage = Math.ceil(total / pageSize);
@@ -1198,7 +1222,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         value: totalPage
       });
 
-      //pagination
+      // pagination
       var i = void 0,
           ulInner = '';
       if (totalPage <= MAX_DISPLAY_TOTAL) {
@@ -1250,14 +1274,16 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       //next
       var nextItem = this.createNext();
 
+      var klass = appendClass(RANDOM_CLASS, PAGINATION_CONTAINER_CLASS);
+
       return [{
-        html: $.node('ul', prevItem + ulInner + nextItem, PAGINATION_CONTAINER_CLASS),
+        html: $.node('ul', prevItem + ulInner + nextItem, klass),
         container: $(selector),
         type: 'append'
       }];
     },
     componentDidMount: function componentDidMount() {
-      this.$container = $(toSelector(PAGINATION_CONTAINER_CLASS));
+      this.$container = $(toSelector(this.RANDOM_CLASS));
 
       this.$next = this.$container.find(toSelector(PAGINATION_ITEM_CLASS_NEXT));
       this.$prev = this.$container.find(toSelector(PAGINATION_ITEM_CLASS_PREV));
@@ -1272,7 +1298,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       // click previous button
       $prev.on('click', function () {
         var $this = $(this);
-        var $pagination = $(toSelector(PAGINATION_ITEM_CLASS));
+        var $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
         if (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
           var $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
           var current = __this__.getPage($active);
@@ -1286,7 +1312,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       // click next button
       $next.on('click', function () {
         var $this = $(this);
-        var $pagination = $(toSelector(PAGINATION_ITEM_CLASS));
+        var $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
         if (!$this.hasClass(PAGINATION_ITEM_CLASS_DISABLE)) {
           var $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
           var current = __this__.getPage($active);
@@ -1300,7 +1326,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       // click paginations
       $container.on('click', '' + toSelector(PAGINATION_ITEM_CLASS), function () {
         var $this = $(this);
-        var $pagination = $(toSelector(PAGINATION_ITEM_CLASS));
+        var $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
         if (!$this.hasClass(PAGINATION_ITEM_CLASS_ACTIVE)) {
           var $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
           var current = __this__.getPage($active);
@@ -1317,7 +1343,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       var moreSelector = toSelector(PAGINATION_ITEM_NEXT_MORE_CLASS) + ',' + toSelector(PAGINATION_ITEM_PREV_MORE_CLASS);
       $container.on('click', moreSelector, function () {
         var $this = $(this);
-        var $pagination = $(toSelector(PAGINATION_ITEM_CLASS));
+        var $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
         var $active = $pagination.filter(toSelector(PAGINATION_ITEM_CLASS_ACTIVE));
         var current = __this__.getPage($active);
         var variable = $this.hasClass(PAGINATION_ITEM_PREV_MORE_CLASS) ? -5 : 5;
@@ -1328,9 +1354,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       });
     },
     createPagination: function createPagination(page, isActive) {
-      var _options7 = this.options,
-          bordered = _options7.bordered,
-          itemRender = _options7.itemRender;
+      var _props7 = this.props,
+          bordered = _props7.bordered,
+          itemRender = _props7.itemRender;
 
 
       var klass = appendClass(PAGINATION_ITEM_CLASS, isActive ? PAGINATION_ITEM_CLASS_ACTIVE : '', bordered ? PAGINATION_ITEM_CLASS_BORDER : '');
@@ -1345,10 +1371,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       return pagination;
     },
     createPrevious: function createPrevious() {
-      var _options8 = this.options,
-          current = _options8.current,
-          itemRender = _options8.itemRender,
-          bordered = _options8.bordered;
+      var _props8 = this.props,
+          current = _props8.current,
+          itemRender = _props8.itemRender,
+          bordered = _props8.bordered;
 
       var isDisable = current === 1;
 
@@ -1364,10 +1390,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       });
     },
     createNext: function createNext() {
-      var _options9 = this.options,
-          current = _options9.current,
-          itemRender = _options9.itemRender,
-          bordered = _options9.bordered,
+      var _props9 = this.props,
+          current = _props9.current,
+          itemRender = _props9.itemRender,
+          bordered = _props9.bordered,
           totalPage = this.totalPage;
 
       var isDisable = current === totalPage;
@@ -1408,7 +1434,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           isPrevOriginal = this.isPrevOriginal,
           isNextOriginal = this.isNextOriginal,
           currentMode = this.currentMode,
-          onChange = this.options.onChange;
+          onChange = this.props.onChange;
 
       var $pagination = $container.find(toSelector(PAGINATION_ITEM_CLASS));
 
@@ -1440,6 +1466,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }
       }
 
+      this.props.current = index;
       isFunction(onChange) && onChange(index);
     },
     filterByTitle: function filterByTitle($el, page) {
@@ -1551,7 +1578,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     },
     moreToPagination: function moreToPagination($more, type) {
       var totalPage = this.totalPage,
-          bordered = this.options.bordered;
+          bordered = this.props.bordered;
 
       var isPrev = type === 'prev';
       var page = isPrev ? 2 : totalPage - 1;
@@ -1583,6 +1610,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       extend = _global$util6.extend,
       removeKeys = _global$util6.removeKeys,
       appendClass = _global$util6.appendClass,
+      propsChecker = _global$util6.propsChecker,
       _global$ClassName6 = global.ClassName,
       TAB_ITEM_CLASS = _global$ClassName6.TAB_ITEM_CLASS,
       TAB_ITEM_CLASS_ACTIVE = _global$ClassName6.TAB_ITEM_CLASS_ACTIVE,
@@ -1613,11 +1641,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   prevSvgDisable = getPrevSvg(DISABLE_COLOR), nextSvgDisable = getNextSvg(DISABLE_COLOR), TAB_ITEM_GAP = 32;
 
   /**
-   *  @param options: {
+   *  @param props: {
    *    type: 'line' | 'card', // default is 'line' 
    *    tabPanes: Array, // => [{tab: String, key: String, forceRender: Boolen}]
    *    defaultKey: String,
-   *    editable: Boolen, // 仅type='card'时有效
+   *    editable: Boolean, // 仅type='card'时有效
+   *    block: Boolean, // 宽度自适应父元素，设置此配置为true还会额外监听window.resize事件
+   *    insertElementJQueryFunc: string, // 将元素插入到文档的jQuery方法
    *    onChange: Function(index),
    *    renderPaneItem: Function(tabName, index)
    *  }
@@ -1627,29 +1657,40 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
    *  在关闭一个tab后切换tab时pane会出现位置错乱，有待优化
    */
 
-  function Tabs(selector, options) {
+  function Tabs(selector, props) {
+    propsChecker(props, {
+      type: 'string',
+      tabPanes: 'array.require',
+      editable: 'boolean',
+      block: 'boolean',
+      insertElementJQueryFunc: 'string',
+      onChange: 'function',
+      renderPaneItem: 'function'
+    });
 
     this.$container = $(selector);
     if (this.$container.length < 1) throw new Error('not found ' + selector + ' Element');
 
-    var type = options.type;
+    var type = props.type;
 
     if (!isUndefined(type) && !['line', 'card'].includes(type)) {
       throw new Error(type + ' is not a correct tabs type');
     }
 
     //default
-    var defaultKey = options.tabPanes[0].key;
-    var defaultOptions = {
+    var defaultKey = props.tabPanes[0].key;
+    var defaultProps = {
       type: 'line',
       tabPanes: [],
       defaultKey: defaultKey,
       editable: false,
+      block: false,
+      insertElementJQueryFunc: 'html',
       onChange: null,
       renderPaneItem: null
     };
 
-    this.options = extend({}, defaultOptions, options);
+    this.props = extend({}, defaultProps, props);
     this.super();
   };
 
@@ -1658,12 +1699,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   extend(Tabs.prototype, {
     render: function render() {
       var $container = this.$container,
-          _options10 = this.options,
-          tabPanes = _options10.tabPanes,
-          renderPaneItem = _options10.renderPaneItem,
-          defaultKey = _options10.defaultKey,
-          type = _options10.type,
-          editable = _options10.editable;
+          _props10 = this.props,
+          tabPanes = _props10.tabPanes,
+          renderPaneItem = _props10.renderPaneItem,
+          defaultKey = _props10.defaultKey,
+          type = _props10.type,
+          editable = _props10.editable,
+          insertElementJQueryFunc = _props10.insertElementJQueryFunc;
 
 
       var tabsDOM = '',
@@ -1730,12 +1772,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
       return [{
         html: $.node('div', [tabsContainerDOM, panesWrapDOM], TAB_CONTAINER_CLASS),
-        container: $container
+        container: $container,
+        type: insertElementJQueryFunc
       }];
     },
     componentDidMount: function componentDidMount() {
       var $container = this.$container,
-          tabPanes = this.options.tabPanes;
+          tabPanes = this.props.tabPanes;
 
       // tab
 
@@ -1769,7 +1812,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     bindEvents: function bindEvents() {
       var $tabItems = this.$tabItems,
           $panes = this.$panes,
-          editable = this.options.editable;
+          $paneWrap = this.$paneWrap,
+          $container = this.$container,
+          _props11 = this.props,
+          editable = _props11.editable,
+          block = _props11.block;
 
 
       this.setUnderLineWidth(0);
@@ -1779,7 +1826,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       var __this__ = this;
 
       //click tab item
-      var type = this.options.type;
+      var type = this.props.type;
 
 
       $tabItems.on('click', function () {
@@ -1815,6 +1862,16 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }
 
         __this__.setPaneWrapWidth('sub');
+        __this__.checkArrowVisibleStatus();
+      });
+
+      // resize
+      block && window.addEventListener('resize', function () {
+        var newWidth = $container.width();
+        $panes.width(newWidth);
+        $paneWrap.width(newWidth * __this__.tabCount);
+        __this__.containerWidth = newWidth;
+
         __this__.checkArrowVisibleStatus();
       });
     },
@@ -1973,10 +2030,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           $paneWrap = this.$paneWrap,
           $panes = this.$panes,
           containerWidth = this.containerWidth,
-          _options11 = this.options,
-          type = _options11.type,
-          onChange = _options11.onChange,
-          tabPanes = _options11.tabPanes;
+          _props12 = this.props,
+          type = _props12.type,
+          onChange = _props12.onChange,
+          tabPanes = _props12.tabPanes;
       var $tabItems = this.$tabItems;
 
 
@@ -2007,17 +2064,18 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       !isNil(current) && $panes.eq(current).removeClass(PANE_ITEM_CLASS_ACTIVE);
       $panes.eq(index).addClass(PANE_ITEM_CLASS_ACTIVE);
 
-      /* 渲染未在初始化时渲染的pane */
-      if (index < tabPanes.length) {
-        var key = tabPanes[index].key;
+      var key = tabPanes[index].key;
 
+      /* 渲染未在初始化时渲染的pane */
+
+      if (index < tabPanes.length) {
         if (!isRenderedRecords[key]) {
           $panes.eq(index).html(unRenderPanes[key]);
           isRenderedRecords[key] = true;
         }
       }
 
-      isFunction(onChange) && onChange(index);
+      isFunction(onChange) && onChange(key, index);
     },
     destroy: function destroy() {
       removeKeys(this, 'isIncludePane, paneWidth');

@@ -6,7 +6,8 @@
   const { 
     jQuery: $,
     util: { 
-      isEmpty, isFunction, isUndefined, toSelector, extend, removeKey, appendClass, getRandomClassName
+      isEmpty, isFunction, isUndefined, toSelector, extend, removeKey, appendClass, getRandomClassName,
+      propsChecker
     },
     ClassName: {
       DEFAULT_BTN_CLASS, GHOST_BTN_CLASS, PRIMARY_BTN_CLASS, DANGER_BTN_CLASS, DASHED_BTN_CLASS, LINK_BTN_CLASS,
@@ -23,30 +24,39 @@
    * 
    * 可以通过实例的loading属性设置button的loading状态
    */
-  function Button(selector, options) {
+  function Button(selector, props) {
     if ($(selector).length === 0) {
       throw new Error(`not found ${selector} elemet in Button`);
     }
-    if (!isUndefined(options.size) && !['large', 'default', 'small'].includes(options.size)) {
-      throw new Error(`${options.size} in not correct Button size`);
+
+    propsChecker(props, {
+      type: 'string',
+      disabled: 'boolean',
+      ghost: 'boolean',
+      htmlType: 'string',
+      iconType: 'string',
+      iconProps: 'object',
+      shape: 'string',
+      onClick: 'function',
+      block: 'boolean',
+      size: 'string',
+      className: 'string',
+      text: 'string'
+    });
+
+    if (!isUndefined(props.size) && !['large', 'default', 'small'].includes(props.size)) {
+      throw new Error(`${props.size} in not correct Button size`);
     }
 
-    const defaultOptions = {
-      type: '',
+    const defaultProps = {
       disabled: false,
       ghost: false,
       htmlType: 'button',
-      iconType: '',
-      iconOptions: {},
-      shape: '',
-      onClick: null,
       block: false,
-      size: 'default',
-      className: '',
-      text: ''
+      size: 'default'
     }
 
-    this.options = extend({}, defaultOptions, options);
+    this.props = extend({}, defaultProps, props);
 
     const RANDOM_CLASS = getRandomClassName();
     $(selector).eq(0).addClass(RANDOM_CLASS);
@@ -61,7 +71,7 @@
     render () {
       const { 
         $el, 
-        options: { type, shape, ghost, disabled, iconType, iconOptions, block, className, htmlType, size, text }
+        props: { type, shape, ghost, disabled, iconType, iconProps, block, className, htmlType, size, text }
       } = this;
 
       let typeClass;
@@ -101,9 +111,9 @@
         this.iconSize = iconSize;
       
       if (!isEmpty(iconType)) {
-        extend(iconOptions, { size: iconSize });
+        extend(iconProps, { size: iconSize });
 
-        const icon = new Icon(iconType, iconOptions);
+        const icon = new Icon(iconType, iconProps);
         $el.prepend(icon.html);
 
         this.icon = icon.html;
@@ -126,7 +136,7 @@
     },
 
     bindEvents() {
-      const { $el, options: { onClick } } = this;
+      const { $el, props: { onClick } } = this;
       const __this__ = this;
       isFunction(onClick) && $el.on('click', function () {
         onClick.call(__this__);
@@ -177,7 +187,7 @@
     },
 
     destroy () {
-      removeKey(this, 'options');
+      removeKey(this, 'props');
     }
   });
 

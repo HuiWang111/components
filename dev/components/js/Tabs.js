@@ -3,7 +3,7 @@
   ? module.exports = factory(global) : typeof define === 'function' && define.amd
   ? define([global], factory) : global.Tabs = factory(global);
 }(this, function (global) {
-  const { 
+  const {
     Component, jQuery: $,
     util: { 
       isFunction, isUndefined, isNil, toSelector, extend, removeKeys, appendClass,
@@ -35,6 +35,7 @@
    *    defaultKey: String,
    *    editable: Boolean, // 仅type='card'时有效
    *    block: Boolean, // 宽度自适应父元素，设置此配置为true还会额外监听window.resize事件
+   *    insertElementJQueryFunc: string, // 将元素插入到文档的jQuery方法
    *    onChange: Function(index),
    *    renderPaneItem: Function(tabName, index)
    *  }
@@ -50,6 +51,7 @@
       tabPanes: 'array.require',
       editable: 'boolean',
       block: 'boolean',
+      insertElementJQueryFunc: 'string',
       onChange: 'function',
       renderPaneItem: 'function'
     });
@@ -69,6 +71,8 @@
       tabPanes: [],
       defaultKey,
       editable: false,
+      block: false,
+      insertElementJQueryFunc: 'html',
       onChange: null,
       renderPaneItem: null
     };
@@ -83,7 +87,7 @@
     render () {
       const { 
         $container,
-        props: { tabPanes, renderPaneItem, defaultKey, type, editable}
+        props: { tabPanes, renderPaneItem, defaultKey, type, editable, insertElementJQueryFunc }
       } = this;
 
       let tabsDOM = '', panesDOM = '', isDefaultFirst = false, isDefaultLast = false;
@@ -167,7 +171,8 @@
       
       return [{
         html: $.node('div', [tabsContainerDOM, panesWrapDOM], TAB_CONTAINER_CLASS),
-        container: $container
+        container: $container,
+        type: insertElementJQueryFunc
       }];
     },
 
@@ -259,6 +264,7 @@
         const newWidth = $container.width();
         $panes.width(newWidth);
         $paneWrap.width(newWidth * __this__.tabCount);
+        __this__.containerWidth = newWidth;
 
         __this__.checkArrowVisibleStatus();
       });

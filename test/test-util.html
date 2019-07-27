@@ -10,7 +10,7 @@
   </style>
 </head>
 <body>
-  <button></button>
+  
   
   <script src="../lib/jquery-3.3.1.min.js"></script>
   <script src="../dev/util.js"></script>
@@ -19,35 +19,7 @@
   <script src="../dev/components/components.js"></script>
   <script>
 
-    var button = new Button('button', {
-      type: 'primary',
-      // disabled: true,
-      // ghost: true,
-      // size: 'small',
-      // shape: 'circle',
-      // iconType: 'error',
-      // block: true,
-      iconOptions: { theme: 'filled' },
-      text: 'forbid',
-      onClick () {
-        this.loading = !this.loading;
-      }
-    });
     
-    var Menu = {};
-    Menu.Item = function (props) {
-      _.propsChecker(props, {
-        key: 'function'
-      });
-
-      const defaultProps = {
-        disabled: false,
-      }
-    };
-
-    Menu.Item({
-      key: function () {}
-    });
 
   </script>
 </body>

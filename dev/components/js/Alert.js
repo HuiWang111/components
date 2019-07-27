@@ -4,9 +4,10 @@
   ? define([global], factory) : global.Alert = factory(global);
 }(this, function (global) {
   const {
-    Component, jQuery: $,
+    Component, jQuery: $, Icon, Observer,
     util: { 
-      isString, isFunction, toSelector, tagOf, extend, removeKeys, appendClass, getRandomClassName
+      isString, isFunction, toSelector, tagOf, extend, removeKeys, appendClass, getRandomClassName,
+      propsChecker
     },
     ClassName: {
       ALERT_MESSAGE_CLASS ,ALERT_DESCRIPTION_CLASS, ALERT_ICON_CLASS, ALERT_CLOSE_ICON, ALERT_WARN_CLASS,
@@ -19,8 +20,8 @@
   alertTypes = ['warn', 'success', 'error', 'info'];
 
   /**
-   * @param options = {
-   *    closable: Boolen,
+   * @param props = {
+   *    closable: Boolean,
    *    closeText: String,
    *    showIcon: Boolen,
    *    description: String,
@@ -32,24 +33,30 @@
    * }
    */
 
-  function Alert(selector, type, options) {
+  function Alert(selector, type, props) {
+    propsChecker(props, {
+      closable: 'boolean',
+      closeText: 'string',
+      showIcon: 'boolean',
+      description: 'string',
+      message: 'string.require',
+      defaultVisible: 'boolean',
+      style: 'object',
+      onClose: 'function',
+      afterClose: 'function'
+    });
+
     if (!alertTypes.includes(type)) {
       throw new Error(`${type} is not a correct Alert type`);
     }
 
-    const defaultOptions = {
+    const defaultProps = {
       closable: false,
-      closeText: '',
       showIcon: false,
-      description: '',
-      message: '',
-      defaultVisible: true,
-      style: {},
-      onClose: null,
-      afterClose: null
+      defaultVisible: false,
     }
 
-    this.options = extend({}, defaultOptions, options);
+    this.props = extend({}, defaultProps, props);
     this.type = type;
     this.$container = $(selector);
     this.super();
@@ -61,18 +68,18 @@
     render () {
       const { 
         type, $container,
-        options: { closable, closeText, showIcon, description, message, defaultVisible, style }
+        props: { closable, closeText, showIcon, description, message, defaultVisible, style }
       } = this;
       const withDesc = isString(description) && description !== '';
-      const iconOptions = {};
+      const iconProps = {};
       if (withDesc) {
-        iconOptions.size = 24;
+        iconProps.size = 24;
       } else {
-        iconOptions.size = 14;
-        iconOptions.theme = 'filled';
+        iconProps.size = 14;
+        iconProps.theme = 'filled';
       }
 
-      const icon = showIcon ? ( new Icon(type, extend({ className: ALERT_ICON_CLASS }, iconOptions)) ).html : '';
+      const icon = showIcon ? ( new Icon(type, extend({ className: ALERT_ICON_CLASS }, iconProps)) ).html : '';
       const msg = $.node('p', message, ALERT_MESSAGE_CLASS);
       const desc = $.node('p', description, ALERT_DESCRIPTION_CLASS);
 
@@ -90,10 +97,16 @@
         case 'info': wrapClass = ALERT_INFO_CLASS; break;
       }
       const RANDOM_CLASS = getRandomClassName();
-      const klass = appendClass(wrapClass, RANDOM_CLASS, ALERT_CONTAINER_CLASS, showIcon ? ALERT_WITH_ICON_CLASS : '', withDesc ? ALERT_WITH_DESC_CLASS : '', closable ? ALERT_WITH_CLOSE_CLASS : '', defaultVisible ? '' : ALERT_INVISIBLE_CLASS);
-      const wrapper = $.node('div', icon + msg + desc + closeIcon, klass, {
-        style,
-      });
+      const klass = appendClass(
+        wrapClass,
+        RANDOM_CLASS,
+        ALERT_CONTAINER_CLASS,
+        showIcon ? ALERT_WITH_ICON_CLASS : '',
+        withDesc ? ALERT_WITH_DESC_CLASS : '',
+        closable ? ALERT_WITH_CLOSE_CLASS : '',
+        defaultVisible ? '' : ALERT_INVISIBLE_CLASS
+      );
+      const wrapper = $.node('div', icon + msg + desc + closeIcon, klass, style ? { style } : null);
       this.RANDOM_CLASS = RANDOM_CLASS;
 
       return [{
@@ -109,7 +122,7 @@
     },
 
     bindEvents () {
-      const { onClose, closable } = this.options;
+      const { onClose, closable } = this.props;
       const __this__ = this;
 
       new Observer(this, 'visible', {
@@ -131,9 +144,9 @@
     },
 
     show () {
-      const { visible, $alertContainer, options: { defaultVisible } } = this;
+      const { visible, $alertContainer, props: { defaultVisible } } = this;
       
-      if (visible === false || defaultVisible === false) {
+      if (visible === true || defaultVisible === false) {
         $alertContainer.removeClass(ALERT_INVISIBLE_CLASS);
         $alertContainer.removeClass(ALERT_SLIDEUP_CLASS);
         $alertContainer.addClass(ALERT_SLIDEDOWN_CLASS);
@@ -141,9 +154,9 @@
     },
 
     hide () {
-      const { $alertContainer, visible, options: { afterClose, defaultVisible } } = this;
+      const { $alertContainer, visible, props: { afterClose, defaultVisible } } = this;
 
-      if (visible === true || defaultVisible === true) {
+      if (visible === false || defaultVisible === true) {
         $alertContainer.removeClass(ALERT_SLIDEDOWN_CLASS);
         $alertContainer.addClass(ALERT_SLIDEUP_CLASS);
         setTimeout(() => {

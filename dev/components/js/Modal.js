@@ -4,10 +4,10 @@
   ? define([global], factory) : global.Modal = factory(global);
 }(this, function (global) {
   const { 
-    Component, jQuery: $,
+    Component, jQuery: $, Icon,
     util: { 
       isString, isObject, isFunction, isUndefined, isNull, toSelector, extend,
-      removeUndef, appendClass, getRandomClassName
+      removeUndef, appendClass, getRandomClassName, propsChecker
     },
     ClassName: {
       MODAL_FOOTER_CONTAINER_CLASS, MODAL_FOOTER_WRAP_CLASS, MODAL_FOOTER_OK_BTN_CLASS, MODAL_FOOTER_CANCEL_BTN_CLASS,
@@ -26,45 +26,42 @@
   MODAL_TYPE_MAP = ['info', 'warn', 'error', 'success', 'confirm'],
   MODAL_COMMON_TYPE_MAP = ['info', 'warn', 'error', 'success'];
 
-  /**
-   * @param options = {
-   *   bodyStyle: Object,
-   *   defaultVisible: Boolen,
-   *   cancelText: String,
-   *   centered: Boolen,
-   *   centered: Boolen,
-   *   closable: Boolen,
-   *   footer: DOMElement,
-   *   keyboard: Boolen,
-   *   mask: Boolen,
-   *   maskStyle: Object,
-   *   okText: String,
-   *   okType: String,
-   *   okButtonProps: Object,
-   *   cancelButtonProps: Object,
-   *   style: Object,
-   *   title: String,
-   *   wrapClassName: String,
-   *   zIndex: Number,
-   *   bodyContent: String,
-   *   afterClose: Function,
-   *   onCancel: Function,
-   *   onOk: Function
-   * }
-   */
+  function Modal(props) {
+    propsChecker(props, {
+      bodyStyle: 'object',
+      defaultVisible: 'boolean',
+      cancelText: 'string',
+      centered: 'boolean',
+      closable: 'boolean',
+      keyboard: 'boolean',
+      mask: 'boolean',
+      maskStyle: 'object',
+      okText: 'string',
+      okType: 'string',
+      okButtonProps: 'object',
+      cancelButtonProps: 'object',
+      style: 'object',
+      title: 'string',
+      wrapClassName: 'string',
+      zIndex: 'number',
+      bodyContent: 'string',
+      footer: 'string',
+      onCancel: 'function',
+      afterClose: 'function',
+      onOk: 'function'
+    });
 
-  function Modal(options) {
-    removeUndef(options);
+    removeUndef(props);
 
     // 默认 footer
-    const cancelText = isUndefined(options.cancelText) ? '取消': options.cancelText;
+    const cancelText = isUndefined(props.cancelText) ? '取消': props.cancelText;
     const cancelButtonProps = {};
     const cancelButtonClass = appendClass(
       DEFAULT_BTN_CLASS,
       MODAL_FOOTER_CANCEL_BTN_CLASS
     );
 
-    const okText = isUndefined(options.okText) ? '确认' : options.okText;
+    const okText = isUndefined(props.okText) ? '确认' : props.okText;
     const okButtonProps = {};
     const okButtonClass = appendClass(
       DEFAULT_BTN_CLASS,
@@ -72,34 +69,26 @@
       MODAL_FOOTER_OK_BTN_CLASS
     );
     
+    // 通过设置为null来配置不显示按钮
     const cancelBtn = isNull(cancelText) ? '' : $.node('button', cancelText, cancelButtonClass, cancelButtonProps);
     const okBtn = isNull(okText) ? '' : $.node('button', okText, okButtonClass, okButtonProps);
 
-    const defaultOptions = {
-      bodyStyle: {},
+    const defaultProps = {
       defaultVisible: false,
       cancelText,
       centered: false,
       closable: false,
       keyboard: true, // 未实现
       mask: true,
-      maskStyle: {},
       okText,
       okType: 'primary', // 未实现
       okButtonProps,
       cancelButtonProps,
-      style: {},
-      title: '',
-      wrapClassName: '',
       zIndex: 1000,
-      bodyContent: '',
-      footer: $.node('div', cancelBtn + okBtn, MODAL_FOOTER_WRAP_CLASS),
-      onCancel: null,
-      afterClose: null,
-      onOk: null
+      footer: $.node('div', cancelBtn + okBtn, MODAL_FOOTER_WRAP_CLASS)
     };
 
-    this.options = extend({}, defaultOptions, options);
+    this.props = extend({}, defaultProps, props);
     this.super();
   }
 
@@ -109,7 +98,7 @@
     render () {
       const { 
         title, closable, bodyContent, footer, bodyStyle, centered, style, wrapClassName, zIndex, defaultVisible
-      } = this.options;
+      } = this.props;
 
       let closeDOM = '';
       if (closable) {
@@ -119,14 +108,12 @@
       }
       
       let titleDOM = '';
-      if (isString(title) && title !== '') {
+      if (title && title !== '') {
         const titleWrap = $.node('div', title + closeDOM, MODAL_HEADER_WRAP_CLASS);
         titleDOM = $.node('div', titleWrap, MODAL_HEADER_CONTAINER_CLASS);
       }
-
-      const bodyContentDOM = $.node('div', bodyContent, MODAL_BODY_CLASS, {
-        style: isObject(bodyStyle) ? bodyStyle : {}
-      });
+      
+      const bodyContentDOM = $.node('div', bodyContent, MODAL_BODY_CLASS, bodyStyle ? { style: bodyStyle } : null);
 
       let footerDOM = '';
       if (isString(footer) && footer !== '') {
@@ -138,7 +125,7 @@
       const klass = appendClass(
         MODAL_CONTAINER_CLASS, 
         centered ? MODAL_CONTAINER_CENTERED_CLASS : '',
-        isString(wrapClassName) ? wrapClassName : '',
+        wrapClassName ? wrapClassName : '',
         RANDOM_CLASS,
         defaultVisible ? '' : MODAL_CONTAINER_INVISIBLE_CLASS
       );
@@ -170,7 +157,7 @@
     bindEvents () {
       const { 
         isModalClosable, $modalCloseBtn, $cancelBtn, $okBtn,
-        options: { afterClose, onCancel, onOk, keyboard }
+        props: { afterClose, onCancel, onOk, keyboard }
       } = this;
 
       const __this__ = this;
@@ -193,12 +180,12 @@
 
           const $this = $(this);
           if ($this.hasClass(MODAL_FOOTER_CANCEL_BTN_CLASS)) {
-            isFunction(onCancel) && onCancel();
+            isFunction(onCancel) && onCancel.call(__this__);
           } else if ($this.hasClass(MODAL_FOOTER_OK_BTN_CLASS)) {
-            isFunction(onOk) && onOk();
+            isFunction(onOk) && onOk.call(__this__);
           }
 
-          isFunction(afterClose) && afterClose();
+          isFunction(afterClose) && afterClose.call(__this__);
         }
       }
 
@@ -217,10 +204,10 @@
     show () {
       const { 
         isIncludeMask, $mask, $container, $okBtn, visible,
-        options: { defaultVisible }
+        props: { defaultVisible }
       } = this;
 
-      if (visible === false || defaultVisible === false) {
+      if (visible === true || defaultVisible === false) {
         $okBtn[0].focus();
         $container.removeClass(MODAL_CONTAINER_INVISIBLE_CLASS);
         isIncludeMask && $mask.removeClass(MODAL_MASK_INVISIBLE_CLASS);
@@ -230,17 +217,17 @@
     hide() {
       const { 
         isIncludeMask, $mask, $container, visible,
-        options: { defaultVisible }
+        props: { defaultVisible }
       } = this;
-
-      if (visible === true || defaultVisible === true) {
+      
+      if (visible === false || defaultVisible === true) {
         $container.addClass(MODAL_CONTAINER_INVISIBLE_CLASS);
         isIncludeMask && $mask.addClass(MODAL_MASK_INVISIBLE_CLASS);
       }
     },
 
     handleMask (dom) {
-      const { maskStyle, mask, centered, defaultVisible } = this.options;
+      const { maskStyle, mask, centered, defaultVisible } = this.props;
 
       if (!mask) return dom;
 
@@ -252,19 +239,17 @@
         centered ? MODAL_CONTAINER_CENTERED_CLASS : '',
         defaultVisible ? '' : MODAL_MASK_INVISIBLE_CLASS
       );
-      return $.node('div', dom, klass, {
-        style: isObject(maskStyle) ? maskStyle : {}
-      });
+      return $.node('div', dom, klass, maskStyle ? { style: maskStyle } : null);
     }
   });
 
-  Modal.method = function(type, options) {
+  Modal.method = function(type, props) {
     if (!MODAL_TYPE_MAP.includes(type)) {
       throw new Error(`${type} is not a correct Modal type`);
     }
 
-    const { title, content, centered, mask, zIndex, onCancel, onOk } = options;
-    let { okText, cancelText } = options;
+    const { title, content, centered, mask, zIndex, onCancel, onOk } = props;
+    let { okText, cancelText } = props;
 
     // modal title
     const icon = new Icon(type, { size: 22 }).html;
@@ -314,8 +299,8 @@
    * Modal.info, Modal.warn, Modal.error, Modal.success, Modal.confirm
    */
   MODAL_TYPE_MAP.forEach((type) => {
-    Modal[type] = function (options) {
-      return Modal.method(type, options);
+    Modal[type] = function (props) {
+      return Modal.method(type, props);
     }
   });
 

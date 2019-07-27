@@ -533,7 +533,7 @@
         if (isRequire) {
           if (isNil(props[key])) throw new Error(`the props '${key}' is required`);
         } else {
-          if (!isUndefined(props[key])) {
+          if (!isNil(props[key])) {
             const message = `the props '${key}' is`;
             checkType(props[key], toCheck, message);
           }
@@ -1764,8 +1764,8 @@
       if (Object.defineProperty) {
         Object.defineProperty(object, prop, {
           set (newValue) {
-            isFunction(set) && set(newValue);
             value = newValue;
+            isFunction(set) && set(newValue);
           },
           get () {
             isFunction(get) && get();
@@ -1774,8 +1774,8 @@
         });
       } else if (object.__defineSetter__) {
         object.__defineSetter__(prop, (newValue) => {
-          isFunction(set) && set(newValue);
           value = newValue;
+          isFunction(set) && set(newValue);
         });
 
         object.__defineGetter__(prop, () => {
