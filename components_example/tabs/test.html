@@ -33,6 +33,7 @@
     var myTab = new Tabs('.tab-container', {
       type: 'card',
       editable: false,
+      animated: false,
       block: true,
       tabPanes: [{
         key: 'hh',
@@ -59,6 +60,9 @@
       },
       renderPaneItem: function (tabName, key) {
         return $.node('span', `this is ${tabName} pane content, this tab's key is "${key}"`);
+      },
+      paneWidthComputer: function(width) {
+        return width - 500;
       }
     });
 

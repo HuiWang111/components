@@ -145,6 +145,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       TAB_PREVIOUS_ARROW_CLASS = 'cpts-tabs-prev-arrow',
       TAB_NEXT_ARROW_CLASS = 'cpts-tabs-next-arrow',
       TAB_CONTAINER_CLASS = 'cpts-tabs-container',
+      TAB_ANIMATE_CLASS = 'cpts-tabs-animate',
       UNDERLINE_CLASS = 'cpts-tabs-underline';
 
   var PAGINATION_ITEM_CLASS = 'cpts-pagination-item',
@@ -253,6 +254,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     TAB_ITEM_CARD_INNER_CALSS: TAB_ITEM_CARD_INNER_CALSS, TAB_ITEM_CONTAINER_CLASS: TAB_ITEM_CONTAINER_CLASS, TAB_ITEM_CONTAINER_WITH_ARROW_CLASS: TAB_ITEM_CONTAINER_WITH_ARROW_CLASS, PANE_ITEM_CLASS: PANE_ITEM_CLASS,
     PANE_ITEM_CLASS_ACTIVE: PANE_ITEM_CLASS_ACTIVE, PANE_ITEM_WRAP_CLASS: PANE_ITEM_WRAP_CLASS, TAB_ARROW_CLASS: TAB_ARROW_CLASS, TAB_ARROW_CLASS_DISABLE: TAB_ARROW_CLASS_DISABLE, TAB_ARROW_CLASS_INVISIBLE: TAB_ARROW_CLASS_INVISIBLE,
     TAB_PREVIOUS_ARROW_CLASS: TAB_PREVIOUS_ARROW_CLASS, TAB_NEXT_ARROW_CLASS: TAB_NEXT_ARROW_CLASS, TAB_CONTAINER_CLASS: TAB_CONTAINER_CLASS, UNDERLINE_CLASS: UNDERLINE_CLASS,
+    TAB_ANIMATE_CLASS: TAB_ANIMATE_CLASS,
 
     /* Pagination */
     PAGINATION_ITEM_CLASS: PAGINATION_ITEM_CLASS, PAGINATION_ITEM_CLASS_ACTIVE: PAGINATION_ITEM_CLASS_ACTIVE, PAGINATION_ITEM_CLASS_BORDER: PAGINATION_ITEM_CLASS_BORDER, PAGINATION_ITEM_CLASS_DISABLE: PAGINATION_ITEM_CLASS_DISABLE,
@@ -1611,6 +1613,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       removeKeys = _global$util6.removeKeys,
       appendClass = _global$util6.appendClass,
       propsChecker = _global$util6.propsChecker,
+      isNumber = _global$util6.isNumber,
+      debounce = _global$util6.debounce,
       _global$ClassName6 = global.ClassName,
       TAB_ITEM_CLASS = _global$ClassName6.TAB_ITEM_CLASS,
       TAB_ITEM_CLASS_ACTIVE = _global$ClassName6.TAB_ITEM_CLASS_ACTIVE,
@@ -1630,6 +1634,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       TAB_NEXT_ARROW_CLASS = _global$ClassName6.TAB_NEXT_ARROW_CLASS,
       TAB_CONTAINER_CLASS = _global$ClassName6.TAB_CONTAINER_CLASS,
       UNDERLINE_CLASS = _global$ClassName6.UNDERLINE_CLASS,
+      TAB_ANIMATE_CLASS = _global$ClassName6.TAB_ANIMATE_CLASS,
       CLOSE_ICON_CLASS = _global$ClassName6.CLOSE_ICON_CLASS,
       DISABLE_COLOR = global.Color.DISABLE_COLOR,
       _global$SVG3 = global.SVG,
@@ -1646,6 +1651,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
    *    tabPanes: Array, // => [{tab: String, key: String, forceRender: Boolen}]
    *    defaultKey: String,
    *    editable: Boolean, // 仅type='card'时有效
+   *    animated: true,
    *    block: Boolean, // 宽度自适应父元素，设置此配置为true还会额外监听window.resize事件
    *    insertElementJQueryFunc: string, // 将元素插入到文档的jQuery方法
    *    onChange: Function(index),
@@ -1662,6 +1668,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       type: 'string',
       tabPanes: 'array.require',
       editable: 'boolean',
+      animated: 'boolean',
       block: 'boolean',
       insertElementJQueryFunc: 'string',
       onChange: 'function',
@@ -1684,6 +1691,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       tabPanes: [],
       defaultKey: defaultKey,
       editable: false,
+      animated: true,
       block: false,
       insertElementJQueryFunc: 'html',
       onChange: null,
@@ -1705,7 +1713,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           defaultKey = _props10.defaultKey,
           type = _props10.type,
           editable = _props10.editable,
-          insertElementJQueryFunc = _props10.insertElementJQueryFunc;
+          insertElementJQueryFunc = _props10.insertElementJQueryFunc,
+          animated = _props10.animated;
 
 
       var tabsDOM = '',
@@ -1765,7 +1774,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
       var tabsContainerDOM = $.node('div', [prevDOM, tabsWrapDOM, nextDOM], appendClass(TAB_ITEM_CONTAINER_CLASS));
 
-      var panesWrapDOM = $.node('div', panesDOM, PANE_ITEM_WRAP_CLASS);
+      var panesWrapDOM = $.node('div', panesDOM, appendClass(PANE_ITEM_WRAP_CLASS, animated ? TAB_ANIMATE_CLASS : ''));
 
       this.unRenderPanes = unRenderPanes;
       this.isRenderedRecords = isRenderedRecords;
@@ -1795,6 +1804,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
       // attr
       this.containerWidth = $container.width();
+
       this.tabItemsWidthList = this.$tabItems.map(function (_, tabItem) {
         return $(tabItem).outerWidth();
       });
@@ -1866,14 +1876,24 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       });
 
       // resize
-      block && window.addEventListener('resize', function () {
-        var newWidth = $container.width();
-        $panes.width(newWidth);
-        $paneWrap.width(newWidth * __this__.tabCount);
-        __this__.containerWidth = newWidth;
+      if (block) {
+        var debounced = debounce(function () {
+          var newWidth = $container.width();
 
-        __this__.checkArrowVisibleStatus();
-      });
+          var $tabItems = __this__.$tabItems;
+          var $currentTab = $tabItems.filter(toSelector(TAB_ITEM_CLASS_ACTIVE));
+          var index = $tabItems.indexOf($currentTab);
+
+          $panes.width(newWidth);
+          $paneWrap.width(newWidth * __this__.tabCount);
+          $paneWrap.translateX(-(newWidth * index));
+          __this__.containerWidth = newWidth;
+
+          __this__.checkArrowVisibleStatus();
+        }, 200);
+
+        window.addEventListener('resize', debounced);
+      }
     },
 
 

@@ -90,7 +90,7 @@ gulp.task('toES5',function(){
  * @description less => css, 监听less变化自动更新css
  */
 function toCSS (filesName, path) {
-  const src = getSrc(filesName, 'less', path);
+  const src = getSrc(filesName, 'less', path);console.log(src);
 
   gulp.task('less',function() {
     return (

@@ -7,12 +7,12 @@
     Component, jQuery: $,
     util: { 
       isFunction, isUndefined, isNil, toSelector, extend, removeKeys, appendClass,
-      propsChecker
+      propsChecker, isNumber, debounce
     },
     ClassName: {
       TAB_ITEM_CLASS, TAB_ITEM_CLASS_ACTIVE, TAB_ITEM_CARD_CLASS, TAB_ITEM_WRAP_CLASS, TAB_ITEM_INNER_CLASS,
       TAB_ITEM_CARD_INNER_CALSS, TAB_ITEM_CONTAINER_CLASS, TAB_ITEM_CONTAINER_WITH_ARROW_CLASS, PANE_ITEM_CLASS,
-      PANE_ITEM_CLASS_ACTIVE, PANE_ITEM_WRAP_CLASS, TAB_ARROW_CLASS, TAB_ARROW_CLASS_DISABLE, TAB_ARROW_CLASS_INVISIBLE, TAB_PREVIOUS_ARROW_CLASS, TAB_NEXT_ARROW_CLASS, TAB_CONTAINER_CLASS, UNDERLINE_CLASS,
+      PANE_ITEM_CLASS_ACTIVE, PANE_ITEM_WRAP_CLASS, TAB_ARROW_CLASS, TAB_ARROW_CLASS_DISABLE, TAB_ARROW_CLASS_INVISIBLE, TAB_PREVIOUS_ARROW_CLASS, TAB_NEXT_ARROW_CLASS, TAB_CONTAINER_CLASS, UNDERLINE_CLASS, TAB_ANIMATE_CLASS,
 
       /* Icon */
       CLOSE_ICON_CLASS
@@ -34,6 +34,7 @@
    *    tabPanes: Array, // => [{tab: String, key: String, forceRender: Boolen}]
    *    defaultKey: String,
    *    editable: Boolean, // 仅type='card'时有效
+   *    animated: true,
    *    block: Boolean, // 宽度自适应父元素，设置此配置为true还会额外监听window.resize事件
    *    insertElementJQueryFunc: string, // 将元素插入到文档的jQuery方法
    *    onChange: Function(index),
@@ -50,6 +51,7 @@
       type: 'string',
       tabPanes: 'array.require',
       editable: 'boolean',
+      animated: 'boolean',
       block: 'boolean',
       insertElementJQueryFunc: 'string',
       onChange: 'function',
@@ -71,6 +73,7 @@
       tabPanes: [],
       defaultKey,
       editable: false,
+      animated: true,
       block: false,
       insertElementJQueryFunc: 'html',
       onChange: null,
@@ -87,7 +90,7 @@
     render () {
       const { 
         $container,
-        props: { tabPanes, renderPaneItem, defaultKey, type, editable, insertElementJQueryFunc }
+        props: { tabPanes, renderPaneItem, defaultKey, type, editable, insertElementJQueryFunc, animated }
       } = this;
 
       let tabsDOM = '', panesDOM = '', isDefaultFirst = false, isDefaultLast = false;
@@ -164,7 +167,10 @@
         TAB_ITEM_CONTAINER_CLASS
       ));
 
-      const panesWrapDOM = $.node('div', panesDOM, PANE_ITEM_WRAP_CLASS);
+      const panesWrapDOM = $.node('div', panesDOM, appendClass(
+        PANE_ITEM_WRAP_CLASS,
+        animated ? TAB_ANIMATE_CLASS : ''
+      ));
 
       this.unRenderPanes = unRenderPanes;
       this.isRenderedRecords = isRenderedRecords;
@@ -193,6 +199,7 @@
 
       // attr
       this.containerWidth = $container.width();
+
       this.tabItemsWidthList = this.$tabItems.map((_, tabItem) => {
         return $(tabItem).outerWidth();
       });
@@ -201,7 +208,6 @@
     },
 
     style () {
-
       const { containerWidth, $panes } = this;
       
       $panes.width(containerWidth + 'px');
@@ -260,14 +266,24 @@
       });
 
       // resize
-      block && window.addEventListener('resize', function () {
-        const newWidth = $container.width();
-        $panes.width(newWidth);
-        $paneWrap.width(newWidth * __this__.tabCount);
-        __this__.containerWidth = newWidth;
+      if (block) {
+        const debounced = debounce(function () {
+          const newWidth = $container.width();
 
-        __this__.checkArrowVisibleStatus();
-      });
+          const $tabItems = __this__.$tabItems;
+          const $currentTab = $tabItems.filter(toSelector(TAB_ITEM_CLASS_ACTIVE));
+          const index = $tabItems.indexOf($currentTab);
+  
+          $panes.width(newWidth);
+          $paneWrap.width(newWidth * __this__.tabCount);
+          $paneWrap.translateX(-(newWidth * index));
+          __this__.containerWidth = newWidth;
+  
+          __this__.checkArrowVisibleStatus();
+        }, 200);
+  
+        window.addEventListener('resize', debounced);
+      }
     },
     
     /**

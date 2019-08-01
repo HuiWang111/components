@@ -814,16 +814,16 @@
     getRandomClassName();
   }
 
-  /* function debounce(func, wait) {
-    wait = isNumber(wait) ? wait : 0;
+  function debounce(func, wait) {
+    wait = toNumber(wait) || 0;
     let timerId = null;
     return function (...args) {
       timerId && clearTimeout(timerId);
       timerId = setTimeout(() => {
-        func(...args);
+        func.apply(this, ...args);
       }, wait);
     }
-  } */
+  }
 
   /**
    * @description 下划线或中划线命名法转驼峰命名法
@@ -1605,6 +1605,7 @@
     // 其他方法
     dateFormater,
     getMonthData,
+    debounce,
     
     SetMock,
     MapMock

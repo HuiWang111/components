@@ -812,16 +812,22 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     getRandomClassName();
   }
 
-  /* function debounce(func, wait) {
-    wait = isNumber(wait) ? wait : 0;
-    let timerId = null;
-    return function (...args) {
+  function debounce(func, wait) {
+    wait = toNumber(wait) || 0;
+    var timerId = null;
+    return function () {
+      var _this = this;
+
+      for (var _len = arguments.length, args = Array(_len), _key3 = 0; _key3 < _len; _key3++) {
+        args[_key3] = arguments[_key3];
+      }
+
       timerId && clearTimeout(timerId);
-      timerId = setTimeout(() => {
-        func(...args);
+      timerId = setTimeout(function () {
+        func.apply.apply(func, [_this].concat(args));
       }, wait);
-    }
-  } */
+    };
+  }
 
   /**
    * @description 下划线或中划线命名法转驼峰命名法
@@ -952,17 +958,17 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
   function forIn(object, callback) {
     checkType(callback, 'function');
 
-    for (var _key3 in object) {
-      var isBreak = callback(object[_key3], _key3, object);
+    for (var _key4 in object) {
+      var isBreak = callback(object[_key4], _key4, object);
       if (isBreak === false) break;
     }
   }
   function forInOwn(object, callback) {
     checkType(callback, 'function');
 
-    for (var _key4 in object) {
-      if (hasOwn(object, _key4)) {
-        var isBreak = callback(object[_key4], _key4, object);
+    for (var _key5 in object) {
+      if (hasOwn(object, _key5)) {
+        var isBreak = callback(object[_key5], _key5, object);
         if (isBreak === false) break;
       }
     }
@@ -1199,10 +1205,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
     for (var i = 0; i < len; i++) {
       var value = array[i];
-      var _key5 = isFunc ? iteratee(value) : value[iteratee];
-      if (!hasOwn(result, _key5)) result[_key5] = [];
+      var _key6 = isFunc ? iteratee(value) : value[iteratee];
+      if (!hasOwn(result, _key6)) result[_key6] = [];
 
-      result[_key5].push(value);
+      result[_key6].push(value);
     }
 
     return result;
@@ -1255,10 +1261,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     checkType(predicate, 'function');
 
     var result = {};
-    for (var _key6 in object) {
-      var value = object[_key6];
-      var isPick = predicate(value, _key6, object);
-      if (isPick === true) result[_key6] = value;
+    for (var _key7 in object) {
+      var value = object[_key7];
+      var isPick = predicate(value, _key7, object);
+      if (isPick === true) result[_key7] = value;
     }
 
     return result;
@@ -1269,8 +1275,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
     var keys = isArray(path) ? path : [path],
         result = {};
-    for (var _key7 in object) {
-      if (!keys.includes(_key7)) result[_key7] = object[_key7];
+    for (var _key8 in object) {
+      if (!keys.includes(_key8)) result[_key8] = object[_key8];
     }
 
     return result;
@@ -1281,10 +1287,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     checkType(predicate, 'function');
 
     var result = {};
-    for (var _key8 in object) {
-      var value = object[_key8];
-      var isPick = predicate(value, _key8, object);
-      if (isPick === false) result[_key8] = value;
+    for (var _key9 in object) {
+      var value = object[_key9];
+      var isPick = predicate(value, _key9, object);
+      if (isPick === false) result[_key9] = value;
     }
 
     return result;
@@ -1295,9 +1301,9 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     checkType(iteratee, 'function');
 
     var result = {};
-    for (var _key9 in object) {
-      var value = object[_key9];
-      var newKey = iteratee(value, _key9, object);
+    for (var _key10 in object) {
+      var value = object[_key10];
+      var newKey = iteratee(value, _key10, object);
       result[newKey] = value;
     }
 
@@ -1309,9 +1315,9 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     checkType(iteratee, 'function');
 
     var result = {};
-    for (var _key10 in object) {
-      var newValue = iteratee(object[_key10], _key10, object);
-      result[_key10] = newValue;
+    for (var _key11 in object) {
+      var newValue = iteratee(object[_key11], _key11, object);
+      result[_key11] = newValue;
     }
 
     return result;
@@ -1376,12 +1382,12 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       });
     },
     add: function add(item) {
-      var _this = this;
+      var _this2 = this;
 
       var addSet = function addSet(target) {
-        if (!_this.has(target)) {
-          _this[_this.nextKey++] = target;
-          _this.size++;
+        if (!_this2.has(target)) {
+          _this2[_this2.nextKey++] = target;
+          _this2.size++;
         }
       };
 
@@ -1444,7 +1450,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    * @description ES5版Map集合
    */
   function MapMock(entries) {
-    var _this2 = this;
+    var _this3 = this;
 
     Object.defineProperty(this, 'size', {
       configurable: false,
@@ -1461,10 +1467,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           if (!isArray(entry)) {
             throw new TypeError(entry + ' is not a Array');
           } else {
-            var _key11 = entry[0],
+            var _key12 = entry[0],
                 value = entry[1];
-            _this2[_key11] = value;
-            _this2.size++;
+            _this3[_key12] = value;
+            _this3.size++;
           }
         });
       }
@@ -1601,6 +1607,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     // 其他方法
     dateFormater: dateFormater,
     getMonthData: getMonthData,
+    debounce: debounce,
 
     SetMock: SetMock,
     MapMock: MapMock
@@ -1644,7 +1651,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
    */
   Object.defineProperty(Component.prototype, 'mount', {
     value: function value(doms) {
-      var _this3 = this;
+      var _this4 = this;
 
       if (!doms || !isLength(doms.length) || doms.length < 1) return;
       removeUndef(doms);
@@ -1684,10 +1691,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         }
 
         domAfterLoad(selector, function () {
-          _this3.componentDidMount();
-          _this3.style();
-          _this3.bindEvents();
-          _this3.destroy();
+          _this4.componentDidMount();
+          _this4.style();
+          _this4.bindEvents();
+          _this4.destroy();
         });
       }
     },
@@ -1761,8 +1768,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       if (!object || !isObjectLike(object)) return;
 
       if (isNil(prop)) {
-        for (var _key12 in object) {
-          this.handlePropChange(object, _key12, object[_key12]);
+        for (var _key13 in object) {
+          this.handlePropChange(object, _key13, object[_key13]);
         }
       } else {
         this.handlePropChange(object, prop, object[prop]);
