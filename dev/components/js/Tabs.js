@@ -7,12 +7,12 @@
     Component, jQuery: $,
     util: { 
       isFunction, isUndefined, isNil, toSelector, extend, removeKeys, appendClass,
-      propsChecker, isNumber, debounce
+      propsChecker, debounce, isEmpty
     },
     ClassName: {
       TAB_ITEM_CLASS, TAB_ITEM_CLASS_ACTIVE, TAB_ITEM_CARD_CLASS, TAB_ITEM_WRAP_CLASS, TAB_ITEM_INNER_CLASS,
       TAB_ITEM_CARD_INNER_CALSS, TAB_ITEM_CONTAINER_CLASS, TAB_ITEM_CONTAINER_WITH_ARROW_CLASS, PANE_ITEM_CLASS,
-      PANE_ITEM_CLASS_ACTIVE, PANE_ITEM_WRAP_CLASS, TAB_ARROW_CLASS, TAB_ARROW_CLASS_DISABLE, TAB_ARROW_CLASS_INVISIBLE, TAB_PREVIOUS_ARROW_CLASS, TAB_NEXT_ARROW_CLASS, TAB_CONTAINER_CLASS, UNDERLINE_CLASS, TAB_ANIMATE_CLASS,
+      PANE_ITEM_CLASS_ACTIVE, PANE_ITEM_WRAP_CLASS, TAB_ARROW_CLASS, TAB_ARROW_CLASS_DISABLE, TAB_ARROW_CLASS_INVISIBLE, TAB_PREVIOUS_ARROW_CLASS, TAB_NEXT_ARROW_CLASS, TAB_CONTAINER_CLASS, UNDERLINE_CLASS, TAB_ANIMATE_CLASS, TAB_ITEM_CONTAINER_WRAP_CLASS, TAB_ITEM_EXTRA_CLASS,
 
       /* Icon */
       CLOSE_ICON_CLASS
@@ -35,6 +35,7 @@
    *    defaultKey: String,
    *    editable: Boolean, // 仅type='card'时有效
    *    animated: true,
+   *    tabBarExtraContent: string,
    *    block: Boolean, // 宽度自适应父元素，设置此配置为true还会额外监听window.resize事件
    *    insertElementJQueryFunc: string, // 将元素插入到文档的jQuery方法
    *    onChange: Function(index),
@@ -54,6 +55,7 @@
       animated: 'boolean',
       block: 'boolean',
       insertElementJQueryFunc: 'string',
+      tabBarExtraContent: 'string',
       onChange: 'function',
       renderPaneItem: 'function'
     });
@@ -163,9 +165,11 @@
         TAB_ARROW_CLASS_INVISIBLE
       ));
 
-      const tabsContainerDOM = $.node('div', [prevDOM, tabsWrapDOM, nextDOM], appendClass(
-        TAB_ITEM_CONTAINER_CLASS
-      ));
+      const tabsContainerDOM = this.getExtra(
+        $.node('div', [prevDOM, tabsWrapDOM, nextDOM], appendClass(
+          TAB_ITEM_CONTAINER_CLASS
+        ))
+      );
 
       const panesWrapDOM = $.node('div', panesDOM, appendClass(
         PANE_ITEM_WRAP_CLASS,
@@ -217,7 +221,7 @@
     bindEvents () {
       const {
         $tabItems, $panes, $paneWrap, $container,
-        props: { editable, block }
+        props: { editable, block, animated }
       } = this;
 
       this.setUnderLineWidth(0);
@@ -275,8 +279,10 @@
           const index = $tabItems.indexOf($currentTab);
   
           $panes.width(newWidth);
-          $paneWrap.width(newWidth * __this__.tabCount);
-          $paneWrap.translateX(-(newWidth * index));
+          if (animated) {
+            $paneWrap.width(newWidth * __this__.tabCount);
+            $paneWrap.translateX(-(newWidth * index));
+          }
           __this__.containerWidth = newWidth;
   
           __this__.checkArrowVisibleStatus();
@@ -284,23 +290,6 @@
   
         window.addEventListener('resize', debounced);
       }
-    },
-    
-    /**
-     * @description index从1开始
-     */
-    changeTo (index) {
-      const { $tabItems } = this;
-      const $active = $tabItems.filter(toSelector(TAB_ITEM_CLASS_ACTIVE));
-      const current = $tabItems.indexOf($active);
-      
-      this.handleTabChange(current, index - 1);
-
-      /* 计算当前active基于父元素的left值 */
-      const activeOffsetLeft = $tabItems.reduce((value, item, i) => {
-        return value + ( i < (index - 1) ? $(item).outerWidth() : 0 )
-      }, 0);
-      $tabItems.parent().translateX(-activeOffsetLeft);
     },
 
     setUnderLineWidth (activeIndex) {
@@ -312,7 +301,9 @@
      * @action 'add' | 'sub' 表示增加或者减少tab
      */
     setPaneWrapWidth (action) {
-      const { $paneWrap, containerWidth } = this;
+      const { $paneWrap, containerWidth, props: { animated } } = this;
+
+      if (!animated) return;
 
       if (action === 'add') {
         this.tabCount++;
@@ -325,7 +316,7 @@
     checkArrowVisibleStatus () {
       const { $arrow, $tabWrap, $tabInner, $tabContainer } = this;
 
-      let wrapWidth = $tabWrap.width();
+      let wrapWidth = $tabWrap.width() + 60; // 加上左右两边各30的padding去计算更为准确
       const innerWidth = $tabInner.outerWidth();
       if (innerWidth > wrapWidth) { // 显示tab左右切换箭头
         $arrow.hasClass(TAB_ARROW_CLASS_INVISIBLE) && $arrow.removeClass(TAB_ARROW_CLASS_INVISIBLE);
@@ -416,7 +407,7 @@
     handleTabChange (current, index, isOnClose) {
       const { 
         unRenderPanes, isRenderedRecords, $underline, $paneWrap, $panes, containerWidth,
-        props: { type, onChange, tabPanes }
+        props: { type, onChange, tabPanes, animated }
       } = this;
       let { $tabItems } = this;
 
@@ -425,7 +416,7 @@
         this.$tabItems = $tabItems;
       }
 
-      // change active
+      // change tab active
       !isNil(current) && $tabItems.eq(current).removeClass(TAB_ITEM_CLASS_ACTIVE);
       $tabItems.eq(index).addClass(TAB_ITEM_CLASS_ACTIVE);
 
@@ -442,7 +433,7 @@
       }
 
       // change pane
-      $paneWrap.translateX(-(containerWidth * index));
+      animated && $paneWrap.translateX(-(containerWidth * index));
       !isNil(current) && $panes.eq(current).removeClass(PANE_ITEM_CLASS_ACTIVE);
       $panes.eq(index).addClass(PANE_ITEM_CLASS_ACTIVE);
 
@@ -457,6 +448,15 @@
       }
 
       isFunction(onChange) && onChange(key, index);
+    },
+
+    getExtra: function(html) {
+      const { tabBarExtraContent } = this.props;
+      if (isEmpty(tabBarExtraContent)) return html;
+
+      const extra = $.node('div', tabBarExtraContent, TAB_ITEM_EXTRA_CLASS);
+
+      return $.node('div', html + extra, TAB_ITEM_CONTAINER_WRAP_CLASS);
     },
 
     destroy () {

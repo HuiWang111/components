@@ -90,7 +90,7 @@ gulp.task('toES5',function(){
  * @description less => css, 监听less变化自动更新css
  */
 function toCSS (filesName, path) {
-  const src = getSrc(filesName, 'less', path);console.log(src);
+  const src = getSrc(filesName, 'less', path);
 
   gulp.task('less',function() {
     return (
@@ -101,10 +101,11 @@ function toCSS (filesName, path) {
         browsers: ['>0%']
       }))
       .pipe(gulp.dest('dist/ygf'))
+      // .pipe(gulp.dest('dev/components'))
     );
   });
   gulp.task('watchLess',function(){
-    gulp.watch('dev/components/less/Menu.less',['less']);
+    gulp.watch('dev/components/less/Tabs.less',['less']);
     gulp.watch('dev/' + path + 'less/CardList.less', ['less']);
   });
   gulp.task('taskList', ['less', 'watchLess']);

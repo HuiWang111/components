@@ -35,6 +35,7 @@
       editable: false,
       animated: false,
       block: true,
+      tabBarExtraContent: $.node('button', 'extra button', 'cpts-btn cpts-primary-btn'),
       tabPanes: [{
         key: 'hh',
         tab: '哈哈哈哈哈哈哈哈哈'
@@ -60,9 +61,6 @@
       },
       renderPaneItem: function (tabName, key) {
         return $.node('span', `this is ${tabName} pane content, this tab's key is "${key}"`);
-      },
-      paneWidthComputer: function(width) {
-        return width - 500;
       }
     });
 

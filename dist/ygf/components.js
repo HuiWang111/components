@@ -136,6 +136,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       TAB_ITEM_CARD_INNER_CALSS = 'cpts-tabs-tab-card-inner',
       TAB_ITEM_CONTAINER_CLASS = 'cpts-tabs-tab-container',
       TAB_ITEM_CONTAINER_WITH_ARROW_CLASS = 'cpts-tabs-tab-with-arrow-container',
+      TAB_ITEM_CONTAINER_WRAP_CLASS = 'cpts-tabs-tab-container-wrapper',
+      TAB_ITEM_EXTRA_CLASS = 'cpts-tabs-tabbar-extra',
       PANE_ITEM_CLASS = 'cpts-tabs-pane-item',
       PANE_ITEM_CLASS_ACTIVE = 'cpts-tabs-pane-item-active',
       PANE_ITEM_WRAP_CLASS = 'cpts-tabs-pane-wrapper',
@@ -254,7 +256,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     TAB_ITEM_CARD_INNER_CALSS: TAB_ITEM_CARD_INNER_CALSS, TAB_ITEM_CONTAINER_CLASS: TAB_ITEM_CONTAINER_CLASS, TAB_ITEM_CONTAINER_WITH_ARROW_CLASS: TAB_ITEM_CONTAINER_WITH_ARROW_CLASS, PANE_ITEM_CLASS: PANE_ITEM_CLASS,
     PANE_ITEM_CLASS_ACTIVE: PANE_ITEM_CLASS_ACTIVE, PANE_ITEM_WRAP_CLASS: PANE_ITEM_WRAP_CLASS, TAB_ARROW_CLASS: TAB_ARROW_CLASS, TAB_ARROW_CLASS_DISABLE: TAB_ARROW_CLASS_DISABLE, TAB_ARROW_CLASS_INVISIBLE: TAB_ARROW_CLASS_INVISIBLE,
     TAB_PREVIOUS_ARROW_CLASS: TAB_PREVIOUS_ARROW_CLASS, TAB_NEXT_ARROW_CLASS: TAB_NEXT_ARROW_CLASS, TAB_CONTAINER_CLASS: TAB_CONTAINER_CLASS, UNDERLINE_CLASS: UNDERLINE_CLASS,
-    TAB_ANIMATE_CLASS: TAB_ANIMATE_CLASS,
+    TAB_ANIMATE_CLASS: TAB_ANIMATE_CLASS, TAB_ITEM_CONTAINER_WRAP_CLASS: TAB_ITEM_CONTAINER_WRAP_CLASS, TAB_ITEM_EXTRA_CLASS: TAB_ITEM_EXTRA_CLASS,
 
     /* Pagination */
     PAGINATION_ITEM_CLASS: PAGINATION_ITEM_CLASS, PAGINATION_ITEM_CLASS_ACTIVE: PAGINATION_ITEM_CLASS_ACTIVE, PAGINATION_ITEM_CLASS_BORDER: PAGINATION_ITEM_CLASS_BORDER, PAGINATION_ITEM_CLASS_DISABLE: PAGINATION_ITEM_CLASS_DISABLE,
@@ -1613,8 +1615,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       removeKeys = _global$util6.removeKeys,
       appendClass = _global$util6.appendClass,
       propsChecker = _global$util6.propsChecker,
-      isNumber = _global$util6.isNumber,
       debounce = _global$util6.debounce,
+      isEmpty = _global$util6.isEmpty,
       _global$ClassName6 = global.ClassName,
       TAB_ITEM_CLASS = _global$ClassName6.TAB_ITEM_CLASS,
       TAB_ITEM_CLASS_ACTIVE = _global$ClassName6.TAB_ITEM_CLASS_ACTIVE,
@@ -1635,6 +1637,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       TAB_CONTAINER_CLASS = _global$ClassName6.TAB_CONTAINER_CLASS,
       UNDERLINE_CLASS = _global$ClassName6.UNDERLINE_CLASS,
       TAB_ANIMATE_CLASS = _global$ClassName6.TAB_ANIMATE_CLASS,
+      TAB_ITEM_CONTAINER_WRAP_CLASS = _global$ClassName6.TAB_ITEM_CONTAINER_WRAP_CLASS,
+      TAB_ITEM_EXTRA_CLASS = _global$ClassName6.TAB_ITEM_EXTRA_CLASS,
       CLOSE_ICON_CLASS = _global$ClassName6.CLOSE_ICON_CLASS,
       DISABLE_COLOR = global.Color.DISABLE_COLOR,
       _global$SVG3 = global.SVG,
@@ -1652,6 +1656,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
    *    defaultKey: String,
    *    editable: Boolean, // 仅type='card'时有效
    *    animated: true,
+   *    tabBarExtraContent: string,
    *    block: Boolean, // 宽度自适应父元素，设置此配置为true还会额外监听window.resize事件
    *    insertElementJQueryFunc: string, // 将元素插入到文档的jQuery方法
    *    onChange: Function(index),
@@ -1671,6 +1676,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       animated: 'boolean',
       block: 'boolean',
       insertElementJQueryFunc: 'string',
+      tabBarExtraContent: 'string',
       onChange: 'function',
       renderPaneItem: 'function'
     });
@@ -1772,7 +1778,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       var prevDOM = $.node('div', prevSvgDisable, appendClass(TAB_PREVIOUS_ARROW_CLASS, TAB_ARROW_CLASS, isDefaultFirst ? TAB_ARROW_CLASS_DISABLE : '', TAB_ARROW_CLASS_INVISIBLE));
       var nextDOM = $.node('div', nextSvg, appendClass(TAB_NEXT_ARROW_CLASS, TAB_ARROW_CLASS, isDefaultLast ? TAB_ARROW_CLASS_DISABLE : '', TAB_ARROW_CLASS_INVISIBLE));
 
-      var tabsContainerDOM = $.node('div', [prevDOM, tabsWrapDOM, nextDOM], appendClass(TAB_ITEM_CONTAINER_CLASS));
+      var tabsContainerDOM = this.getExtra($.node('div', [prevDOM, tabsWrapDOM, nextDOM], appendClass(TAB_ITEM_CONTAINER_CLASS)));
 
       var panesWrapDOM = $.node('div', panesDOM, appendClass(PANE_ITEM_WRAP_CLASS, animated ? TAB_ANIMATE_CLASS : ''));
 
@@ -1826,7 +1832,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           $container = this.$container,
           _props11 = this.props,
           editable = _props11.editable,
-          block = _props11.block;
+          block = _props11.block,
+          animated = _props11.animated;
 
 
       this.setUnderLineWidth(0);
@@ -1885,8 +1892,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           var index = $tabItems.indexOf($currentTab);
 
           $panes.width(newWidth);
-          $paneWrap.width(newWidth * __this__.tabCount);
-          $paneWrap.translateX(-(newWidth * index));
+          if (animated) {
+            $paneWrap.width(newWidth * __this__.tabCount);
+            $paneWrap.translateX(-(newWidth * index));
+          }
           __this__.containerWidth = newWidth;
 
           __this__.checkArrowVisibleStatus();
@@ -1894,25 +1903,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
         window.addEventListener('resize', debounced);
       }
-    },
-
-
-    /**
-     * @description index从1开始
-     */
-    changeTo: function changeTo(index) {
-      var $tabItems = this.$tabItems;
-
-      var $active = $tabItems.filter(toSelector(TAB_ITEM_CLASS_ACTIVE));
-      var current = $tabItems.indexOf($active);
-
-      this.handleTabChange(current, index - 1);
-
-      /* 计算当前active基于父元素的left值 */
-      var activeOffsetLeft = $tabItems.reduce(function (value, item, i) {
-        return value + (i < index - 1 ? $(item).outerWidth() : 0);
-      }, 0);
-      $tabItems.parent().translateX(-activeOffsetLeft);
     },
     setUnderLineWidth: function setUnderLineWidth(activeIndex) {
       var $underline = this.$underline,
@@ -1927,8 +1917,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
      */
     setPaneWrapWidth: function setPaneWrapWidth(action) {
       var $paneWrap = this.$paneWrap,
-          containerWidth = this.containerWidth;
+          containerWidth = this.containerWidth,
+          animated = this.props.animated;
 
+
+      if (!animated) return;
 
       if (action === 'add') {
         this.tabCount++;
@@ -1944,7 +1937,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           $tabContainer = this.$tabContainer;
 
 
-      var wrapWidth = $tabWrap.width();
+      var wrapWidth = $tabWrap.width() + 60; // 加上左右两边各30的padding去计算更为准确
       var innerWidth = $tabInner.outerWidth();
       if (innerWidth > wrapWidth) {
         // 显示tab左右切换箭头
@@ -2053,7 +2046,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           _props12 = this.props,
           type = _props12.type,
           onChange = _props12.onChange,
-          tabPanes = _props12.tabPanes;
+          tabPanes = _props12.tabPanes,
+          animated = _props12.animated;
       var $tabItems = this.$tabItems;
 
 
@@ -2062,7 +2056,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         this.$tabItems = $tabItems;
       }
 
-      // change active
+      // change tab active
       !isNil(current) && $tabItems.eq(current).removeClass(TAB_ITEM_CLASS_ACTIVE);
       $tabItems.eq(index).addClass(TAB_ITEM_CLASS_ACTIVE);
 
@@ -2080,7 +2074,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       }
 
       // change pane
-      $paneWrap.translateX(-(containerWidth * index));
+      animated && $paneWrap.translateX(-(containerWidth * index));
       !isNil(current) && $panes.eq(current).removeClass(PANE_ITEM_CLASS_ACTIVE);
       $panes.eq(index).addClass(PANE_ITEM_CLASS_ACTIVE);
 
@@ -2097,6 +2091,18 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
       isFunction(onChange) && onChange(key, index);
     },
+
+
+    getExtra: function getExtra(html) {
+      var tabBarExtraContent = this.props.tabBarExtraContent;
+
+      if (isEmpty(tabBarExtraContent)) return html;
+
+      var extra = $.node('div', tabBarExtraContent, TAB_ITEM_EXTRA_CLASS);
+
+      return $.node('div', html + extra, TAB_ITEM_CONTAINER_WRAP_CLASS);
+    },
+
     destroy: function destroy() {
       removeKeys(this, 'isIncludePane, paneWidth');
     }
