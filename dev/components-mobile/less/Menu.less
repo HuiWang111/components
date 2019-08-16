@@ -1,0 +1,150 @@
+.cpts-menu {
+  width: @vertical-menu-width;
+  box-sizing: border-box;
+  font-size: 14px;
+  color: @light-menu-color;
+  background: #fff;
+  outline: none;
+
+  > .cpts-menu-item,
+  > .cpts-menu-submenu > .cpts-menu-title,
+  > .cpts-menu-submenu > .cpts-menu-sub > .cpts-menu-item {
+    position: relative;
+    display: block;
+    white-space: nowrap;
+    transition: color .3s cubic-bezier(.645, .045, .355, 1),
+    border-color .3s cubic-bezier(.645, .045, .355, 1),
+    background .3s cubic-bezier(.645, .045, .355, 1),
+    padding .15s cubic-bezier(.645, .045, .355, 1);
+    cursor: pointer;
+    height: 40px;
+    line-height: 40px;
+    padding: 0 24px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:hover {
+      color: @primary-color;
+    }
+  }
+
+  > .cpts-menu-submenu {
+    &.cpts-menu-open > .cpts-menu-title > .cpts-menu-arrow {
+      transform: rotateX(180deg);
+    }
+    &.cpts-menu-close > .cpts-menu-title > .cpts-menu-arrow {
+      transform: rotateX(0);
+    }
+
+    > .cpts-menu-title {
+      padding-left: 24px;
+      padding-right: 34px;
+
+      > .cpts-menu-arrow {
+        position: absolute;
+        right: 16px;
+        top: 20px;
+        width: 10px;
+        transition: transform .3s cubic-bezier(.645, .045, .355, 1);
+
+        &::before,
+        &::after {
+          content: ' ';
+          position: absolute;
+          width: 6px;
+          height: 1.5px;
+          background-color: #fff;
+          // 不是很理解为什么使用linear-gradient，而不是直接使用background-color
+          background-image: linear-gradient(to right, @light-menu-color, @light-menu-color);
+        }
+
+        &::before {
+          transform: rotate(-45deg) translate(2.5px);
+        }
+        &::after {
+          transform: rotate(45deg) translate(-2.5px);
+        }
+      }
+    }
+
+    > .cpts-menu-sub {
+      transition: height .3s ease-in-out;
+      overflow: hidden;
+    }
+  }
+
+  &.cpts-menu-vertical {
+
+    > .cpts-menu-submenu > .cpts-menu-sub > .cpts-menu-item {
+      padding-left: 48px;
+    }
+
+    .cpts-menu-item.cpts-menu-selected {
+      border-right: 3px solid @primary-color;
+      background-color: @light-menu-selected-item-bg;
+    }
+
+    > .cpts-menu-submenu {
+      overflow: visible;
+      padding: 0;
+      height: auto;
+      min-height: 40px;
+    }
+
+    &.cpts-menu-light {
+      border-right: 1px solid @menu-border-color;
+    }
+  }
+
+  &.cpts-menu-horizontal {
+    width: auto;
+    height: @horizontal-menu-height;
+    line-height: @horizontal-menu-height;
+    border-bottom: 1px solid @menu-border-color;
+    
+    > .cpts-menu-submenu {
+      display: inline-block;
+      vertical-align: top;
+      height: 100%;
+
+      > .cpts-menu-title {
+        height: 100%;
+      }
+
+      &.cpts-menu-open > .cpts-menu-title,
+      &.cpts-menu-submenu-active > .cpts-menu-title {
+        color: @primary-color;
+        border-bottom: 2px solid @primary-color;
+        box-sizing: border-box;
+      }
+
+      > .cpts-menu-sub {
+        background-color: #fff;
+        box-shadow: @menu-box-shadow;
+
+        > .cpts-menu-item {
+          &.cpts-menu-selected {
+            color: @primary-color;
+            background-color: @light-menu-selected-item-bg;
+          }
+          &.hover {
+            color: @primary-color;
+          }
+        }
+      }
+    }
+
+    > .cpts-menu-item {
+      display: inline-block;
+      vertical-align: top;
+      height: 100%;
+      box-sizing: border-box;
+
+      &.cpts-menu-selected,
+      &:hover {
+        color: @primary-color;
+        border-bottom: 2px solid @primary-color;
+      }
+    }
+  }
+}
