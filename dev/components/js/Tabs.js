@@ -297,7 +297,7 @@
           $this.addClass(DROPDOWN_ACTIVE_ITEM_CLASS);
           const key = $this.attr('data-key');
           if (onClickDropdownItem) {
-            onClickDropdownItem(key, tabPanes[index] && tabPanes[index].key);
+            onClickDropdownItem(key, tabPanes[index] && tabPanes[index].key, index);
           }
         }
       });
