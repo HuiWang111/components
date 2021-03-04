@@ -290,13 +290,14 @@
       // click dropdown item
       $dropdownItems.on('click', function() {
         const $this = $(this);
+        const $tabItem = $this.parents(toSelector(TAB_ITEM_CLASS));
+        const index = $tabItems.indexOf($tabItem);
         if (!$this.hasClass(DROPDOWN_ACTIVE_ITEM_CLASS)) {
           $(toSelector(DROPDOWN_ACTIVE_ITEM_CLASS)).removeClass(DROPDOWN_ACTIVE_ITEM_CLASS);
-          console.log(this);
           $this.addClass(DROPDOWN_ACTIVE_ITEM_CLASS);
           const key = $this.attr('data-key');
           if (onClickDropdownItem) {
-            onClickDropdownItem(key);
+            onClickDropdownItem(key, tabPanes[index] && tabPanes[index].key);
           }
         }
       });
