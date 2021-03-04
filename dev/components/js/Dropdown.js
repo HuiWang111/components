@@ -30,15 +30,12 @@
     extend(Dropdown.prototype, {
         render() {
             const { dataSource, defaultActiveKey } = this.props;
-            const defaultKey = defaultActiveKey == null
-                ? dataSource[0] && dataSource[0].key
-                : defaultActiveKey;
 
             const inner = dataSource.map(item => {
                 const { key, label } = item;
                 const className = appendClass(
                     DROPDOWN_ITEM_CLASS,
-                    key === defaultKey ? DROPDOWN_ACTIVE_ITEM_CLASS : ''
+                    key === defaultActiveKey ? DROPDOWN_ACTIVE_ITEM_CLASS : ''
                 );
 
                 return $.node('li', label, className, {

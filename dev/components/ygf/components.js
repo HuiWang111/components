@@ -1577,15 +1577,12 @@
     extend(Dropdown.prototype, {
         render() {
             const { dataSource, defaultActiveKey } = this.props;
-            const defaultKey = defaultActiveKey == null
-                ? dataSource[0] && dataSource[0].key
-                : defaultActiveKey;
 
             const inner = dataSource.map(item => {
                 const { key, label } = item;
                 const className = appendClass(
                     DROPDOWN_ITEM_CLASS,
-                    key === defaultKey ? DROPDOWN_ACTIVE_ITEM_CLASS : ''
+                    key === defaultActiveKey ? DROPDOWN_ACTIVE_ITEM_CLASS : ''
                 );
 
                 return $.node('li', label, className, {
@@ -1857,6 +1854,8 @@
           const current = $tabItems.indexOf($active);
           const index = $tabItems.indexOf($this);
 
+          $active.find(toSelector(DROPDOWN_ACTIVE_ITEM_CLASS)).removeClass(DROPDOWN_ACTIVE_ITEM_CLASS);
+
           __this__.handleTabChange(current, index);
         }
       });
@@ -1871,7 +1870,6 @@
           if (!menus || menus.length === 0) return;
 
           const $dropdown = $this.find(toSelector(DROPDOWN_CONTAINER_CLASS));
-          console.log($this);
           $dropdown.addClass('show')
         }
       }, function() {
@@ -1889,10 +1887,20 @@
       });
 
       // click dropdown item
-      $dropdownItems.on('click', function() {
+      $dropdownItems.on('click', function(e) {
+        e.stopPropagation();
+
         const $this = $(this);
         const $tabItem = $this.parents(toSelector(TAB_ITEM_CLASS));
         const index = $tabItems.indexOf($tabItem);
+
+        if (!$tabItem.hasClass(TAB_ITEM_CLASS_ACTIVE)) {
+          const $active = $tabItems.filter(toSelector(TAB_ITEM_CLASS_ACTIVE));
+          const current = $tabItems.indexOf($active);
+
+          __this__.handleTabChange(current, index, false, false);
+        }
+
         if (!$this.hasClass(DROPDOWN_ACTIVE_ITEM_CLASS)) {
           $(toSelector(DROPDOWN_ACTIVE_ITEM_CLASS)).removeClass(DROPDOWN_ACTIVE_ITEM_CLASS);
           $this.addClass(DROPDOWN_ACTIVE_ITEM_CLASS);
@@ -2060,10 +2068,7 @@
       });
     },
 
-    /**
-     * @description static为true时不会改变pane和underline的translateX值
-     */
-    handleTabChange (current, index, isOnClose) {
+    handleTabChange (current, index, isOnClose, triggerEvent = true) {
       const { 
         unRenderPanes, isRenderedRecords, $underline, $paneWrap, $panes, containerWidth,
         props: { type, onChange, tabPanes, animated }
@@ -2106,7 +2111,7 @@
         }
       }
 
-      isFunction(onChange) && onChange(key, index);
+      triggerEvent && isFunction(onChange) && onChange(key, index);
     },
 
     getExtra: function(html) {

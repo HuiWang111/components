@@ -1643,13 +1643,12 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           dataSource = _props10.dataSource,
           defaultActiveKey = _props10.defaultActiveKey;
 
-      var defaultKey = defaultActiveKey == null ? dataSource[0] && dataSource[0].key : defaultActiveKey;
 
       var inner = dataSource.map(function (item) {
         var key = item.key,
             label = item.label;
 
-        var className = appendClass(DROPDOWN_ITEM_CLASS, key === defaultKey ? DROPDOWN_ACTIVE_ITEM_CLASS : '');
+        var className = appendClass(DROPDOWN_ITEM_CLASS, key === defaultActiveKey ? DROPDOWN_ACTIVE_ITEM_CLASS : '');
 
         return $.node('li', label, className, {
           dataKey: key
@@ -1934,6 +1933,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           var current = $tabItems.indexOf($active);
           var index = $tabItems.indexOf($this);
 
+          $active.find(toSelector(DROPDOWN_ACTIVE_ITEM_CLASS)).removeClass(DROPDOWN_ACTIVE_ITEM_CLASS);
+
           __this__.handleTabChange(current, index);
         }
       });
@@ -1949,7 +1950,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           if (!menus || menus.length === 0) return;
 
           var $dropdown = $this.find(toSelector(DROPDOWN_CONTAINER_CLASS));
-          console.log($this);
           $dropdown.addClass('show');
         }
       }, function () {
@@ -1968,10 +1968,20 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       });
 
       // click dropdown item
-      $dropdownItems.on('click', function () {
+      $dropdownItems.on('click', function (e) {
+        e.stopPropagation();
+
         var $this = $(this);
         var $tabItem = $this.parents(toSelector(TAB_ITEM_CLASS));
         var index = $tabItems.indexOf($tabItem);
+
+        if (!$tabItem.hasClass(TAB_ITEM_CLASS_ACTIVE)) {
+          var $active = $tabItems.filter(toSelector(TAB_ITEM_CLASS_ACTIVE));
+          var current = $tabItems.indexOf($active);
+
+          __this__.handleTabChange(current, index, false, false);
+        }
+
         if (!$this.hasClass(DROPDOWN_ACTIVE_ITEM_CLASS)) {
           $(toSelector(DROPDOWN_ACTIVE_ITEM_CLASS)).removeClass(DROPDOWN_ACTIVE_ITEM_CLASS);
           $this.addClass(DROPDOWN_ACTIVE_ITEM_CLASS);
@@ -2154,14 +2164,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }
       });
     },
-
-
-    /**
-     * @description static为true时不会改变pane和underline的translateX值
-     */
     handleTabChange: function handleTabChange(current, index, isOnClose) {
       var _this2 = this;
 
+      var triggerEvent = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
       var unRenderPanes = this.unRenderPanes,
           isRenderedRecords = this.isRenderedRecords,
           $underline = this.$underline,
@@ -2214,7 +2220,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }
       }
 
-      isFunction(onChange) && onChange(key, index);
+      triggerEvent && isFunction(onChange) && onChange(key, index);
     },
 
 
