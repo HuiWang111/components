@@ -464,7 +464,7 @@
     handleTabChange (current, index, isOnClose) {
       const { 
         unRenderPanes, isRenderedRecords, $underline, $paneWrap, $panes, containerWidth,
-        props: { type, onChange, tabPanes, animated, onClickDropdownItem }
+        props: { type, onChange, tabPanes, animated }
       } = this;
       let { $tabItems } = this;
 
@@ -494,7 +494,7 @@
       !isNil(current) && $panes.eq(current).removeClass(PANE_ITEM_CLASS_ACTIVE);
       $panes.eq(index).addClass(PANE_ITEM_CLASS_ACTIVE);
 
-      const { key, menus } = tabPanes[index];
+      const { key } = tabPanes[index];
 
       /* 渲染未在初始化时渲染的pane */
       if (index < tabPanes.length) {
@@ -505,9 +505,6 @@
       }
 
       isFunction(onChange) && onChange(key, index);
-      if (menus && menus.length) {
-        onClickDropdownItem(menus[0].key);
-      }
     },
 
     getExtra: function(html) {

@@ -2171,8 +2171,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           type = _props13.type,
           onChange = _props13.onChange,
           tabPanes = _props13.tabPanes,
-          animated = _props13.animated,
-          onClickDropdownItem = _props13.onClickDropdownItem;
+          animated = _props13.animated;
       var $tabItems = this.$tabItems;
 
 
@@ -2203,9 +2202,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       !isNil(current) && $panes.eq(current).removeClass(PANE_ITEM_CLASS_ACTIVE);
       $panes.eq(index).addClass(PANE_ITEM_CLASS_ACTIVE);
 
-      var _tabPanes$index = tabPanes[index],
-          key = _tabPanes$index.key,
-          menus = _tabPanes$index.menus;
+      var key = tabPanes[index].key;
 
       /* 渲染未在初始化时渲染的pane */
 
@@ -2217,9 +2214,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       }
 
       isFunction(onChange) && onChange(key, index);
-      if (menus && menus.length) {
-        onClickDropdownItem(menus[0].key);
-      }
     },
 
 
