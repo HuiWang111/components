@@ -16,7 +16,8 @@
 
       /* Icon */
       ICON_CLASS
-    }
+    },
+    Icon
   } = global;
 
   /**

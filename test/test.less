@@ -1,0 +1,13 @@
+@heights: range(50, 1000, 50);
+
+each(@heights, {
+    .customized-spinning-content.content-height-@{value} when not (@value = 100) {
+        height: ~'@{value}px';
+    }
+});
+
+@prefix: ~'aaa-bbb';
+
+.@{prefix} {
+    color: red;
+}

@@ -1,3 +1,5 @@
+@import (reference) '../varibles.less';
+
 .cpts-tabs-container {
   overflow: hidden;
   display: flex;
@@ -7,7 +9,7 @@
   /* tab */
   .cpts-tabs-tab-container {
     width: 100%;
-    overflow: hidden;
+    // overflow: hidden;
     margin-bottom: 16px;
     border-bottom: 1px solid #e8e8e8;
     position: relative;
@@ -19,7 +21,7 @@
   
     & > .cpts-tabs-tab-wrapper {
       flex: 1;
-      overflow: hidden;
+      // overflow: hidden;
       white-space: nowrap;
     
       & > .cpts-tabs-tab-inner {
@@ -34,6 +36,7 @@
           margin-right: @tabs-base-margin-right;
           box-sizing: border-box;
           transition: color .5s;
+          position: relative;
   
           &.cpts-tabs-tab-item-active {
             color: @primary-color;

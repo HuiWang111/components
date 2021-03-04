@@ -28,6 +28,7 @@
   <script src="../../dev/components/js/common/className.js"></script>
   <script src="../../dev/components/js/common/color.js"></script>
   <script src="../../dev/components/js/common/svg.js"></script>
+  <script src="../../dev/components/js/Dropdown.js"></script>
   <script src="../../dev/components/js/Tabs.js"></script>
   <script>
     var myTab = new Tabs('.tab-container', {
@@ -38,7 +39,14 @@
       tabBarExtraContent: $.node('button', 'extra button', 'cpts-btn cpts-primary-btn'),
       tabPanes: [{
         key: 'hh',
-        tab: '哈哈哈哈哈哈哈哈哈'
+        tab: '哈哈哈哈哈哈哈哈哈',
+        menus: [{
+          key: 'bb',
+          label: '测试1'
+        }, {
+          key: 'dd',
+          label: '测试2'
+        }]
       }, {
         key: 'xx',
         tab: '嘻嘻嘻我洗我洗衣西我细腻',

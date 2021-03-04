@@ -1,0 +1,33 @@
+@import (reference) '../varibles.less';
+
+.cpts-dropdown {
+    display: none;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    transform: translateY(100%);
+    z-index: 999;
+    background-color: #fff;
+    box-shadow: 0px 2px 60px 0px rgba(0, 0, 0, .2);
+
+    &.show {
+        display: block;
+    }
+
+    &-item {
+        height: 50px;
+        line-height: 50px;
+        text-align: center;
+        color: #333;
+
+        &:hover {
+            color: #3d9738;
+        }
+    }
+
+    &-active-item {
+        background-color: #b9c9b3;
+        color: #3d9738;
+    }
+}

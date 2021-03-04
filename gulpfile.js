@@ -46,7 +46,7 @@ const utilJSFile = getSrc(
   'util'
 );
 const cptsJSFile = getSrc(
-  'components-mobile',
+  'components',
   'js',
   'components/ygf/'
 );
@@ -76,7 +76,8 @@ gulp.task('js-min',function() {
  * @description 输出es5未压缩的js文件
  */
 gulp.task('toES5',function(){
-  return gulp.src(utilJSFile.concat(cptsJSFile))
+  console.log(cptsJSFile);
+  return gulp.src(cptsJSFile)
   .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
   .pipe(babel({
     presets: [
@@ -113,7 +114,8 @@ function toCSS (filesName, path) {
     gulp.start('taskList');
   });
 }
-toCSS('components-mobile', 'components-mobile/');
+// toCSS('components-mobile', 'components-mobile/');
+toCSS('components', 'components/');
 
 /**
  * @description 压缩css文件
@@ -139,8 +141,8 @@ compressCSS('components', 'components/');
 /* 合并js文件 */
 const cptsBaseFiles = getSrc(
   // 'Icon, Alert, Button, Gallery, Message, Modal, Pagination, Tabs',
-  // 'Icon, Button, Gallery, Message, Pagination, Tabs',
-  'Gallery, Pagination, Tabs',
+  'Icon, Button, Gallery, Message, Pagination, Dropdown, Tabs', // ygf
+  // 'Gallery, Pagination, Dropdown, Tabs', // ygf-mobile
   'js',
   'components/js/'
 );
@@ -152,6 +154,18 @@ const cptsBaseCommonFile = getSrc(
 gulp.task('combineCptsBase', function () {
   return gulp.src(cptsBaseCommonFile.concat(cptsBaseFiles))
   .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
-  .pipe(concat('components-mobile.js'))
+  .pipe(concat('components.js'))
   .pipe(gulp.dest('dev/components/ygf'))
+});
+
+gulp.task('testless',function() {
+  return (
+    gulp.src('test/test.less')
+    .pipe(plumber({errorHandler: notify.onError('Error:<%= error.message %>;')}))
+    .pipe(less())
+    .pipe(autoprefixer({
+      browsers: ['>0%']
+    }))
+    .pipe(gulp.dest('dist'))
+  );
 });

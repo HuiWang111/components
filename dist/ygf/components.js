@@ -241,6 +241,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       MENU_SELECTED_ITEM_CLASS = 'cpts-menu-selected',
       MENU_SUBMENU_ACTIVE_CLASS = 'cpts-menu-submenu-active';
 
+  var DROPDOWN_CONTAINER_CLASS = 'cpts-dropdown',
+      DROPDOWN_ITEM_CLASS = 'cpts-dropdown-item',
+      DROPDOWN_ACTIVE_ITEM_CLASS = 'cpts-dropdown-active-item';
+
   return Object.freeze({
     /* Icon */
     ICON_CLASS: ICON_CLASS, FILLED_ICON_CLASS: FILLED_ICON_CLASS, WARNING_ICON_CLASS: WARNING_ICON_CLASS, SUCCESS_ICON_CLASS: SUCCESS_ICON_CLASS, INFO_ICON_CLASS: INFO_ICON_CLASS, ERROR_ICON_CLASS: ERROR_ICON_CLASS,
@@ -292,7 +296,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     MENU_HORIZONTAL_CLASS: MENU_HORIZONTAL_CLASS, MENU_DARK_CLASS: MENU_DARK_CLASS, MENU_LIGHT_CLASS: MENU_LIGHT_CLASS, MENU_DISABLED_CLASS: MENU_DISABLED_CLASS,
     MENU_SUBMENU_TITLE_CLASS: MENU_SUBMENU_TITLE_CLASS, MENU_SUBMENU_TITLE_WRAP_CLASS: MENU_SUBMENU_TITLE_WRAP_CLASS, MENU_SUBMENU_ARROW_CLASS: MENU_SUBMENU_ARROW_CLASS,
     MENU_SUB_CLASS: MENU_SUB_CLASS, MENU_HIDDEN_CLASS: MENU_HIDDEN_CLASS, MENU_SUBMENU_OPEN_CLASS: MENU_SUBMENU_OPEN_CLASS, MENU_SUBMENU_CLOSE_CLASS: MENU_SUBMENU_CLOSE_CLASS, MENU_SUBMENU_ACTIVE_CLASS: MENU_SUBMENU_ACTIVE_CLASS,
-    MENU_SELECTED_ITEM_CLASS: MENU_SELECTED_ITEM_CLASS
+    MENU_SELECTED_ITEM_CLASS: MENU_SELECTED_ITEM_CLASS,
+
+    // dropdown
+    DROPDOWN_CONTAINER_CLASS: DROPDOWN_CONTAINER_CLASS, DROPDOWN_ITEM_CLASS: DROPDOWN_ITEM_CLASS, DROPDOWN_ACTIVE_ITEM_CLASS: DROPDOWN_ACTIVE_ITEM_CLASS
   });
 });
 ;!function (global, factory) {
@@ -481,7 +488,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       BLOCK_BTN_CLASS = _global$ClassName2.BLOCK_BTN_CLASS,
       WITHICON_BTN_CLASS = _global$ClassName2.WITHICON_BTN_CLASS,
       LOADING_BTN_CLASS = _global$ClassName2.LOADING_BTN_CLASS,
-      ICON_CLASS = _global$ClassName2.ICON_CLASS;
+      ICON_CLASS = _global$ClassName2.ICON_CLASS,
+      Icon = global.Icon;
 
   /**
    * @description 将页面上已有的元素定义成components-button 注：必须是页面中已有的元素
@@ -1602,48 +1610,105 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   return Pagination;
 });
 ;!function (global, factory) {
+  (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && module !== 'undefined' ? module.exports = factory(global) : typeof define === 'function' && define.amd ? define([global], factory) : global.Dropdown = factory(global);
+}(this, function (global) {
+  var $ = global.jQuery,
+      _global$ClassName6 = global.ClassName,
+      DROPDOWN_CONTAINER_CLASS = _global$ClassName6.DROPDOWN_CONTAINER_CLASS,
+      DROPDOWN_ITEM_CLASS = _global$ClassName6.DROPDOWN_ITEM_CLASS,
+      DROPDOWN_ACTIVE_ITEM_CLASS = _global$ClassName6.DROPDOWN_ACTIVE_ITEM_CLASS,
+      _global$util6 = global.util,
+      propsChecker = _global$util6.propsChecker,
+      extend = _global$util6.extend,
+      appendClass = _global$util6.appendClass;
+
+
+  var defaultProps = {
+    dataSource: []
+  };
+
+  function Dropdown(props) {
+    propsChecker({
+      dataSource: 'array',
+      defaultActiveKey: 'string'
+    });
+
+    this.props = extend({}, defaultProps, props);
+    this.html = this.render();
+  }
+
+  extend(Dropdown.prototype, {
+    render: function render() {
+      var _props10 = this.props,
+          dataSource = _props10.dataSource,
+          defaultActiveKey = _props10.defaultActiveKey;
+
+      var defaultKey = defaultActiveKey == null ? dataSource[0] && dataSource[0].key : defaultActiveKey;
+
+      var inner = dataSource.map(function (item) {
+        var key = item.key,
+            label = item.label;
+
+        var className = appendClass(DROPDOWN_ITEM_CLASS, key === defaultKey ? DROPDOWN_ACTIVE_ITEM_CLASS : '');
+
+        return $.node('li', label, className, {
+          dataKey: key
+        });
+      });
+
+      return $.node('ul', inner, DROPDOWN_CONTAINER_CLASS);
+    }
+  });
+
+  return Dropdown;
+});
+;!function (global, factory) {
   (typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' ? module.exports = factory(global) : typeof define === 'function' && define.amd ? define([global], factory) : global.Tabs = factory(global);
 }(this, function (global) {
   var Component = global.Component,
       $ = global.jQuery,
-      _global$util6 = global.util,
-      isFunction = _global$util6.isFunction,
-      isUndefined = _global$util6.isUndefined,
-      isNil = _global$util6.isNil,
-      toSelector = _global$util6.toSelector,
-      extend = _global$util6.extend,
-      removeKeys = _global$util6.removeKeys,
-      appendClass = _global$util6.appendClass,
-      propsChecker = _global$util6.propsChecker,
-      debounce = _global$util6.debounce,
-      isEmpty = _global$util6.isEmpty,
-      _global$ClassName6 = global.ClassName,
-      TAB_ITEM_CLASS = _global$ClassName6.TAB_ITEM_CLASS,
-      TAB_ITEM_CLASS_ACTIVE = _global$ClassName6.TAB_ITEM_CLASS_ACTIVE,
-      TAB_ITEM_CARD_CLASS = _global$ClassName6.TAB_ITEM_CARD_CLASS,
-      TAB_ITEM_WRAP_CLASS = _global$ClassName6.TAB_ITEM_WRAP_CLASS,
-      TAB_ITEM_INNER_CLASS = _global$ClassName6.TAB_ITEM_INNER_CLASS,
-      TAB_ITEM_CARD_INNER_CALSS = _global$ClassName6.TAB_ITEM_CARD_INNER_CALSS,
-      TAB_ITEM_CONTAINER_CLASS = _global$ClassName6.TAB_ITEM_CONTAINER_CLASS,
-      TAB_ITEM_CONTAINER_WITH_ARROW_CLASS = _global$ClassName6.TAB_ITEM_CONTAINER_WITH_ARROW_CLASS,
-      PANE_ITEM_CLASS = _global$ClassName6.PANE_ITEM_CLASS,
-      PANE_ITEM_CLASS_ACTIVE = _global$ClassName6.PANE_ITEM_CLASS_ACTIVE,
-      PANE_ITEM_WRAP_CLASS = _global$ClassName6.PANE_ITEM_WRAP_CLASS,
-      TAB_ARROW_CLASS = _global$ClassName6.TAB_ARROW_CLASS,
-      TAB_ARROW_CLASS_DISABLE = _global$ClassName6.TAB_ARROW_CLASS_DISABLE,
-      TAB_ARROW_CLASS_INVISIBLE = _global$ClassName6.TAB_ARROW_CLASS_INVISIBLE,
-      TAB_PREVIOUS_ARROW_CLASS = _global$ClassName6.TAB_PREVIOUS_ARROW_CLASS,
-      TAB_NEXT_ARROW_CLASS = _global$ClassName6.TAB_NEXT_ARROW_CLASS,
-      TAB_CONTAINER_CLASS = _global$ClassName6.TAB_CONTAINER_CLASS,
-      UNDERLINE_CLASS = _global$ClassName6.UNDERLINE_CLASS,
-      TAB_ANIMATE_CLASS = _global$ClassName6.TAB_ANIMATE_CLASS,
-      TAB_ITEM_CONTAINER_WRAP_CLASS = _global$ClassName6.TAB_ITEM_CONTAINER_WRAP_CLASS,
-      TAB_ITEM_EXTRA_CLASS = _global$ClassName6.TAB_ITEM_EXTRA_CLASS,
-      CLOSE_ICON_CLASS = _global$ClassName6.CLOSE_ICON_CLASS,
+      _global$util7 = global.util,
+      isFunction = _global$util7.isFunction,
+      isUndefined = _global$util7.isUndefined,
+      isNil = _global$util7.isNil,
+      toSelector = _global$util7.toSelector,
+      extend = _global$util7.extend,
+      removeKeys = _global$util7.removeKeys,
+      appendClass = _global$util7.appendClass,
+      propsChecker = _global$util7.propsChecker,
+      debounce = _global$util7.debounce,
+      isEmpty = _global$util7.isEmpty,
+      _global$ClassName7 = global.ClassName,
+      TAB_ITEM_CLASS = _global$ClassName7.TAB_ITEM_CLASS,
+      TAB_ITEM_CLASS_ACTIVE = _global$ClassName7.TAB_ITEM_CLASS_ACTIVE,
+      TAB_ITEM_CARD_CLASS = _global$ClassName7.TAB_ITEM_CARD_CLASS,
+      TAB_ITEM_WRAP_CLASS = _global$ClassName7.TAB_ITEM_WRAP_CLASS,
+      TAB_ITEM_INNER_CLASS = _global$ClassName7.TAB_ITEM_INNER_CLASS,
+      TAB_ITEM_CARD_INNER_CALSS = _global$ClassName7.TAB_ITEM_CARD_INNER_CALSS,
+      TAB_ITEM_CONTAINER_CLASS = _global$ClassName7.TAB_ITEM_CONTAINER_CLASS,
+      TAB_ITEM_CONTAINER_WITH_ARROW_CLASS = _global$ClassName7.TAB_ITEM_CONTAINER_WITH_ARROW_CLASS,
+      PANE_ITEM_CLASS = _global$ClassName7.PANE_ITEM_CLASS,
+      PANE_ITEM_CLASS_ACTIVE = _global$ClassName7.PANE_ITEM_CLASS_ACTIVE,
+      PANE_ITEM_WRAP_CLASS = _global$ClassName7.PANE_ITEM_WRAP_CLASS,
+      TAB_ARROW_CLASS = _global$ClassName7.TAB_ARROW_CLASS,
+      TAB_ARROW_CLASS_DISABLE = _global$ClassName7.TAB_ARROW_CLASS_DISABLE,
+      TAB_ARROW_CLASS_INVISIBLE = _global$ClassName7.TAB_ARROW_CLASS_INVISIBLE,
+      TAB_PREVIOUS_ARROW_CLASS = _global$ClassName7.TAB_PREVIOUS_ARROW_CLASS,
+      TAB_NEXT_ARROW_CLASS = _global$ClassName7.TAB_NEXT_ARROW_CLASS,
+      TAB_CONTAINER_CLASS = _global$ClassName7.TAB_CONTAINER_CLASS,
+      UNDERLINE_CLASS = _global$ClassName7.UNDERLINE_CLASS,
+      TAB_ANIMATE_CLASS = _global$ClassName7.TAB_ANIMATE_CLASS,
+      TAB_ITEM_CONTAINER_WRAP_CLASS = _global$ClassName7.TAB_ITEM_CONTAINER_WRAP_CLASS,
+      TAB_ITEM_EXTRA_CLASS = _global$ClassName7.TAB_ITEM_EXTRA_CLASS,
+      CLOSE_ICON_CLASS = _global$ClassName7.CLOSE_ICON_CLASS,
+      DROPDOWN_CONTAINER_CLASS = _global$ClassName7.DROPDOWN_CONTAINER_CLASS,
+      DROPDOWN_ITEM_CLASS = _global$ClassName7.DROPDOWN_ITEM_CLASS,
+      DROPDOWN_ACTIVE_ITEM_CLASS = _global$ClassName7.DROPDOWN_ACTIVE_ITEM_CLASS,
       DISABLE_COLOR = global.Color.DISABLE_COLOR,
       _global$SVG3 = global.SVG,
       getPrevSvg = _global$SVG3.getPrevSvg,
       getNextSvg = _global$SVG3.getNextSvg,
+      Dropdown = global.Dropdown,
       prevSvg = getPrevSvg(),
       nextSvg = getNextSvg();
 
@@ -1678,8 +1743,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       insertElementJQueryFunc: 'string',
       tabBarExtraContent: 'string',
       onChange: 'function',
-      renderPaneItem: 'function'
+      renderPaneItem: 'function',
+      onClickDropdownItem: 'function'
     });
+
+    if (props.tabPanes.length === 0) return;
 
     this.$container = $(selector);
     if (this.$container.length < 1) throw new Error('not found ' + selector + ' Element');
@@ -1691,7 +1759,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     }
 
     //default
-    var defaultKey = props.tabPanes[0].key;
+    var defaultKey = props.tabPanes[0] && props.tabPanes[0].key;
     var defaultProps = {
       type: 'line',
       tabPanes: [],
@@ -1713,14 +1781,14 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
   extend(Tabs.prototype, {
     render: function render() {
       var $container = this.$container,
-          _props10 = this.props,
-          tabPanes = _props10.tabPanes,
-          renderPaneItem = _props10.renderPaneItem,
-          defaultKey = _props10.defaultKey,
-          type = _props10.type,
-          editable = _props10.editable,
-          insertElementJQueryFunc = _props10.insertElementJQueryFunc,
-          animated = _props10.animated;
+          _props11 = this.props,
+          tabPanes = _props11.tabPanes,
+          renderPaneItem = _props11.renderPaneItem,
+          defaultKey = _props11.defaultKey,
+          type = _props11.type,
+          editable = _props11.editable,
+          insertElementJQueryFunc = _props11.insertElementJQueryFunc,
+          animated = _props11.animated;
 
 
       var tabsDOM = '',
@@ -1734,7 +1802,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
       tabPanes.forEach(function (pane, index) {
         var tab = pane.tab,
-            key = pane.key;
+            key = pane.key,
+            menus = pane.menus;
         var forceRender = pane.forceRender;
 
 
@@ -1749,7 +1818,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         var klass = appendClass(TAB_ITEM_CLASS, isActive ? TAB_ITEM_CLASS_ACTIVE : '', type === 'card' ? TAB_ITEM_CARD_CLASS : '');
         var closeIcon = isEditableCard ? new Icon('close').html : '';
 
-        var tabDOM = $.node('div', tab + closeIcon, klass);
+        var dropdownHtml = '';
+        if (menus && menus.length > 0) {
+          var dropdown = new Dropdown({
+            dataSource: menus
+          });
+          dropdownHtml = dropdown.html;
+        }
+
+        var tabDOM = $.node('div', tab + closeIcon + dropdownHtml, klass);
         tabsDOM += tabDOM;
 
         // pane
@@ -1803,6 +1880,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       this.$tabItems = this.$tabInner.find(toSelector(TAB_ITEM_CLASS));
       this.$underline = this.$tabWrap.find(toSelector(UNDERLINE_CLASS));
       this.$arrow = $container.find(toSelector(TAB_ARROW_CLASS));
+      this.$dropdownItems = this.$tabItems.find(toSelector(DROPDOWN_ITEM_CLASS));
 
       // pane
       this.$paneWrap = $container.find(toSelector(PANE_ITEM_WRAP_CLASS));
@@ -1830,10 +1908,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           $panes = this.$panes,
           $paneWrap = this.$paneWrap,
           $container = this.$container,
-          _props11 = this.props,
-          editable = _props11.editable,
-          block = _props11.block,
-          animated = _props11.animated;
+          $dropdownItems = this.$dropdownItems,
+          _props12 = this.props,
+          editable = _props12.editable,
+          block = _props12.block,
+          animated = _props12.animated,
+          onClickDropdownItem = _props12.onClickDropdownItem,
+          tabPanes = _props12.tabPanes;
 
 
       this.setUnderLineWidth(0);
@@ -1854,6 +1935,49 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           var index = $tabItems.indexOf($this);
 
           __this__.handleTabChange(current, index);
+        }
+      });
+
+      $tabItems.hover(function () {
+        var $this = $(this);
+        var index = $tabItems.indexOf($this);
+
+        if (tabPanes[index]) {
+          var menus = tabPanes[index].menus;
+
+
+          if (!menus || menus.length === 0) return;
+
+          var $dropdown = $this.find(toSelector(DROPDOWN_CONTAINER_CLASS));
+          console.log($this);
+          $dropdown.addClass('show');
+        }
+      }, function () {
+        var $this = $(this);
+        var index = $tabItems.indexOf($this);
+
+        if (tabPanes[index]) {
+          var menus = tabPanes[index].menus;
+
+
+          if (!menus || menus.length === 0) return;
+
+          var $dropdown = $this.find(toSelector(DROPDOWN_CONTAINER_CLASS));
+          $dropdown.removeClass('show');
+        }
+      });
+
+      // click dropdown item
+      $dropdownItems.on('click', function () {
+        var $this = $(this);
+        if (!$this.hasClass(DROPDOWN_ACTIVE_ITEM_CLASS)) {
+          $(toSelector(DROPDOWN_ACTIVE_ITEM_CLASS)).removeClass(DROPDOWN_ACTIVE_ITEM_CLASS);
+          console.log(this);
+          $this.addClass(DROPDOWN_ACTIVE_ITEM_CLASS);
+          var key = $this.attr('data-key');
+          if (onClickDropdownItem) {
+            onClickDropdownItem(key);
+          }
         }
       });
 
@@ -2043,11 +2167,12 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           $paneWrap = this.$paneWrap,
           $panes = this.$panes,
           containerWidth = this.containerWidth,
-          _props12 = this.props,
-          type = _props12.type,
-          onChange = _props12.onChange,
-          tabPanes = _props12.tabPanes,
-          animated = _props12.animated;
+          _props13 = this.props,
+          type = _props13.type,
+          onChange = _props13.onChange,
+          tabPanes = _props13.tabPanes,
+          animated = _props13.animated,
+          onClickDropdownItem = _props13.onClickDropdownItem;
       var $tabItems = this.$tabItems;
 
 
@@ -2078,7 +2203,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       !isNil(current) && $panes.eq(current).removeClass(PANE_ITEM_CLASS_ACTIVE);
       $panes.eq(index).addClass(PANE_ITEM_CLASS_ACTIVE);
 
-      var key = tabPanes[index].key;
+      var _tabPanes$index = tabPanes[index],
+          key = _tabPanes$index.key,
+          menus = _tabPanes$index.menus;
 
       /* 渲染未在初始化时渲染的pane */
 
@@ -2090,6 +2217,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       }
 
       isFunction(onChange) && onChange(key, index);
+      if (menus && menus.length) {
+        onClickDropdownItem(menus[0].key);
+      }
     },
 
 

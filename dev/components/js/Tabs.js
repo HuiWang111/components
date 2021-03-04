@@ -15,10 +15,14 @@
       PANE_ITEM_CLASS_ACTIVE, PANE_ITEM_WRAP_CLASS, TAB_ARROW_CLASS, TAB_ARROW_CLASS_DISABLE, TAB_ARROW_CLASS_INVISIBLE, TAB_PREVIOUS_ARROW_CLASS, TAB_NEXT_ARROW_CLASS, TAB_CONTAINER_CLASS, UNDERLINE_CLASS, TAB_ANIMATE_CLASS, TAB_ITEM_CONTAINER_WRAP_CLASS, TAB_ITEM_EXTRA_CLASS,
 
       /* Icon */
-      CLOSE_ICON_CLASS
+      CLOSE_ICON_CLASS,
+
+      /* Dropdown */
+      DROPDOWN_CONTAINER_CLASS, DROPDOWN_ITEM_CLASS, DROPDOWN_ACTIVE_ITEM_CLASS
     },
     Color: { DISABLE_COLOR },
-    SVG: { getPrevSvg, getNextSvg }
+    SVG: { getPrevSvg, getNextSvg },
+    Dropdown
   } = global,
   
   prevSvg = getPrevSvg(),
@@ -57,8 +61,11 @@
       insertElementJQueryFunc: 'string',
       tabBarExtraContent: 'string',
       onChange: 'function',
-      renderPaneItem: 'function'
+      renderPaneItem: 'function',
+      onClickDropdownItem: 'function'
     });
+
+    if (props.tabPanes.length === 0) return;
 
     this.$container = $(selector);
     if (this.$container.length < 1) throw new Error(`not found ${selector} Element`);
@@ -69,7 +76,7 @@
     }
 
     //default
-    const defaultKey = props.tabPanes[0].key;
+    const defaultKey = props.tabPanes[0] && props.tabPanes[0].key;
     const defaultProps = {
       type: 'line',
       tabPanes: [],
@@ -100,7 +107,7 @@
       const isEditableCard = type === 'card' && editable;
 
       tabPanes.forEach((pane, index) => {
-        const { tab, key } = pane;
+        const { tab, key, menus } = pane;
         let { forceRender } = pane;
 
         isNil(forceRender) && (forceRender = true);
@@ -119,8 +126,16 @@
         const closeIcon = isEditableCard ? (
           (new Icon('close')).html
         ) : '';
+        
+        let dropdownHtml = '';
+        if (menus && menus.length > 0) {
+          const dropdown = new Dropdown({
+            dataSource: menus
+          });
+          dropdownHtml = dropdown.html;
+        }
 
-        let tabDOM = $.node('div', tab + closeIcon, klass);
+        let tabDOM = $.node('div', tab + closeIcon + dropdownHtml, klass);
         tabsDOM += tabDOM;
         
         // pane
@@ -196,6 +211,7 @@
       this.$tabItems = this.$tabInner.find(toSelector(TAB_ITEM_CLASS));
       this.$underline = this.$tabWrap.find(toSelector(UNDERLINE_CLASS));
       this.$arrow = $container.find(toSelector(TAB_ARROW_CLASS));
+      this.$dropdownItems = this.$tabItems.find(toSelector(DROPDOWN_ITEM_CLASS));
 
       // pane
       this.$paneWrap = $container.find(toSelector(PANE_ITEM_WRAP_CLASS));
@@ -220,8 +236,8 @@
 
     bindEvents () {
       const {
-        $tabItems, $panes, $paneWrap, $container,
-        props: { editable, block, animated }
+        $tabItems, $panes, $paneWrap, $container, $dropdownItems,
+        props: { editable, block, animated, onClickDropdownItem, tabPanes }
       } = this;
 
       this.setUnderLineWidth(0);
@@ -241,6 +257,47 @@
           const index = $tabItems.indexOf($this);
 
           __this__.handleTabChange(current, index);
+        }
+      });
+
+      $tabItems.hover(function() {
+        const $this = $(this);
+        const index = $tabItems.indexOf($this);
+
+        if (tabPanes[index]) {
+          const { menus } = tabPanes[index];
+
+          if (!menus || menus.length === 0) return;
+
+          const $dropdown = $this.find(toSelector(DROPDOWN_CONTAINER_CLASS));
+          console.log($this);
+          $dropdown.addClass('show')
+        }
+      }, function() {
+        const $this = $(this);
+        const index = $tabItems.indexOf($this);
+
+        if (tabPanes[index]) {
+          const { menus } = tabPanes[index];
+
+          if (!menus || menus.length === 0) return;
+
+          const $dropdown = $this.find(toSelector(DROPDOWN_CONTAINER_CLASS));
+          $dropdown.removeClass('show')
+        }
+      });
+
+      // click dropdown item
+      $dropdownItems.on('click', function() {
+        const $this = $(this);
+        if (!$this.hasClass(DROPDOWN_ACTIVE_ITEM_CLASS)) {
+          $(toSelector(DROPDOWN_ACTIVE_ITEM_CLASS)).removeClass(DROPDOWN_ACTIVE_ITEM_CLASS);
+          console.log(this);
+          $this.addClass(DROPDOWN_ACTIVE_ITEM_CLASS);
+          const key = $this.attr('data-key');
+          if (onClickDropdownItem) {
+            onClickDropdownItem(key);
+          }
         }
       });
 
@@ -407,7 +464,7 @@
     handleTabChange (current, index, isOnClose) {
       const { 
         unRenderPanes, isRenderedRecords, $underline, $paneWrap, $panes, containerWidth,
-        props: { type, onChange, tabPanes, animated }
+        props: { type, onChange, tabPanes, animated, onClickDropdownItem }
       } = this;
       let { $tabItems } = this;
 
@@ -437,7 +494,7 @@
       !isNil(current) && $panes.eq(current).removeClass(PANE_ITEM_CLASS_ACTIVE);
       $panes.eq(index).addClass(PANE_ITEM_CLASS_ACTIVE);
 
-      const { key } = tabPanes[index];
+      const { key, menus } = tabPanes[index];
 
       /* 渲染未在初始化时渲染的pane */
       if (index < tabPanes.length) {
@@ -448,6 +505,9 @@
       }
 
       isFunction(onChange) && onChange(key, index);
+      if (menus && menus.length) {
+        onClickDropdownItem(menus[0].key);
+      }
     },
 
     getExtra: function(html) {

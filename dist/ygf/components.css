@@ -541,7 +541,6 @@ body {
 }
 .cpts-tabs-container .cpts-tabs-tab-container {
   width: 100%;
-  overflow: hidden;
   margin-bottom: 16px;
   border-bottom: 1px solid #e8e8e8;
   position: relative;
@@ -558,7 +557,6 @@ body {
      -moz-box-flex: 1;
       -ms-flex: 1;
           flex: 1;
-  overflow: hidden;
   white-space: nowrap;
 }
 .cpts-tabs-container .cpts-tabs-tab-container > .cpts-tabs-tab-wrapper > .cpts-tabs-tab-inner {
@@ -581,6 +579,7 @@ body {
   -o-transition: color 0.5s;
   -moz-transition: color 0.5s;
   transition: color 0.5s;
+  position: relative;
 }
 .cpts-tabs-container .cpts-tabs-tab-container > .cpts-tabs-tab-wrapper > .cpts-tabs-tab-inner > .cpts-tabs-tab-item.cpts-tabs-tab-item-active {
   color: #1890ff;
@@ -724,6 +723,7 @@ body {
   -moz-transition: all 1s;
   transition: all 1s;
   opacity: 0;
+  z-index: 9999;
 }
 .cpts-message-contaier.comedown {
   opacity: 1;
@@ -881,4 +881,37 @@ body {
 }
 .cpts-pagination-container > .cpts-pagination-item-more:hover > a > svg:last-child {
   display: block;
+}
+.cpts-dropdown {
+  display: none;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  -webkit-transform: translateY(100%);
+     -moz-transform: translateY(100%);
+      -ms-transform: translateY(100%);
+       -o-transform: translateY(100%);
+          transform: translateY(100%);
+  z-index: 999;
+  background-color: #fff;
+  -webkit-box-shadow: 0px 2px 60px 0px rgba(0, 0, 0, 0.2);
+     -moz-box-shadow: 0px 2px 60px 0px rgba(0, 0, 0, 0.2);
+          box-shadow: 0px 2px 60px 0px rgba(0, 0, 0, 0.2);
+}
+.cpts-dropdown.show {
+  display: block;
+}
+.cpts-dropdown-item {
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  color: #333;
+}
+.cpts-dropdown-item:hover {
+  color: #3d9738;
+}
+.cpts-dropdown-active-item {
+  background-color: #b9c9b3;
+  color: #3d9738;
 }
